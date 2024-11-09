@@ -104,12 +104,14 @@ export class Game {
         this.cameraX = character.x;
 
         // Steuerung für Charakterbewegung
+        character.keyPressed = true;
         if (this.keysPressed.right) {
             character.velocity.x = 100;
         } else if (this.keysPressed.left) {
             character.velocity.x = -100;
         } else {
             character.velocity.x = 0;
+            character.keyPressed = false;
         }
     }
 
