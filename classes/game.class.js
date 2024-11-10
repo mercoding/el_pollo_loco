@@ -1,55 +1,25 @@
+import { chickenAnimations } from "../animations/chicken.anim.js";
 import { Character } from "./character.class.js";
+import { Chicken } from "./chicken.class.js";
 import { MovableObject } from "./movableObject.class.js";
+import { World } from "./world.class.js";
 
-export class Game {
+export class Game extends World {
     constructor() {
-        this.canvas = document.getElementById('canvas');
-        this.ctx = this.canvas.getContext('2d');
+        super()
         this.gameObjects = [];
         this.lastFrameTime = 0;
         this.gravity = 9.81;
         this.gravityEnabled = true;
         this.groundLevel = this.canvas.height - 50;
-
-        // Parallax-Hintergrundbilder
-        this.backgroundImageSky = new Image();
-        this.backgroundImageSky.src = 'img/5_background/layers/air.png';
-        this.backgroundImageClouds = new Image();
-        this.backgroundImageClouds.src = 'img/5_background/layers/4_clouds/full.png';
-        this.backgroundImageMountains = new Image();
-        this.backgroundImageMountains.src = 'img/5_background/layers/3_third_layer/full.png';
-        this.backgroundImageFar = new Image();
-        this.backgroundImageFar.src = 'img/5_background/layers/2_second_layer/full.png';
-        this.backgroundImageNear = new Image();
-        this.backgroundImageNear.src = 'img/5_background/layers/1_first_layer/full.png';
-
-        // Scroll-Geschwindigkeiten
-        this.scrollSpeedClouds = 0.2;    // Langsame Geschwindigkeit für die kontinuierliche Bewegung der Wolken
-        this.scrollSpeedMountains = 0.4; // Geschwindigkeit für die Berge
-        this.scrollSpeedFar = 0.5;       // Geschwindigkeit für den fernen Hintergrund
-        this.scrollSpeedNear = 1.0;      // Geschwindigkeit für den vorderen Hintergrund
-
-        // Initialpositionen für die Wolken
-        this.cloudsOffset = 0;
-
-        // Kamera-Position und Eingaben
         this.cameraX = 0;
         this.keysPressed = { left: false, right: false };
-
-        //this.initInputListeners();
+        this.spawnCooldown = 2; // Sekunden zwischen dem Spawnen eines Gegners
+        this.lastEnemySpawnTime = 0; // Letzte Spawn-Zeit für Gegner
+        this.minDistanceBetweenEnemies = 300; // Mindestabstand zwischen Gegnern
+        this.spawnDistance = 350;
+        this.lastCharacterX = 0;
     }
-/*
-    initInputListeners() {
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') this.keysPressed.right = true;
-            if (e.key === 'ArrowLeft') this.keysPressed.left = true;
-        });
-
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowRight') this.keysPressed.right = false;
-            if (e.key === 'ArrowLeft') this.keysPressed.left = false;
-        });
-    }*/
 
     addGameObject(gameObject) {
         this.gameObjects.push(gameObject);
@@ -65,96 +35,97 @@ export class Game {
         const currentFrameTime = performance.now();
         const deltaTime = (currentFrameTime - this.lastFrameTime) / 1000;
         this.lastFrameTime = currentFrameTime;
-
         this.ClearCanvas();
         this.renderBackgrounds();
-
-        // Spiellogik und Zeichnen der Spielobjekte
-        this.gameObjects.forEach(obj => {
-            if (this.gravityEnabled && obj instanceof MovableObject) {
-                obj.velocity.y += this.gravity * deltaTime;
-            }
-
-            obj.move(deltaTime);
-            obj.updateCollider();
-
-            // Boden-Kollision
-            if (obj instanceof Character && obj.y + obj.height >= this.groundLevel) {
-                obj.y = this.groundLevel - obj.height;
-                obj.land();
-            }
-
-            // Kamera-Steuerung
-            if (obj instanceof Character) {
-                this.handleCameraAndCharacterMovement(obj, deltaTime);
-            }
-        });
-
-        // Zeichne den Charakter in der Mitte
-        this.gameObjects.forEach(obj => {
-            const screenX = this.canvas.width / 2 - obj.width / 2;
-            obj.Update(this.ctx, deltaTime, screenX);
-        });
-
+        this.setSceneGameObjects(deltaTime);
+        this.setSceneCamera(deltaTime);
+        this.removeOffScreenEnemies();
         requestAnimationFrame(() => this.Update());
     }
 
-    handleCameraAndCharacterMovement(character, deltaTime) {
-        // Kamera folgt dem Charakter
-        this.cameraX = character.x;
+    setSceneGameObjects(deltaTime) {
+        this.gameObjects.forEach(obj => {
+            if (this.gravityEnabled && obj instanceof MovableObject) obj.velocity.y += this.gravity * deltaTime;
+            if (obj instanceof Chicken) obj.move(deltaTime, true);
+            else obj.move(deltaTime);
+            obj.updateCollider();
+            if (obj instanceof Character && obj.y + obj.height >= this.groundLevel) {   // Boden-Kollision für den Charakter
+                obj.y = this.groundLevel - obj.height;
+                obj.land();
+            }
+            if (obj instanceof Character) {     // Kamera nur auf den Charakter fokussieren
+                this.handleCameraAndCharacterMovement(obj, deltaTime);
+                this.checkAndSpawnEnemy(obj); 
+            }
+        });
+    }
 
-        // Steuerung für Charakterbewegung
+    setSceneCamera(deltaTime) {
+         // Zeichne alle Objekte relativ zur Kamera
+         this.gameObjects.forEach(obj => {
+            let screenX;
+            // Falls es der Charakter ist, bleibt er in der Mitte
+            if (obj instanceof Character) {
+                screenX = this.canvas.width / 2 - obj.width / 2;
+            } else {
+                // Für andere Objekte die relative Position zur Kamera berechnen
+                screenX = obj.x - this.cameraX + this.canvas.width / 2;
+            }
+            obj.Update(this.ctx, deltaTime, screenX);
+        });
+    }
+    
+
+    handleCameraAndCharacterMovement(character, deltaTime) {
+        if(character.health < 1) return;
+        this.cameraX = character.x;
         character.keyPressed = true;
-        if (this.keysPressed.right) {
-            character.velocity.x = 100;
-        } else if (this.keysPressed.left) {
-            character.velocity.x = -100;
-        } else {
+        if (this.keysPressed.right) character.velocity.x = 100;
+        else if (this.keysPressed.left) character.velocity.x = -100;
+        else {
             character.velocity.x = 0;
             character.keyPressed = false;
         }
     }
 
-    renderBackgrounds() {
-        // Verschiebt die Wolken nach links für eine kontinuierliche Bewegung
-        this.cloudsOffset -= this.scrollSpeedClouds;
+    setEnemyFacing(enemy, character) {
+        if(character.velocity.x > 0) 
+            {
+                enemy.facingRight = true;
+                enemy.setTarget(character);  // Setzt das Ziel auf den Charakter
+                enemy.player = character;
+            }
+            else {
+                enemy.facingRight = false;
+                enemy.setTarget(character);
+                enemy.player = character;
+            }
+    }
 
-        // X-Positionen basierend auf der Kamera-Position und Scroll-Geschwindigkeiten
-        const cloudsX = this.cloudsOffset % this.canvas.width;
-        const mountainX = -(this.cameraX * this.scrollSpeedMountains) % this.canvas.width;
-        const farX = -(this.cameraX * this.scrollSpeedFar) % this.canvas.width;
-        const nearX = -(this.cameraX * this.scrollSpeedNear) % this.canvas.width;
-
-        // Himmel als statischen Hintergrund zeichnen
-        this.ctx.drawImage(this.backgroundImageSky, 0, 0, this.canvas.width, this.canvas.height);
-
-        // Wolken, die sich kontinuierlich bewegen
-        this.ctx.drawImage(this.backgroundImageClouds, cloudsX, 0, this.canvas.width, this.canvas.height);
-        this.ctx.drawImage(this.backgroundImageClouds, cloudsX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
-        if (cloudsX > 0) {
-            this.ctx.drawImage(this.backgroundImageClouds, cloudsX - this.canvas.width, 0, this.canvas.width, this.canvas.height);
+    checkAndSpawnEnemy(character) {
+        const currentFrameTime = performance.now() / 1000;
+        if ((currentFrameTime - this.lastEnemySpawnTime >= this.spawnCooldown) && 
+            Math.abs(character.x - this.lastCharacterX) >= this.spawnDistance) {
+            const spawnX = character.x + (character.velocity.x > 0 ? this.spawnDistance : -this.spawnDistance);
+            const enemy = new Chicken(spawnX, this.groundLevel - 50, 50, 50, chickenAnimations);
+            this.setEnemyFacing(enemy, character);
+            this.addGameObject(enemy);
+            this.lastEnemySpawnTime = currentFrameTime;
+            this.lastCharacterX = spawnX;
         }
+    }
+    
+    
 
-        // Berge
-        this.ctx.drawImage(this.backgroundImageMountains, mountainX, 0, this.canvas.width, this.canvas.height);
-        this.ctx.drawImage(this.backgroundImageMountains, mountainX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
-        if (mountainX > 0) {
-            this.ctx.drawImage(this.backgroundImageMountains, mountainX - this.canvas.width, 0, this.canvas.width, this.canvas.height);
-        }
-
-        // Weiter entfernte Hintergrund-Ebenen
-        this.ctx.drawImage(this.backgroundImageFar, farX, 0, this.canvas.width, this.canvas.height);
-        this.ctx.drawImage(this.backgroundImageFar, farX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
-        if (farX > 0) {
-            this.ctx.drawImage(this.backgroundImageFar, farX - this.canvas.width, 0, this.canvas.width, this.canvas.height);
-        }
-
-        // Nahe gelegene Hintergrund-Ebenen
-        this.ctx.drawImage(this.backgroundImageNear, nearX, 0, this.canvas.width, this.canvas.height);
-        this.ctx.drawImage(this.backgroundImageNear, nearX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
-        if (nearX > 0) {
-            this.ctx.drawImage(this.backgroundImageNear, nearX - this.canvas.width, 0, this.canvas.width, this.canvas.height);
-        }
+    removeOffScreenEnemies() {
+        this.gameObjects = this.gameObjects.filter(obj => {
+            if (obj instanceof Chicken) {
+                // Entfernt Gegner, die außerhalb des Kamera-Sichtfelds sind
+                const screenX = obj.x - this.cameraX + this.canvas.width / 2;
+                return screenX + obj.width >= 0 && screenX <= this.canvas.width;
+            }
+            return true;
+        });
     }
 
     ClearCanvas() {

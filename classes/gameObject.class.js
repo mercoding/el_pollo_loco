@@ -20,4 +20,13 @@ export class GameObject {
             this.collider.y + this.collider.height > other.collider.y
         );
     }
+
+    getHitbox() {
+        return {
+            left: this.x,
+            right: this.x + this.width,
+            top: this.y,
+            bottom: this.y + this.height - 25
+        };
+    }
 }

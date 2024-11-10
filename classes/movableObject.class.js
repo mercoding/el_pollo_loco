@@ -6,28 +6,54 @@ export class MovableObject extends GameObject {
         this.velocity = { x: 0, y: 0 }; // Geschwindigkeit in x- und y-Richtung
         this.speed = 100;
         this.moveSimulation = false;
+        this.target = null; // Ziel für Gegner
     }
 
-    move(deltaTime) {
-        if(this.moveSimulation) return;
+    move(deltaTime, onTarget = false) {
+        //if(this.moveSimulation) return;
         // Berechnung der neuen Position basierend auf der Geschwindigkeit und deltaTime
+       
         this.x += this.velocity.x * deltaTime;
         this.y += this.velocity.y * deltaTime;
+        
+        if(onTarget === true)  this.targetMove();
 
         // Collider nach der Bewegung aktualisieren
         this.updateCollider();
     }
 
     setVelocity(dx, dy) {
-        if(this.moveSimulation) return;
+        //if(this.moveSimulation) return;
         this.velocity.x = dx * this.speed;
         this.velocity.y = dy * this.speed;
     }
 
     Translate(dx, dy, speed) {
-        if(this.moveSimulation) return;
+        //if(this.moveSimulation) return;
         this.velocity.x = dx * speed;
         this.velocity.y = dy * speed;
+    }
+
+    setTarget(target) {
+        this.target = target;  // Einmaliges Ziel für Bewegung setzen
+    }
+
+
+    targetMove() {
+        let direction = 0;
+        if (this.target !== null) {
+            direction = this.target.x > this.x ? 1 : -1;  // Richtung festlegen
+            this.velocity.x = this.speed * direction;  // Geschwindigkeit basierend auf Richtung            
+            if ((direction === -1 && this.x >= this.target.x)) {                
+                this.target = null;
+                direction = -1; 
+            }
+            else if ((direction === 1 && this.x <= this.target.x)) {
+                this.target = null;
+                direction = 1; 
+            }
+        }    
+        this.velocity.y = 0;
     }
 }
 
