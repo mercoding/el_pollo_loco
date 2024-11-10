@@ -3,6 +3,7 @@ import { Character } from "./character.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
 export class Chicken extends Animatable(MovableObject) {
+    global;
     constructor(x, y, width, height, animationPaths) {
         super(animationPaths, x, y, width, height);
         this.facingRight = true;
@@ -24,7 +25,7 @@ export class Chicken extends Animatable(MovableObject) {
 
         // Falls es der Charakter ist, bleibt er in der Mitte
         if (this.isCollidingWith(this.player)) {
-            this.checkCollisionWithEnemy();
+            this.checkCollisionWithPlayer();
         }
         this.drawChicken(ctx, screenX)
     }
@@ -77,8 +78,8 @@ export class Chicken extends Animatable(MovableObject) {
         return false;
     }
 
-    checkCollisionWithEnemy() {
-        if (this.dead) return;
+    checkCollisionWithPlayer() {
+        if (this.dead || this.hurt) return;
         const charHitbox = this.player.getHitbox();
         const enemyHitbox = this.getHitbox();
 

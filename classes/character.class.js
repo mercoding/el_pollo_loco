@@ -1,6 +1,7 @@
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
 export class Character extends Animatable(MovableObject) {
+    global;
     constructor(x, y, width, height, animationPaths) {        
         super(animationPaths, x, y, width, height);
         this.facingRight = true;
@@ -11,29 +12,52 @@ export class Character extends Animatable(MovableObject) {
         this.health = 3; // Start-Leben des Charakters
         this.isInvincible = false; // Unverwundbarkeit nach Schaden
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
+        this.collider.width -= 50;
     }
 
     Start() {}
 
     Update(ctx, deltaTime, screenX) {
-        if(this.health < 1) this.setState('dead');
-        else this.move(deltaTime); // Bewegung berechnen (inkl. vertikaler Geschwindigkeit)
         this.isOnGround(deltaTime);
         this.updateAnimation(deltaTime); // Animation aktualisieren
         this.drawCharacter(ctx, screenX);
+        if(this.health < 1) this.setState('dead');
+        else if(!this.global.isHurt) this.move(deltaTime); // Bewegung berechnen (inkl. vertikaler Geschwindigkeit)
+    }
+
+    isHurt(frame, ctx, screenX) {
+        if (!this.facingRight && this.health > 0) {
+            //ctx.translate(screenX / 4 - this.width, this.y);
+            //ctx.translate(screenX / 4 - this.width, this.y);
+            //ctx.scale(-1, 1);
+            ctx.drawImage(frame, -screenX, this.y, this.width, this.height);
+        }
+        
+    }
+
+    drawFacingRight(frame, ctx, screenX) {
+        if(this.global.isHurt) this.isHurt(frame, ctx, screenX);
+        ctx.translate(screenX, this.y);
+        ctx.scale(1, 1);
+        ctx.drawImage(frame, 0, 0, this.width, this.height);
+    }
+
+    drawFacingLeft(frame, ctx, screenX) {
+        if(this.global.isHurt) this.isHurt(frame, ctx, screenX);
+        ctx.translate(screenX / 4 - this.width, this.y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(frame, -screenX, 0, this.width, this.height);
     }
 
     drawCharacter(ctx, screenX) {
         const frame = this.getCurrentFrame();
+        
         if (frame) {
             ctx.save();
             if (!this.facingRight && this.health > 0) {
-                ctx.translate(screenX / 4 - this.width, this.y);
-                ctx.scale(-1, 1);
-                ctx.drawImage(frame, -screenX, 0, this.width, this.height);
+                this.drawFacingLeft(frame, ctx, screenX);
             } else {
-                ctx.translate(screenX, this.y);
-                ctx.drawImage(frame, 0, 0, this.width, this.height);
+                this.drawFacingRight(frame, ctx, screenX);
             }
             ctx.restore();
         }
@@ -67,6 +91,7 @@ export class Character extends Animatable(MovableObject) {
 
     takeDamage() {
         this.setState('hurt');
+        //this.global.isHurt = true;
         if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
             this.health -= 1; // Reduziert das Leben um 1
             this.isInvincible = true;
@@ -75,8 +100,16 @@ export class Character extends Animatable(MovableObject) {
             setTimeout(() => {
                 this.isInvincible = false;
                 this.setState('idle');
+                //this.global.isHurt = false;
             }, this.invincibilityDuration * 3000);
         }
-        if (this.health <= 0) this.setState('dead');
+        this.isDead();
+    }
+
+    isDead() {
+        if (this.health <= 0) {
+            this.setState('dead');
+            setTimeout(() => { this.global.gameOver = true;}, 8000);
+        }
     }
 }

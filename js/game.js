@@ -4,8 +4,10 @@ import { Character } from "../classes/character.class.js";
 import { Chicken } from "../classes/chicken.class.js";
 import { Game } from "../classes/game.class.js";
 import { GameObject } from "../classes/gameObject.class.js";
+import { Global } from "../classes/global.class.js";
 
-const game = new Game();
+const global = new Global();
+const game = new Game(global);
 let character, chicken;
 const ground = new GameObject(0, 250, 500, 20);
 
@@ -38,7 +40,7 @@ function onKeydown() {
                 }
                 break;
         }
-    }, character.health > 0);
+    });
 }
 
 function onKeyup() {
@@ -51,7 +53,7 @@ function onKeyup() {
             game.keysPressed.left = false;
             if (character.onGround) character.setState('idle'); // Nur zurück zu `idle`, wenn er am Boden ist
         }
-    }, character.health > 0);
+    });
 }
 
 function control() {

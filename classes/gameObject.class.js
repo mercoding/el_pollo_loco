@@ -23,7 +23,7 @@ export class GameObject {
 
     getHitbox() {
         return {
-            left: this.x,
+            left: this.x - this.width,
             right: this.x + this.width,
             top: this.y,
             bottom: this.y + this.height - 25
