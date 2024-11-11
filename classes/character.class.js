@@ -8,7 +8,6 @@ export class Character extends Animatable(MovableObject) {
         this.onGround = true;
         this.jumpStrength = -200; // Sprungkraft
         this.gravity = 800;       // Gravitation (Anpassbar)
-        this.keyPressed = false;
         this.health = 3; // Start-Leben des Charakters
         this.isInvincible = false; // Unverwundbarkeit nach Schaden
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
@@ -23,8 +22,8 @@ export class Character extends Animatable(MovableObject) {
         if(this.health < 1) this.setState('dead');
         else if(this.isHurt) this.setState('hurt');
         else this.move(deltaTime);
-        this.updateAnimation(deltaTime); // Animation aktualisieren
         this.drawCharacter(ctx, screenX);
+        this.updateAnimation(deltaTime);
     }
 
     drawFacingRight(frame, ctx, screenX) {
@@ -54,7 +53,6 @@ export class Character extends Animatable(MovableObject) {
     }
 
     walk(facing, x, speed) {
-        if(this.isHurt) return;
         this.facingRight = facing;
         this.velocity.x = x * speed;
         if (this.onGround) {
@@ -63,7 +61,7 @@ export class Character extends Animatable(MovableObject) {
     }
 
     idle() {
-        if (this.onGround && !this.isHurt) {
+        if (this.onGround) {
             this.velocity.x = 0;
             this.setState('idle');
         }
@@ -96,20 +94,17 @@ export class Character extends Animatable(MovableObject) {
     }
 
     takeDamage() {        
-        //this.global.isHurt = true;
         if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
             this.health -= 1; // Reduziert das Leben um 1
             this.isInvincible = true;
             this.isHurt = true;
             this.setState('hurt');
-            this.velocity.x = this.facingRight ? -150 : 150;
-
+            this.velocity.x = this.facingRight ? -150 : 150;            
             setTimeout(() => {
                 this.isInvincible = false;
                 this.isHurt = false;
-                this.setState('idle');
                 if(this.health > 0) this.setState(this.onGround ? 'idle' : 'jump');
-            }, this.invincibilityDuration * 3000);
+            }, this.invincibilityDuration * 1000);
         }
         this.isDead();
     }
@@ -119,5 +114,9 @@ export class Character extends Animatable(MovableObject) {
             this.setState('dead');
             //setTimeout(() => { this.global.gameOver = true;}, 8000);
         }
+    }
+
+    setStateOnce(newState) {
+        if(this.state !== newState) this.setState(newState);
     }
 }

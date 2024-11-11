@@ -55,12 +55,12 @@ export class Chicken extends Animatable(MovableObject) {
 
     squish() {
         if (!this.isSquished) {
-            //this.height /= 2;      // Höhe halbieren
-            //this.height = 0;
+            //this.global.points += 10;
             this.y += 13;//+= this.height;  // Y-Position anpassen
             this.isSquished = true; // Gegner als zerquetscht markieren
             this.velocity.x = 0;
             this.setState('dead');
+            this.global += 10;
         }
     }
 
