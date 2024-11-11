@@ -20,10 +20,11 @@ export class Character extends Animatable(MovableObject) {
 
     Update(ctx, deltaTime, screenX) {
         this.isOnGround(deltaTime);
+        if(this.health < 1) this.setState('dead');
+        else if(this.isHurt) this.setState('hurt');
+        else this.move(deltaTime);
         this.updateAnimation(deltaTime); // Animation aktualisieren
         this.drawCharacter(ctx, screenX);
-        if(this.health < 1) this.setState('dead');
-        else if(!this.global.isHurt) this.move(deltaTime); // Bewegung berechnen (inkl. vertikaler Geschwindigkeit)
     }
 
     drawFacingRight(frame, ctx, screenX) {
@@ -62,7 +63,7 @@ export class Character extends Animatable(MovableObject) {
     }
 
     idle() {
-        if (this.onGround || !this.isHurt) {
+        if (this.onGround && !this.isHurt) {
             this.velocity.x = 0;
             this.setState('idle');
         }
@@ -94,9 +95,7 @@ export class Character extends Animatable(MovableObject) {
         else if (this.keyPressed) this.setState('walk');
     }
 
-    takeDamage() {
-        console.log('Hurt');
-        
+    takeDamage() {        
         //this.global.isHurt = true;
         if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
             this.health -= 1; // Reduziert das Leben um 1
@@ -104,7 +103,6 @@ export class Character extends Animatable(MovableObject) {
             this.isHurt = true;
             this.setState('hurt');
             this.velocity.x = this.facingRight ? -150 : 150;
-            console.log('Hurt');
 
             setTimeout(() => {
                 this.isInvincible = false;
@@ -119,7 +117,7 @@ export class Character extends Animatable(MovableObject) {
     isDead() {
         if (this.health <= 0) {
             this.setState('dead');
-            setTimeout(() => { this.global.gameOver = true;}, 8000);
+            //setTimeout(() => { this.global.gameOver = true;}, 8000);
         }
     }
 }
