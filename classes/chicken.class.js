@@ -79,7 +79,7 @@ export class Chicken extends Animatable(MovableObject) {
     }
 
     checkCollisionWithPlayer() {
-        if (this.dead || this.hurt) return;
+        if (this.player.health < 1 || this.player.isHurt) return;
         const charHitbox = this.player.getHitbox();
         const enemyHitbox = this.getHitbox();
 

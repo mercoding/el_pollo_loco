@@ -13,6 +13,7 @@ export class Character extends Animatable(MovableObject) {
         this.isInvincible = false; // Unverwundbarkeit nach Schaden
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
         this.collider.width -= 50;
+        this.isHurt = false;
     }
 
     Start() {}
@@ -25,25 +26,13 @@ export class Character extends Animatable(MovableObject) {
         else if(!this.global.isHurt) this.move(deltaTime); // Bewegung berechnen (inkl. vertikaler Geschwindigkeit)
     }
 
-    isHurt(frame, ctx, screenX) {
-        if (!this.facingRight && this.health > 0) {
-            //ctx.translate(screenX / 4 - this.width, this.y);
-            //ctx.translate(screenX / 4 - this.width, this.y);
-            //ctx.scale(-1, 1);
-            ctx.drawImage(frame, -screenX, this.y, this.width, this.height);
-        }
-        
-    }
-
     drawFacingRight(frame, ctx, screenX) {
-        if(this.global.isHurt) this.isHurt(frame, ctx, screenX);
         ctx.translate(screenX, this.y);
         ctx.scale(1, 1);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
     drawFacingLeft(frame, ctx, screenX) {
-        if(this.global.isHurt) this.isHurt(frame, ctx, screenX);
         ctx.translate(screenX / 4 - this.width, this.y);
         ctx.scale(-1, 1);
         ctx.drawImage(frame, -screenX, 0, this.width, this.height);
@@ -63,8 +52,24 @@ export class Character extends Animatable(MovableObject) {
         }
     }
 
+    walk(facing, x, speed) {
+        this.facingRight = facing;
+        if (this.onGround) {
+            this.Translate(x, 0, speed);
+            this.setState('walk');
+        }
+    }
+
+    idle() {
+        if (this.onGround) {
+            this.Translate(0, 0, 100);
+            this.setState('idle');
+        }
+    }
+
     jump() {
         if (this.onGround) {
+            //this.setVelocity(0, this.jumpStrength)
             this.velocity.y = this.jumpStrength;
             this.onGround = false; 
             this.setState('jump'); 
@@ -90,17 +95,19 @@ export class Character extends Animatable(MovableObject) {
     }
 
     takeDamage() {
-        this.setState('hurt');
         //this.global.isHurt = true;
         if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
             this.health -= 1; // Reduziert das Leben um 1
             this.isInvincible = true;
+            this.isHurt = true;
+            this.setState('hurt');
             this.velocity.x = this.facingRight ? -150 : 150;
 
             setTimeout(() => {
                 this.isInvincible = false;
+                this.isHurt = false;
                 this.setState('idle');
-                //this.global.isHurt = false;
+                if(this.health > 0) this.setState(this.onGround ? 'idle' : 'jump');
             }, this.invincibilityDuration * 3000);
         }
         this.isDead();

@@ -17,7 +17,7 @@ function init() {
     chicken = new Chicken(200, 200, 30, 30, chickenAnimations);
     game.addGameObject(character);
 
-    control();
+    //control();
     game.Start();
 }
 

@@ -2,6 +2,7 @@ import { chickenAnimations } from "../animations/chicken.anim.js";
 import { Character } from "./character.class.js";
 import { Chicken } from "./chicken.class.js";
 import { Global } from "./global.class.js";
+import { InputHandler } from "./inputHandler.class.js";
 import { MovableObject } from "./movableObject.class.js";
 import { World } from "./world.class.js";
 
@@ -21,6 +22,7 @@ export class Game extends World {
         this.minDistanceBetweenEnemies = 300; // Mindestabstand zwischen Gegnern
         this.spawnDistance = 350;
         this.lastCharacterX = 0;
+        this.inputHandler = new InputHandler();
     }
 
     addGameObject(gameObject) {
@@ -50,11 +52,36 @@ export class Game extends World {
         requestAnimationFrame(() => this.Update());
     }
 
+    updateCharacterMovement(deltaTime, character, input) {
+        if(character.isHurt || character < 1) {
+            character.velocity.x = 0;
+            return;
+        }
+        if(input.right) {
+            character.walk(true, 1, 100);
+        }
+        else if(input.left) {
+            character.walk(false, -1, 100);
+        }
+        else {
+            character.idle();
+        }
+        if(input.up) {
+            character.jump();
+        }
+       
+        character.move(deltaTime);
+    }
+
     setSceneGameObjects(deltaTime) {
         this.gameObjects.forEach(obj => {
             if (this.gravityEnabled && obj instanceof MovableObject) obj.velocity.y += this.gravity * deltaTime;
             if (obj instanceof Chicken) obj.move(deltaTime, true);
-            if (obj instanceof Character && !this.global.isHust) obj.move(deltaTime);
+            if (obj instanceof Character) {
+                const input = this.inputHandler.getInput();
+                this.updateCharacterMovement(deltaTime, obj, input);
+                //obj.move(deltaTime);
+            }
             obj.updateCollider();
             if (obj instanceof Character && obj.y + obj.height >= this.groundLevel) {   // Boden-Kollision für den Charakter
                 obj.y = this.groundLevel - obj.height;
@@ -84,7 +111,7 @@ export class Game extends World {
 
 
     handleCameraAndCharacterMovement(character, deltaTime) {
-        if (character.health < 1) return;
+        if (character.health < 1 || character.isHurt) return;
         this.cameraX = character.x;
         character.keyPressed = true;
         if (this.keysPressed.right) character.velocity.x = 100;
