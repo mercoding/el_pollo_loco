@@ -145,6 +145,7 @@ export class Game extends World {
     }
 
     checkAndSpawnCoinRow(character) {
+        if(character.state == 'idle') return;
         const currentTime = performance.now() / 1000;
         //const minDistanceForNewRow = 500; // Mindestabstand zwischen Coin-Reihen
         const direction = character.facingRight ? 1 : -1;
