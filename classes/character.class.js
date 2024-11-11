@@ -53,23 +53,23 @@ export class Character extends Animatable(MovableObject) {
     }
 
     walk(facing, x, speed) {
+        if(this.isHurt) return;
         this.facingRight = facing;
+        this.velocity.x = x * speed;
         if (this.onGround) {
-            this.Translate(x, 0, speed);
             this.setState('walk');
         }
     }
 
     idle() {
-        if (this.onGround) {
-            this.Translate(0, 0, 100);
+        if (this.onGround || !this.isHurt) {
+            this.velocity.x = 0;
             this.setState('idle');
         }
     }
 
     jump() {
         if (this.onGround) {
-            //this.setVelocity(0, this.jumpStrength)
             this.velocity.y = this.jumpStrength;
             this.onGround = false; 
             this.setState('jump'); 
@@ -95,6 +95,8 @@ export class Character extends Animatable(MovableObject) {
     }
 
     takeDamage() {
+        console.log('Hurt');
+        
         //this.global.isHurt = true;
         if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
             this.health -= 1; // Reduziert das Leben um 1
@@ -102,6 +104,7 @@ export class Character extends Animatable(MovableObject) {
             this.isHurt = true;
             this.setState('hurt');
             this.velocity.x = this.facingRight ? -150 : 150;
+            console.log('Hurt');
 
             setTimeout(() => {
                 this.isInvincible = false;

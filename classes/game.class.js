@@ -78,8 +78,8 @@ export class Game extends World {
             if (this.gravityEnabled && obj instanceof MovableObject) obj.velocity.y += this.gravity * deltaTime;
             if (obj instanceof Chicken) obj.move(deltaTime, true);
             if (obj instanceof Character) {
-                const input = this.inputHandler.getInput();
-                this.updateCharacterMovement(deltaTime, obj, input);
+                /*const input = this.inputHandler.getInput();
+                this.updateCharacterMovement(deltaTime, obj, input);*/
                 //obj.move(deltaTime);
             }
             obj.updateCollider();
@@ -114,12 +114,8 @@ export class Game extends World {
         if (character.health < 1 || character.isHurt) return;
         this.cameraX = character.x;
         character.keyPressed = true;
-        if (this.keysPressed.right) character.velocity.x = 100;
-        else if (this.keysPressed.left) character.velocity.x = -100;
-        else {
-            character.velocity.x = 0;
-            character.keyPressed = false;
-        }
+        const input = this.inputHandler.getInput();
+        this.updateCharacterMovement(deltaTime, character, input);
     }
 
     setEnemyFacing(enemy, character) {
