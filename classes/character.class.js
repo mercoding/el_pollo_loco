@@ -206,6 +206,7 @@ export class Character extends Animatable(MovableObject) {
             const buffer = 4; // Kleiner Puffer für die Platzierung
 
             // Vertikale Kollisionserkennung für das Landen auf dem Hindernis:
+            /*
         if (
             charHitbox.bottom > obstacleHitbox.top &&       
             charHitbox.top < obstacleHitbox.top &&          
@@ -216,14 +217,12 @@ export class Character extends Animatable(MovableObject) {
             this.onGround = true;
             this.ground = obstacleHitbox.top; // Setze die Bodenhöhe auf die Hindernishöhe
             this.isOnObstacle = true;
-            this.ground = 400;
-            console.log('collision');
-            
+            this.ground = 400;            
         }
         else {
             this.isOnObstacle = false;
             this.resetAfterObstacle();
-        }
+        }*/
         
             // Horizontale Kollision von links nach rechts
             if (
@@ -248,9 +247,7 @@ export class Character extends Animatable(MovableObject) {
                 this.idle();
                 
             } 
-            this.resetAfterObstacle();
-            console.log(this.isOnObstacle);
-            
+            this.resetAfterObstacle();            
         }
         
     
