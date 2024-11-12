@@ -22,7 +22,7 @@ export class Coin extends GameObject {
 
     Update(ctx, deltaTime, screenX) {
         // Zeichne die Münze, wenn sie noch nicht eingesammelt wurde und im sichtbaren Bereich ist
-        if (!this.dead && this.isVisibleOnCanvas(screenX)) {
+        if (!this.dead && this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
             ctx.drawImage(Coin.coinImage, screenX, this.y, this.width, this.height);
         }
 
@@ -48,7 +48,8 @@ export class Coin extends GameObject {
     }
 
     // Prüfen, ob Coin im sichtbaren Bereich des Canvas ist
-    isVisibleOnCanvas(screenX) {
-        return screenX + this.width > 0 && screenX < canvas.width;
+    isVisibleOnCanvas(screenX, canvasWidth) {
+        // Check if the obstacle is within the visible canvas area
+        return screenX + this.width > 0 && screenX < canvasWidth;
     }
 }

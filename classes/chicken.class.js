@@ -10,7 +10,7 @@ export class Chicken extends Animatable(MovableObject) {
         this.setState('walk');
         this.speed = 50;
         this.onGround = true;
-        this.gravity = 800;
+        //this.gravity = 800;
         this.initialX = x;  // Speichere den Startpunkt
         //this.targetX = null; // Ziel für Gegner
         this.player = null;
@@ -42,13 +42,13 @@ export class Chicken extends Animatable(MovableObject) {
     }
 
     moveLeft(frame, ctx, screenX) {
-        ctx.translate(screenX + this.width, this.y);
+        ctx.translate(screenX + this.width, 380);
         ctx.scale(-1, 1);  // Flipped für "nach links"
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
     moveRight(frame, ctx, screenX) {
-        ctx.translate(screenX, this.y);
+        ctx.translate(screenX, 380);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
@@ -91,5 +91,20 @@ export class Chicken extends Animatable(MovableObject) {
             this.onHit(charHitbox, enemyHitbox);
         }
         return false;
+    }
+
+    handleCollisionWithObstacle(obstacle) {
+        const obstacleHitbox = obstacle.getHitbox();
+        const chickenHitbox = this.getHitbox();
+
+        // Check for collision overlap between enemy and obstacle
+        const isOverlappingHorizontally = obstacleHitbox.right > chickenHitbox.left && obstacleHitbox.left < chickenHitbox.right;
+        const isOverlappingVertically = obstacleHitbox.bottom > chickenHitbox.top && obstacleHitbox.top < chickenHitbox.bottom;
+
+        if (isOverlappingHorizontally && isOverlappingVertically) {
+            // Reverse the enemy's direction upon collision
+            this.velocity.x *= -1;
+            this.facingRight = !this.facingRight;
+        }
     }
 }

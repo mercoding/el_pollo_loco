@@ -5,9 +5,11 @@ import { Coin } from "./coin.class.js";
 import { Global } from "./global.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 import { MovableObject } from "./movableObject.class.js";
+import { Obstacle } from "./obstacle.class.js";
 import { World } from "./world.class.js";
 
 export class Game extends World {
+    obstacles = [];
     constructor(global) {
         super();
         this.global = global;
@@ -26,6 +28,12 @@ export class Game extends World {
         this.lastCharacterX = 0;
         this.inputHandler = new InputHandler();
         this.coinSpacing = 50;
+
+        this.lastObstacleSpawnX = 0; // Track the X position of the last spawned obstacle
+        this.minObstacleSpacing = 300; // Minimum distance between obstacles
+        this.maxObstacleSpacing = 600; // Maximum distance between obstacles
+        this.obstacleSpawnCooldown = 3; // Minimum time in seconds between spawns
+        this.lastObstacleSpawnTime = 0;
     }
 
     addGameObject(gameObject) {
@@ -38,8 +46,48 @@ export class Game extends World {
             obj.global = this.global;
             obj.Start()
         });
+
+        this.obstaclePositions = [
+            -500,  // X position of the first obstacle
+            -1000, // Second obstacle position
+            -1500, // Continue adding obstacle positions as needed
+            -2000,
+            -3000,
+            500,  // X position of the first obstacle
+            1000, // Second obstacle position
+            1500, // Continue adding obstacle positions as needed
+            2000,
+            3000,
+            // etc.
+        ];
+
+
+        this.initializeObstacles();
+
+
         this.lastFrameTime = performance.now();
         this.Update();
+    }
+
+
+
+    initializeObstacles() {
+        // Create obstacles at predefined positions to make them feel part of the scene
+        this.obstaclePositions.forEach(positionX => {
+            const obstacle = new Obstacle(positionX, this.groundLevel - 35, 35, 30, "img/obstacles/stone.png");
+            this.addGameObject(obstacle);
+        });
+    }
+
+    handleCollisions() {
+        const character = this.gameObjects.find(obj => obj instanceof Character);
+        this.gameObjects.forEach(obj => {
+            if (obj instanceof Obstacle) {
+                if (character.isCollidingWith(obj)) {
+                    character.handleObstacleCollision(obj); // New collision method in Character
+                }
+            }
+        });
     }
 
     Update() {
@@ -52,6 +100,8 @@ export class Game extends World {
         this.setSceneGameObjects(deltaTime);
         this.setSceneCamera(deltaTime);
         this.removeOffScreenEnemies();
+        // Regularly spawn obstacles
+        this.handleCollisions();
         this.removeDeadCoins();
         requestAnimationFrame(() => this.Update());
     }
@@ -62,6 +112,7 @@ export class Game extends World {
             character.velocity.x = 0;
             return;
         }*/
+
         if (input.right) {
             character.walk(true, 1, 100);
         }
@@ -82,11 +133,17 @@ export class Game extends World {
         this.gameObjects.forEach(obj => {
             obj.Start();
             if (this.gravityEnabled && obj instanceof MovableObject) obj.velocity.y += this.gravity * deltaTime;
-            if (obj instanceof Chicken) obj.move(deltaTime, true);
+            if (obj instanceof Chicken) {
+                obj.move(deltaTime, true);
+                this.gameObjects.forEach(obstacle => {
+                    if (obstacle instanceof Obstacle) obstacle.handleCollisionWithEnemy(obj);
+                });
+            }
             if (obj instanceof Character) {     // Kamera nur auf den Charakter fokussieren
                 this.handleCameraAndCharacterMovement(obj, deltaTime);
                 this.checkAndSpawnEnemy(obj);
                 this.checkAndSpawnCoinRow(obj);
+
             }
             if (obj instanceof Character && obj.y + obj.height >= this.groundLevel) {   // Boden-Kollision für den Charakter
                 obj.y = this.groundLevel - obj.height;
@@ -107,7 +164,7 @@ export class Game extends World {
             obj.Update(this.ctx, deltaTime, screenX);
         });
     }
-    
+
 
 
     handleCameraAndCharacterMovement(character, deltaTime) {
@@ -134,64 +191,183 @@ export class Game extends World {
         const currentFrameTime = performance.now() / 1000;
         if ((currentFrameTime - this.lastEnemySpawnTime >= this.spawnCooldown) &&
             Math.abs(character.x - this.lastCharacterX) >= this.spawnDistance) {
-            const spawnX = character.x + (character.velocity.x > 0 ? this.spawnDistance : -this.spawnDistance);
-            const enemy = new Chicken(spawnX, this.groundLevel - 50, 50, 50, chickenAnimations);
-            enemy.global = this.global;
-            this.setEnemyFacing(enemy, character);
-            this.addGameObject(enemy);
-            this.lastEnemySpawnTime = currentFrameTime;
-            this.lastCharacterX = spawnX;
+            let spawnX = character.x + (character.velocity.x > 0 ? this.spawnDistance : -this.spawnDistance);
+            /*
+            for (let index = 0; index < this.obstaclePositions.length; index++) {
+                if(spawnX <= this.obstaclePositions[index] + 100 && spawnX >= this.obstaclePositions[index] - 100)
+                    if(this.obstaclePositions[index + 1])
+                        spawnX = (this.obstaclePositions[index] + this.obstaclePositions[index + 1]) / 2;
+                    else
+                        spawnX = this.obstaclePositions[index] + 100;
+            }*/
+            spawnX = this.adjustCoinPosition(spawnX, this.obstaclePositions, 70);
+            if (!this.isChickenNearby(spawnX, this.groundLevel - 50, 500)) {
+                const enemy = new Chicken(spawnX, this.groundLevel - 50, 50, 50, chickenAnimations);
+                enemy.global = this.global;
+                this.setEnemyFacing(enemy, character);
+                this.addGameObject(enemy);
+                this.lastEnemySpawnTime = currentFrameTime;
+                this.lastCharacterX = spawnX;
+            }
         }
     }
 
+    adjustCoinPosition(coinX, obstaclePositions, minDistance = 50) {
+        // Funktion, die überprüft, ob die Position zu nah an den Hindernissen ist
+        const isTooClose = (x) => obstaclePositions.some(obstacleX => Math.abs(obstacleX - x) < minDistance);
+
+        // Verschiebe `coinX` in die passende Richtung abhängig von seinem Vorzeichen
+        const shiftDirection = coinX < 0 ? -1 : 1; // Negativ für links, positiv für rechts
+
+        // So lange die Münz-Position zu nah an einem Hindernis ist, verschieben
+        while (isTooClose(coinX)) {
+            coinX += shiftDirection * minDistance; // Münze um `minDistance` in die richtige Richtung verschieben
+        }
+
+        return coinX; // Gibt die angepasste Position zurück
+    }
+
+    isCoinNearby(x, y, threshold = 50) {
+        // Prüfe, ob ein Coin in der Nähe der geplanten Position ist
+        return this.gameObjects.some(obj => {
+            return obj instanceof Coin &&
+                Math.abs(obj.x - x) < threshold &&  // Horizontal in der Nähe
+                Math.abs(obj.y - y) < threshold;    // Vertikal in der Nähe
+        });
+    }
+
+    isChickenNearby(x, y, threshold = 100) {
+        // Prüfe, ob ein Chicken in der Nähe der geplanten Position ist
+        return this.gameObjects.some(obj => {
+            return obj instanceof Chicken &&
+                Math.abs(obj.x - x) < threshold &&  // Horizontal in der Nähe
+                Math.abs(obj.y - y) < threshold;    // Vertikal in der Nähe
+        });
+    }
+
+
+
     checkAndSpawnCoinRow(character) {
-        if(character.state == 'idle') return;
+        if (character.state == 'idle') return;
         const currentTime = performance.now() / 1000;
         //const minDistanceForNewRow = 500; // Mindestabstand zwischen Coin-Reihen
         const direction = character.facingRight ? 1 : -1;
-    
+
         // Berechne die Startposition für die Coins: etwas außerhalb des sichtbaren Bereichs
         const startX = character.x + direction * (this.canvas.width / 2 + 100); // Spawnt Coins außerhalb des Canvas
         const yPosition = this.groundLevel - 80; // Feste Höhe der Coin-Reihe
-    
+
         // Bedingung für Abklingzeit und Mindestabstand seit dem letzten Spawn
         if (currentTime - this.lastSpawnTime < this.spawnCoinCooldown) return;
         //if (Math.abs(character.x - this.lastCharacterX && this.spawnCooldown == 2) < minDistanceForNewRow) return;
-    
+
         // Zufällige Anzahl von Coins erzeugen und in einer Linie platzieren
         const numberOfCoins = Math.floor(Math.random() * 5) + 3;
         for (let i = 0; i < numberOfCoins; i++) {
-            const x = startX + i * this.coinSpacing * direction; // Platzierung entlang der Bewegungsrichtung
-            const coin = new Coin(x, yPosition, 80, 80, 10); // Größe und Punktewert der Coins
-            coin.player = character;
-            coin.global = this.global;
-            this.addGameObject(coin);
+            let x = startX + i * this.coinSpacing * direction; // Platzierung entlang der Bewegungsrichtung
+            x = this.adjustCoinPosition(x, this.obstaclePositions, 50);
+            if (!this.isCoinNearby(x, yPosition, 100)) {
+                const coin = new Coin(x, yPosition, 80, 80, 10); // Größe und Punktewert der Coins
+                coin.player = character;
+                coin.global = this.global;
+                this.addGameObject(coin);
+            }
         }
-    
+
         // Aktualisiere die Zeit und Position des letzten Coin-Spawns
         this.lastSpawnTime = currentTime;
         this.lastCharacterX = character.x;
     }
+
+
+    // Prüft, ob ein Hindernis nahe der gewünschten Position ist
+    isNearObstacle(x) {
+        return this.gameObjects.some(obj => obj instanceof Obstacle && Math.abs(obj.x - x) < 100);
+    }
+    /*
+        checkAndSpawnObstacle() {
+            const currentTime = performance.now() / 1000;
+            const characterX = this.getCharacterX(); // Use character position as reference for obstacle placement
     
+            // Only spawn if enough time has passed and there’s adequate distance
+            if (currentTime - this.lastObstacleSpawnTime >= this.obstacleSpawnCooldown) {
+                const distanceFromLastObstacle = Math.abs(characterX - this.lastObstacleSpawnX);
+                if (distanceFromLastObstacle >= this.minObstacleSpacing) {
+                    
+                    // Determine the next spawn location and random distance
+                    const direction = characterX > this.lastObstacleSpawnX ? 1 : -1;
+                    const randomSpacing = this.minObstacleSpacing + Math.random() * (this.maxObstacleSpacing - this.minObstacleSpacing);
+                    const obstacleX = this.lastObstacleSpawnX + direction * randomSpacing;
+                    const obstacleY = this.groundLevel - 180; // Adjust based on ground level
     
+                    const obstacle = new Obstacle(obstacleX, obstacleY, 50, 50, "img/obstacles/stone.png");
+                    this.addGameObject(obstacle);
     
+                    // Update the last spawn position and time
+                    this.lastObstacleSpawnX = obstacleX;
+                    this.lastObstacleSpawnTime = currentTime;
+                }
+            }
+        }*/
+    /*
+        getCharacterX() {
+            // Returns the X position of the character for reference
+            const character = this.gameObjects.find(obj => obj instanceof Character);
+            return character ? character.x : 0;
+        }*/
+
+    handleObjectCollisions(obj) {
+        this.gameObjects.forEach(other => {
+            if (other !== obj && other instanceof Obstacle) {
+                if (obj.isCollidingWith(other)) {
+                    if (obj instanceof Character) {
+                        obj.handleObstacleCollision(other);  // New collision response in Character
+                    }
+                    else obj.resetAfterObstacle();
+                    if (obj instanceof Chicken) {
+                        other.handleCollisionWithEnemy(obj); // Obstacle changes Chicken direction
+                    }
+                }
+            }
+        });
+    }
+
+
 
     removeDeadCoins() {
         this.gameObjects = this.gameObjects.filter(obj => !(obj instanceof Coin && obj.dead));
     }
 
     removeOffScreenEnemies() {
+        const character = this.gameObjects.find(player => player instanceof Character);
+        // Definiere die Mindestentfernung, die der Charakter in die entgegengesetzte Richtung laufen muss, um einen Gegner zu löschen
+        const minDistanceToRemoveEnemy = 1000; // Mindeststrecke in Pixeln (anpassbar)
+
         this.gameObjects = this.gameObjects.filter(obj => {
             if (obj instanceof Chicken) {
-                // Entfernt Gegner, die außerhalb des Kamera-Sichtfelds sind
+                // Berechne die Position des Gegners relativ zur Kamera
                 const screenX = obj.x - this.cameraX + this.canvas.width / 2;
-                return screenX + obj.width >= 0 && screenX <= this.canvas.width;
+
+                // Wenn der Gegner außerhalb des Kamera-Sichtfelds ist
+                if (screenX + obj.width < 0 || screenX > this.canvas.width) {
+                    // Prüfe, ob der Charakter genügend Abstand zurückgelegt hat
+                    const distanceMoved = Math.abs(character.x - obj.lastCharacterX);
+
+                    if (distanceMoved >= minDistanceToRemoveEnemy) {
+                        return false; // Entferne den Gegner
+                    }
+                } else {
+                    // Aktualisiere die letzte bekannte Position des Charakters, wenn der Gegner im Sichtfeld ist
+                    obj.lastCharacterX = character.x;
+                }
             }
-            return true;
+            return true; // Behalte das Objekt im Spiel, wenn es kein Chicken ist oder nicht entfernt werden soll
         });
     }
+
 
     ClearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
+
 }

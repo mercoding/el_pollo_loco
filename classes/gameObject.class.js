@@ -4,7 +4,7 @@ export class GameObject {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.collider = { x: this.x, y: this.y, width: this.width, height: this.height };
+        this.collider = { x: this.x, y: this.y, width: this.width + 20, height: this.height - 25 };
     }
 
     updateCollider() {
@@ -26,7 +26,7 @@ export class GameObject {
             left: this.x - this.width,
             right: this.x + this.width,
             top: this.y,
-            bottom: this.y + this.height - 25
+            bottom: this.y + this.height
         };
     }
 }

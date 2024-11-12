@@ -7,6 +7,12 @@ export class MovableObject extends GameObject {
         this.speed = 100;
         this.moveSimulation = false;
         this.target = null; // Ziel für Gegner
+
+        this.layers = [
+            { y: 0, range: [[0, 500], [1000, 1500]] }, // Ground level
+            { y: 10, range: [[500, 1000]] }, // Elevated platform from x=500 to x=1000
+            // Add more layers as needed
+        ];
     }
 
     move(deltaTime, onTarget = false) {
