@@ -212,18 +212,12 @@ export class Game extends World {
     }
 
     checkAndSpawnEnemy(character) {
+        if(character.x > 9500 || character.x < -9500) return;
         const currentFrameTime = performance.now() / 1000;
         if ((currentFrameTime - this.lastEnemySpawnTime >= this.spawnCooldown) &&
             Math.abs(character.x - this.lastCharacterX) >= this.spawnDistance) {
             let spawnX = character.x + (character.velocity.x > 0 ? this.spawnDistance : -this.spawnDistance);
-            /*
-            for (let index = 0; index < this.obstaclePositions.length; index++) {
-                if(spawnX <= this.obstaclePositions[index] + 100 && spawnX >= this.obstaclePositions[index] - 100)
-                    if(this.obstaclePositions[index + 1])
-                        spawnX = (this.obstaclePositions[index] + this.obstaclePositions[index + 1]) / 2;
-                    else
-                        spawnX = this.obstaclePositions[index] + 100;
-            }*/
+
             spawnX = this.adjustCoinPosition(spawnX, this.obstaclePositions, 70);
             if (!this.isChickenNearby(spawnX, this.groundLevel - 50, 500)) {
                 const enemy = new Chicken(spawnX, this.groundLevel - 50, 50, 50, chickenAnimations);
@@ -324,37 +318,7 @@ export class Game extends World {
     isNearObstacle(x) {
         return this.gameObjects.some(obj => obj instanceof Obstacle && Math.abs(obj.x - x) < 100);
     }
-    /*
-        checkAndSpawnObstacle() {
-            const currentTime = performance.now() / 1000;
-            const characterX = this.getCharacterX(); // Use character position as reference for obstacle placement
-    
-            // Only spawn if enough time has passed and there’s adequate distance
-            if (currentTime - this.lastObstacleSpawnTime >= this.obstacleSpawnCooldown) {
-                const distanceFromLastObstacle = Math.abs(characterX - this.lastObstacleSpawnX);
-                if (distanceFromLastObstacle >= this.minObstacleSpacing) {
-                    
-                    // Determine the next spawn location and random distance
-                    const direction = characterX > this.lastObstacleSpawnX ? 1 : -1;
-                    const randomSpacing = this.minObstacleSpacing + Math.random() * (this.maxObstacleSpacing - this.minObstacleSpacing);
-                    const obstacleX = this.lastObstacleSpawnX + direction * randomSpacing;
-                    const obstacleY = this.groundLevel - 180; // Adjust based on ground level
-    
-                    const obstacle = new Obstacle(obstacleX, obstacleY, 50, 50, "img/obstacles/stone.png");
-                    this.addGameObject(obstacle);
-    
-                    // Update the last spawn position and time
-                    this.lastObstacleSpawnX = obstacleX;
-                    this.lastObstacleSpawnTime = currentTime;
-                }
-            }
-        }*/
-    /*
-        getCharacterX() {
-            // Returns the X position of the character for reference
-            const character = this.gameObjects.find(obj => obj instanceof Character);
-            return character ? character.x : 0;
-        }*/
+   
 
     handleObjectCollisions(obj) {
         this.gameObjects.forEach(other => {

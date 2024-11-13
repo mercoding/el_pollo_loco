@@ -13,6 +13,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         //this.targetX = null; // Ziel für Gegner
         this.player = player;
         this.dead = false;
+        this.frameDuration = 0.3;
     }
 
     Start() { }
