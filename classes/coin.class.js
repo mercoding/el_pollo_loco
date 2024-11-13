@@ -10,12 +10,16 @@ export class Coin extends GameObject {
         this.dead = false;
         this.points = points;
         this.player = null;
+        this.collider.width -= 30;
+        this.collider.height -= 30;
+        console.log(this.y);
+        
 
         // Nur einmal das Bild für alle Coins laden
         if (!Coin.imageLoaded) {
             Coin.coinImage.src = 'img/8_coin/coin_1.png';
             Coin.imageLoaded = true;
-        }
+        }        
     }
 
     Start() {}
@@ -41,9 +45,17 @@ export class Coin extends GameObject {
         const isOverlappingHorizontally = charHitbox.right > coinHitbox.left && charHitbox.left < coinHitbox.right;
         const isOverlappingVertically = charHitbox.bottom > coinHitbox.top && charHitbox.top < coinHitbox.bottom;
 
-        if (isOverlappingHorizontally && isOverlappingVertically) {
-            this.dead = true;
-            this.global.points += this.points;// Punkte zum Spieler hinzufügen
+        if (isOverlappingHorizontally || isOverlappingVertically) {
+            if(this.y > 290) {
+                this.dead = true;
+                this.global.coins += this.points;// Punkte zum Spieler hinzufügen
+            }
+            else if(!this.player.onGround) {
+                this.dead = true;
+                this.global.coins += this.points;// Punkte zum Spieler hinzufügen
+            }
+            console.log(this.global.coins);
+            
         }
     }
 

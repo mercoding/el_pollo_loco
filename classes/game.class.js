@@ -1,11 +1,14 @@
 import { chickenAnimations } from "../animations/chicken.anim.js";
+import { chickenBossAnimations } from "../animations/chickenBoss.anim.js";
 import { Character } from "./character.class.js";
 import { Chicken } from "./chicken.class.js";
+import { ChickenBoss } from "./chickenBoss.class.js";
 import { Coin } from "./coin.class.js";
 import { Global } from "./global.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 import { MovableObject } from "./movableObject.class.js";
 import { Obstacle } from "./obstacle.class.js";
+import { UI } from "./ui.class.js";
 import { World } from "./world.class.js";
 
 export class Game extends World {
@@ -34,6 +37,7 @@ export class Game extends World {
         this.maxObstacleSpacing = 600; // Maximum distance between obstacles
         this.obstacleSpawnCooldown = 3; // Minimum time in seconds between spawns
         this.lastObstacleSpawnTime = 0;
+        this.ui = new UI(this.global);
     }
 
     addGameObject(gameObject) {
@@ -46,6 +50,8 @@ export class Game extends World {
             obj.global = this.global;
             obj.Start()
         });
+
+        this.enemyBossPositions = [-10000, 10000];
 
         this.obstaclePositions = [
             -500,  // X position of the first obstacle
@@ -63,13 +69,22 @@ export class Game extends World {
 
 
         this.initializeObstacles();
-
+        this.initializeBosses();
+        this.ui.drawHealthBar(0,50,50);
 
         this.lastFrameTime = performance.now();
         this.Update();
     }
 
-
+    initializeBosses() {
+         // Create obstacles at predefined positions to make them feel part of the scene
+         const character = this.gameObjects.find(obj => obj instanceof Character);
+         this.enemyBossPositions.forEach(positionX => {
+            const boss = new ChickenBoss(character, positionX, this.groundLevel - 245, 250, 250, chickenBossAnimations);
+            boss.global = this.global;
+            this.addGameObject(boss);
+        });
+    }
 
     initializeObstacles() {
         // Create obstacles at predefined positions to make them feel part of the scene
@@ -97,6 +112,7 @@ export class Game extends World {
         this.lastFrameTime = currentFrameTime;
         this.ClearCanvas();
         this.renderBackgrounds();
+        this.drawUI();
         this.setSceneGameObjects(deltaTime);
         this.setSceneCamera(deltaTime);
         this.removeOffScreenEnemies();
@@ -104,6 +120,14 @@ export class Game extends World {
         this.handleCollisions();
         this.removeDeadCoins();
         requestAnimationFrame(() => this.Update());
+    }
+    
+
+
+    drawUI() {
+        this.ui.drawBottleBar(this.global.getBottles(), 10, 10);
+        this.ui.drawHealthBar(this.global.health, 10, 45);
+        this.ui.drawCoinStatusBar(this.global.coins, 625, 10);
     }
 
     updateCharacterMovement(deltaTime, character, input) {
@@ -168,7 +192,7 @@ export class Game extends World {
 
 
     handleCameraAndCharacterMovement(character, deltaTime) {
-        if (character.health < 1 || character.isHurt) return;
+        if (character.global.health < 1 || character.isHurt) return;
         this.cameraX = character.x;
         const input = this.inputHandler.getInput();
         this.updateCharacterMovement(deltaTime, character, input);
@@ -248,36 +272,52 @@ export class Game extends World {
 
 
     checkAndSpawnCoinRow(character) {
-        if (character.state == 'idle') return;
+        if (character.state === 'idle') return;
         const currentTime = performance.now() / 1000;
-        //const minDistanceForNewRow = 500; // Mindestabstand zwischen Coin-Reihen
         const direction = character.facingRight ? 1 : -1;
-
-        // Berechne die Startposition für die Coins: etwas außerhalb des sichtbaren Bereichs
+    
+        // Berechne die Startposition für die Coins, etwas außerhalb des sichtbaren Bereichs
         const startX = character.x + direction * (this.canvas.width / 2 + 100); // Spawnt Coins außerhalb des Canvas
-        const yPosition = this.groundLevel - 80; // Feste Höhe der Coin-Reihe
-
+        const baseYPosition = this.groundLevel - 80; // Basis-Höhe für die Coin-Reihe
+    
         // Bedingung für Abklingzeit und Mindestabstand seit dem letzten Spawn
         if (currentTime - this.lastSpawnTime < this.spawnCoinCooldown) return;
-        //if (Math.abs(character.x - this.lastCharacterX && this.spawnCooldown == 2) < minDistanceForNewRow) return;
-
-        // Zufällige Anzahl von Coins erzeugen und in einer Linie platzieren
-        const numberOfCoins = Math.floor(Math.random() * 5) + 3;
+    
+        // Zufällige Entscheidung, ob die Coins in einer geraden Linie oder in einer gebogenen Reihe spawnen
+        const isCurvedRow = Math.random() < 0.7; // 50% Wahrscheinlichkeit für eine gebogene Reihe
+        const numberOfCoins = Math.floor(Math.random() * 6) + 3;
+    
         for (let i = 0; i < numberOfCoins; i++) {
-            let x = startX + i * this.coinSpacing * direction; // Platzierung entlang der Bewegungsrichtung
+            let x = startX + i * this.coinSpacing * direction;
+    
+            // Berechne die Y-Position für die Coins
+            let y;
+            if (isCurvedRow) {
+                // Startet unten und erreicht in der Mitte den höchsten Punkt
+                const midpoint = Math.floor(numberOfCoins / 2);
+                const curveHeight = 80; // Maximaler Höhenunterschied in der Kurve
+                const distanceFromMidpoint = Math.abs(i - midpoint);
+                y = baseYPosition - (curveHeight - distanceFromMidpoint * 20); // Wert 20 kontrolliert die Steigung zur Mitte hin
+            } else {
+                // Gerade Linie
+                y = baseYPosition;
+            }
+    
             x = this.adjustCoinPosition(x, this.obstaclePositions, 50);
-            if (!this.isCoinNearby(x, yPosition, 100)) {
-                const coin = new Coin(x, yPosition, 80, 80, 10); // Größe und Punktewert der Coins
+            if (!this.isCoinNearby(x, y, 80)) {
+                const coin = new Coin(x, y, 80, 80, 1); // Größe und Punktewert der Coins
                 coin.player = character;
                 coin.global = this.global;
                 this.addGameObject(coin);
             }
         }
-
+    
         // Aktualisiere die Zeit und Position des letzten Coin-Spawns
         this.lastSpawnTime = currentTime;
         this.lastCharacterX = character.x;
     }
+    
+    
 
 
     // Prüft, ob ein Hindernis nahe der gewünschten Position ist
