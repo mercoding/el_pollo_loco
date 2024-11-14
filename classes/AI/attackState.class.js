@@ -16,14 +16,13 @@ export class AttackState {
             // Springbewegung
             this.boss.velocity.y = -400;  // Leichter Sprung
             const directionToPlayer = this.boss.player.x <= this.boss.x ? -1 : 1;
-            this.boss.velocity.x = directionToPlayer * this.boss.speed * 2.5;  // Beschleunigte Bewegung auf Spieler zu
+            this.boss.velocity.x = directionToPlayer * this.boss.speed * 3.5;  // Beschleunigte Bewegung auf Spieler zu
             this.attackTriggered = true;
             this.boss.onGround = false;            
         } 
         else if (this.boss.onGround) {
             // Wechsel in den Rückkehr-Status, nachdem der Angriff durchgeführt wurde
             this.boss.stateMachine.changeState(new ReturnState(this.boss));
-            //this.boss.velocity.x = 0;
         }
     }
 

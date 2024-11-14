@@ -9,7 +9,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.facingRight = true;
         this.setState('idle');
         this.speed = 50;
-        this.gravity = 800; 
+        this.gravity = 800;
         this.ground = 435;
         this.onGround = true;
         this.canvas = canvas;
@@ -25,9 +25,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.startPosition = x;
         this.currentDistanceToPlayer;
         this.stateMachine = new StateMachine(new IdleState(this));
+        //this.collider.height = 500;
+        //this.collider.width = 500;
+        //this.collider.y += 100;
     }
 
-    Start() {}
+    Start() { }
 
     Update(ctx, deltaTime, screenX) {
         this.isOnGround(deltaTime);
@@ -39,12 +42,14 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.facingRight = this.player.x < this.x;
         this.currentDistanceToPlayer = this.calculateDistanceToPlayer();
         this.stateMachine.update(deltaTime);
-        
+
         // Führe die Bewegung aus
         this.move(deltaTime);
-
+        
 
         this.drawChicken(ctx, screenX);
+        super.updateCollider();
+        this.updateCollision();
     }
 
     drawChicken(ctx, screenX) {
@@ -67,39 +72,13 @@ export class ChickenBoss extends Animatable(MovableObject) {
         ctx.translate(screenX, this.y);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
-    
+
     calculateDistanceToPlayer() {
         const dx = this.player.x - this.x;
         const dy = this.player.y - this.y;
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    /*
-    calculateReturnPosition() {
-        // Berechnet eine dynamische Rückkehrposition relativ zur Position des Spielers
-        const offsetDistance = 250; // Mindestabstand in Pixeln zur Spielerposition
-        this.returnPosition = this.boss.player.x < this.boss.x 
-            ? this.boss.player.x + offsetDistance
-            : this.boss.player.x - offsetDistance;
-    }*/
-
-            calculateReturnPosition() {
-                // Define the minimum offset distance from the player
-                const offsetDistance = 250; 
-                
-                // Calculate the return position based on the boss’s and player’s current positions
-                if (this.boss.x < this.boss.player.x) {
-                    console.log(this.boss.player.x - offsetDistance);
-                    // Boss is to the left of the player, return to the left side at the offset distance
-                    return this.boss.player.x - offsetDistance;
-                } else {
-                    console.log(this.boss.player.x + offsetDistance);
-                    
-                    // Boss is to the right of the player, return to the right side at the offset distance
-                    return this.boss.player.x + offsetDistance;
-                }
-            }
-            
     move(deltaTime) {
         super.move(deltaTime);
     }
@@ -119,29 +98,14 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.onGround = true;
         this.velocity.y = 0;
         if (this.state == 'jump') this.setState('idle');
-        //else if (this.keyPressed) this.setState('walk');
     }
 
-    performAttackJump() {
-        console.log('jump');
-        this.setState('attack');
-        const dx = this.player.x - this.x;
-        const dy = this.player.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        const directionX = dx / distance;
-        this.velocity.y = -200;  // Jump up
-        this.velocity.x = directionX * 150;  // Move towards player
-    }
 
-    hasLandedAfterAttack() {
-        return this.onGround;  // Placeholder for checking if boss has landed
-    }
 
     calculateReturnPosition(boss) {
         // Define the offset distance you want the boss to maintain from the player
         const offsetDistance = (this.player.x < boss.x) ? 250 : -250;
-    
+
         // Determine the boss's target return position based on the player's position
         if (this.player.x < boss.x) {
             // If the player is to the left, position the boss to the right of the player
@@ -152,5 +116,27 @@ export class ChickenBoss extends Animatable(MovableObject) {
         }
     }
 
+    updateCollision() {
+        if(super.isCollidingWith(this.player)) console.log('colliding');
+        
+        /*
+        const bossHitBox = this.getHitbox();
+        const playerHitbox = this.player.getHitbox();
+    
+        // Horizontale und vertikale Überschneidung gleichzeitig prüfen
+        const isOverlappingHorizontally = bossHitBox.right > playerHitbox.left && bossHitBox.left < playerHitbox.right;
+        const isOverlappingVertically = bossHitBox.bottom > playerHitbox.top && bossHitBox.top < playerHitbox.bottom;
+    
+        if (isOverlappingHorizontally && isOverlappingVertically) {
+            
+            console.log("collision detected");
+            return true;  // Es gibt eine Kollision
+        }
+        return false;  // Keine Kollision erkannt*/
+    }
+    
+    
+    
+    
     
 }

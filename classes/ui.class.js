@@ -35,7 +35,7 @@ export class UI extends World {
     }
 
     drawHealthBar(percent, x, y) {                
-        this.healthStatusBar.src = this.healthStatus[percent].path;
+        this.healthStatusBar.src = percent > 0 ? this.healthStatus[percent].path : this.healthStatus['0'].path;
         this.ctx.drawImage(this.healthStatusBar, x, y, 200, 50);
     }
 
