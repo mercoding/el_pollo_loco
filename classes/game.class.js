@@ -51,7 +51,7 @@ export class Game extends World {
             obj.Start()
         });
 
-        this.enemyBossPositions = [-10000, 10000];
+        this.enemyBossPositions = [-500, 250];
 
         this.obstaclePositions = [
             -500,  // X position of the first obstacle
@@ -80,7 +80,7 @@ export class Game extends World {
          // Create obstacles at predefined positions to make them feel part of the scene
          const character = this.gameObjects.find(obj => obj instanceof Character);
          this.enemyBossPositions.forEach(positionX => {
-            const boss = new ChickenBoss(character, positionX, this.groundLevel - 245, 250, 250, chickenBossAnimations);
+            const boss = new ChickenBoss(character, positionX, this.groundLevel - 245, 250, 250, this.canvas, chickenBossAnimations);
             boss.global = this.global;
             this.addGameObject(boss);
         });
@@ -157,6 +157,9 @@ export class Game extends World {
         this.gameObjects.forEach(obj => {
             obj.Start();
             if (this.gravityEnabled && obj instanceof MovableObject) obj.velocity.y += this.gravity * deltaTime;
+            if (obj instanceof ChickenBoss) {
+                //obj.move(deltaTime);
+            }
             if (obj instanceof Chicken) {
                 obj.move(deltaTime, true);
                 this.gameObjects.forEach(obstacle => {

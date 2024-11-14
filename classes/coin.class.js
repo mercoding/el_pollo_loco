@@ -11,9 +11,7 @@ export class Coin extends GameObject {
         this.points = points;
         this.player = null;
         this.collider.width -= 30;
-        this.collider.height -= 30;
-        console.log(this.y);
-        
+        this.collider.height -= 30;        
 
         // Nur einmal das Bild für alle Coins laden
         if (!Coin.imageLoaded) {
@@ -53,9 +51,7 @@ export class Coin extends GameObject {
             else if(!this.player.onGround) {
                 this.dead = true;
                 this.global.coins += this.points;// Punkte zum Spieler hinzufügen
-            }
-            console.log(this.global.coins);
-            
+            }            
         }
     }
 
