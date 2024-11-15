@@ -13,9 +13,9 @@ const ground = new GameObject(0, 250, 500, 20);
 
 
 function init() {
-    character = new Character(10, 350, 50, 150, pepeAnimations);
-    chicken = new Chicken(200, 200, 30, 30, chickenAnimations);
-    game.addGameObject(character);
+    //character = new Character(10, 350, 50, 150, pepeAnimations);
+    //chicken = new Chicken(200, 200, 30, 30, chickenAnimations);
+    //game.addGameObject(character);
 
     //control();
     game.Start();

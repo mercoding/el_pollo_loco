@@ -1,11 +1,11 @@
-import { GameObject } from "./gameObject.class.js";
+import { CollisionCapable, GameObject } from "./gameObject.class.js";
 
-export class Obstacle extends GameObject {
+export class Obstacle extends CollisionCapable(GameObject) {
     static obstacleImage = new Image();
     static imageLoaded = false;
 
-    constructor(x, y, width, height, imgPath) {
-        super(x, y, width, height);
+    constructor(imgPath, collisionManager, ...args) {
+        super(collisionManager, ...args);
         this.dead = false;
 
         // Load the obstacle image only once for performance
@@ -13,6 +13,7 @@ export class Obstacle extends GameObject {
             Obstacle.obstacleImage.src = imgPath;
             Obstacle.imageLoaded = true;
         }
+        this.updateCollider();
     }
 
     Start() {}

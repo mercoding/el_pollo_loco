@@ -4,15 +4,15 @@ import { Animatable, MovableObject } from "./movableObject.class.js";
 
 export class ChickenBoss extends Animatable(MovableObject) {
     global;
-    constructor(player, x, y, width, height, canvas, animationPaths) {
-        super(animationPaths, x, y, width, height);
+    constructor(animationPaths, collisionManager, player, x, ...args) {
+        super(animationPaths, collisionManager, x, ...args);
         this.facingRight = true;
         this.setState('idle');
         this.speed = 50;
         this.gravity = 800;
         this.ground = 435;
         this.onGround = true;
-        this.canvas = canvas;
+        //this.canvas = canvas;
         this.player = player;
         this.dead = false;
         this.attackDistanceThreshold = 120;
@@ -25,6 +25,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.startPosition = x;
         this.currentDistanceToPlayer;
         this.stateMachine = new StateMachine(new IdleState(this));
+        this.updateCollider();
         //this.collider.height = 500;
         //this.collider.width = 500;
         //this.collider.y += 100;
@@ -49,7 +50,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
 
         this.drawChicken(ctx, screenX);
         super.updateCollider();
-        this.updateCollision();
+        //this.updateCollision();
     }
 
     drawChicken(ctx, screenX) {
@@ -115,9 +116,10 @@ export class ChickenBoss extends Animatable(MovableObject) {
             return this.player.x - offsetDistance;
         }
     }
-
+/*
     updateCollision() {
-        if(super.isCollidingWith(this.player)) console.log('colliding');
+        //if(super.isCollidingWith(this.player)) console.log('colliding');
+        if(super.collidingWith != null) console.log('colliding');
         
         /*
         const bossHitBox = this.getHitbox();
@@ -133,7 +135,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
             return true;  // Es gibt eine Kollision
         }
         return false;  // Keine Kollision erkannt*/
-    }
+    //}*/
     
     
     

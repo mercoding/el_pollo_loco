@@ -1,3 +1,5 @@
+import { CollisionManager } from "./collisionManager.class.js";
+
 export class Global {
     constructor() {
         this.health = 100;
@@ -7,6 +9,8 @@ export class Global {
         this.gameOver = false;
         //this.isHurt = false;
         this.break = false;
+        this.gameObjects = [];
+        this.collisionManager = new CollisionManager();
     }
 
     calculateBottlePercentage(bottleCount) {
@@ -21,11 +25,26 @@ export class Global {
         if (percentage >= 80) return 80;
         if (percentage >= 60) return 60;
         if (percentage >= 40) return 40;
-        if (percentage >= 20) return 20;
+        if (percentage >= 20) return 20;        
         return 0;
+    }
+
+    updateCollisions() {
+        this.collisionManager.updateCollisions();
     }
 
     getBottles() {
         return this.calculateBottlePercentage(this.bottles);
     }
+
+    addGameObject(gameObject) {
+        this.gameObjects.push(gameObject);
+    }
+
+    destroy(gameObject) {
+        const index = this.gameObjects.indexOf(gameObject);
+        if (index !== -1) {
+            this.gameObjects.splice(index, 1);
+        }
+    }    
 }

@@ -1,9 +1,11 @@
+import { pepeAnimations } from "../animations/character.anim.js";
 import { chickenAnimations } from "../animations/chicken.anim.js";
 import { chickenBossAnimations } from "../animations/chickenBoss.anim.js";
 import { Character } from "./character.class.js";
 import { Chicken } from "./chicken.class.js";
 import { ChickenBoss } from "./chickenBoss.class.js";
 import { Coin } from "./coin.class.js";
+import { CollisionManager } from "./collisionManager.class.js";
 import { Global } from "./global.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 import { MovableObject } from "./movableObject.class.js";
@@ -13,6 +15,7 @@ import { World } from "./world.class.js";
 
 export class Game extends World {
     obstacles = [];
+    collisionManager;
     constructor(global) {
         super();
         this.global = global;
@@ -45,9 +48,15 @@ export class Game extends World {
     }
 
     Start() {
+        this.collisionManager = new CollisionManager();
+        
+        //this.global.addGameObject(character);
         this.global = new Global();
-        this.gameObjects.forEach(obj => {
+        const character = new Character(pepeAnimations, this.global.collisionManager, 10, 350, 50, 150, 'Player');
+        this.global.addGameObject(character);
+        this.global.gameObjects.forEach(obj => {
             obj.global = this.global;
+            obj.collisionManager.addObject(obj);
             obj.Start()
         });
 
@@ -78,25 +87,29 @@ export class Game extends World {
 
     initializeBosses() {
          // Create obstacles at predefined positions to make them feel part of the scene
-         const character = this.gameObjects.find(obj => obj instanceof Character);
+         const character = this.global.gameObjects.find(obj => obj instanceof Character);
          this.enemyBossPositions.forEach(positionX => {
-            const boss = new ChickenBoss(character, positionX, this.groundLevel - 245, 250, 250, this.canvas, chickenBossAnimations);
+            const boss = new ChickenBoss(chickenBossAnimations, this.global.collisionManager, character, positionX, this.groundLevel - 245, 250, 250, 'Enemy');
             boss.global = this.global;
-            this.addGameObject(boss);
+            this.global.addGameObject(boss);
+            this.global.collisionManager.addObject(boss);
         });
     }
 
     initializeObstacles() {
         // Create obstacles at predefined positions to make them feel part of the scene
         this.obstaclePositions.forEach(positionX => {
-            const obstacle = new Obstacle(positionX, this.groundLevel - 35, 35, 30, "img/obstacles/stone.png");
-            this.addGameObject(obstacle);
+            //const obstacle = new Obstacle(positionX, this.groundLevel - 35, 35, 30, "img/obstacles/stone.png", this.collisionManager);
+            const obstacle = new Obstacle("img/obstacles/stone.png", this.global.collisionManager, positionX, this.groundLevel - 35, 35, 30, 'Obstacle');
+
+            this.global.addGameObject(obstacle);
+            this.global.collisionManager.addObject(obstacle);
         });
     }
 
     handleCollisions() {
-        const character = this.gameObjects.find(obj => obj instanceof Character);
-        this.gameObjects.forEach(obj => {
+        const character = this.global.gameObjects.find(obj => obj instanceof Character);
+        this.global.gameObjects.forEach(obj => {
             if (obj instanceof Obstacle) {
                 if (character.isCollidingWith(obj)) {
                     character.handleObstacleCollision(obj); // New collision method in Character
@@ -115,10 +128,13 @@ export class Game extends World {
         this.drawUI();
         this.setSceneGameObjects(deltaTime);
         this.setSceneCamera(deltaTime);
+        this.global.collisionManager.updateCollisions(); 
+        
         this.removeOffScreenEnemies();
         // Regularly spawn obstacles
         this.handleCollisions();
-        this.removeDeadCoins();
+        //this.removeDeadCoins();
+               
         requestAnimationFrame(() => this.Update());
     }
     
@@ -154,15 +170,15 @@ export class Game extends World {
     }
 
     setSceneGameObjects(deltaTime) {
-        this.gameObjects.forEach(obj => {
-            obj.Start();
+        this.global.gameObjects.forEach(obj => {
+            //obj.Start();
             if (this.gravityEnabled && obj instanceof MovableObject) obj.velocity.y += this.gravity * deltaTime;
             if (obj instanceof ChickenBoss) {
                 //obj.move(deltaTime);
             }
             if (obj instanceof Chicken) {
                 obj.move(deltaTime, true);
-                this.gameObjects.forEach(obstacle => {
+                this.global.gameObjects.forEach(obstacle => {
                     if (obstacle instanceof Obstacle) obstacle.handleCollisionWithEnemy(obj);
                 });
             }
@@ -181,7 +197,7 @@ export class Game extends World {
     }
 
     setSceneCamera(deltaTime) {
-        this.gameObjects.forEach(obj => {
+        this.global.gameObjects.forEach(obj => {
             let screenX;
             if (obj instanceof Character) {
                 screenX = this.canvas.width / 2 - obj.width / 2;
@@ -223,10 +239,11 @@ export class Game extends World {
 
             spawnX = this.adjustCoinPosition(spawnX, this.obstaclePositions, 70);
             if (!this.isChickenNearby(spawnX, this.groundLevel - 50, 500)) {
-                const enemy = new Chicken(spawnX, this.groundLevel - 50, 50, 50, chickenAnimations);
+                const enemy = new Chicken(chickenAnimations, this.collisionManager, spawnX, this.groundLevel - 50, 50, 50, 'Enemy');
                 enemy.global = this.global;
                 this.setEnemyFacing(enemy, character);
-                this.addGameObject(enemy);
+                this.global.addGameObject(enemy);
+                this.global.collisionManager.addObject(enemy);
                 this.lastEnemySpawnTime = currentFrameTime;
                 this.lastCharacterX = spawnX;
             }
@@ -250,7 +267,7 @@ export class Game extends World {
 
     isCoinNearby(x, y, threshold = 50) {
         // Prüfe, ob ein Coin in der Nähe der geplanten Position ist
-        return this.gameObjects.some(obj => {
+        return this.global.gameObjects.some(obj => {
             return obj instanceof Coin &&
                 Math.abs(obj.x - x) < threshold &&  // Horizontal in der Nähe
                 Math.abs(obj.y - y) < threshold;    // Vertikal in der Nähe
@@ -259,7 +276,7 @@ export class Game extends World {
 
     isChickenNearby(x, y, threshold = 100) {
         // Prüfe, ob ein Chicken in der Nähe der geplanten Position ist
-        return this.gameObjects.some(obj => {
+        return this.global.gameObjects.some(obj => {
             return obj instanceof Chicken &&
                 Math.abs(obj.x - x) < threshold &&  // Horizontal in der Nähe
                 Math.abs(obj.y - y) < threshold;    // Vertikal in der Nähe
@@ -302,10 +319,12 @@ export class Game extends World {
     
             x = this.adjustCoinPosition(x, this.obstaclePositions, 50);
             if (!this.isCoinNearby(x, y, 80)) {
-                const coin = new Coin(x, y, 80, 80, 1); // Größe und Punktewert der Coins
+                const coin = new Coin(this.global.collisionManager, 1, x, y, 80, 80, 'Coin'); // Größe und Punktewert der Coins
                 coin.player = character;
                 coin.global = this.global;
-                this.addGameObject(coin);
+                this.global.addGameObject(coin);
+                
+                this.global.collisionManager.addObject(coin);
             }
         }
     
@@ -319,12 +338,12 @@ export class Game extends World {
 
     // Prüft, ob ein Hindernis nahe der gewünschten Position ist
     isNearObstacle(x) {
-        return this.gameObjects.some(obj => obj instanceof Obstacle && Math.abs(obj.x - x) < 100);
+        return this.global.gameObjects.some(obj => obj instanceof Obstacle && Math.abs(obj.x - x) < 100);
     }
    
 
     handleObjectCollisions(obj) {
-        this.gameObjects.forEach(other => {
+        this.global.gameObjects.forEach(other => {
             if (other !== obj && other instanceof Obstacle) {
                 if (obj.isCollidingWith(other)) {
                     if (obj instanceof Character) {
@@ -342,15 +361,15 @@ export class Game extends World {
 
 
     removeDeadCoins() {
-        this.gameObjects = this.gameObjects.filter(obj => !(obj instanceof Coin && obj.dead));
+        this.global.gameObjects = this.global.gameObjects.filter(obj => !(obj instanceof Coin && obj.dead));
     }
 
     removeOffScreenEnemies() {
-        const character = this.gameObjects.find(player => player instanceof Character);
+        const character = this.global.gameObjects.find(player => player instanceof Character);
         // Definiere die Mindestentfernung, die der Charakter in die entgegengesetzte Richtung laufen muss, um einen Gegner zu löschen
         const minDistanceToRemoveEnemy = 1000; // Mindeststrecke in Pixeln (anpassbar)
 
-        this.gameObjects = this.gameObjects.filter(obj => {
+        this.global.gameObjects = this.global.gameObjects.filter(obj => {
             if (obj instanceof Chicken) {
                 // Berechne die Position des Gegners relativ zur Kamera
                 const screenX = obj.x - this.cameraX + this.canvas.width / 2;
@@ -361,6 +380,7 @@ export class Game extends World {
                     const distanceMoved = Math.abs(character.x - obj.lastCharacterX);
 
                     if (distanceMoved >= minDistanceToRemoveEnemy) {
+                        this.collisionManager.destroy(obj);
                         return false; // Entferne den Gegner
                     }
                 } else {

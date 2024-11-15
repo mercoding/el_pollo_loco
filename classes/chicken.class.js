@@ -4,8 +4,8 @@ import { Animatable, MovableObject } from "./movableObject.class.js";
 
 export class Chicken extends Animatable(MovableObject) {
     global;
-    constructor(x, y, width, height, animationPaths) {
-        super(animationPaths, x, y, width, height);
+    constructor(animationPaths, collisionManager, x, ...args) {
+        super(animationPaths, collisionManager, x, ...args);
         this.facingRight = true;
         this.setState('walk');
         this.speed = 50;
@@ -15,6 +15,7 @@ export class Chicken extends Animatable(MovableObject) {
         //this.targetX = null; // Ziel für Gegner
         this.player = null;
         this.dead = false;
+        this.updateCollider();
     }
 
     Start() { }
@@ -24,9 +25,10 @@ export class Chicken extends Animatable(MovableObject) {
         this.updateAnimation(deltaTime);
 
         // Falls es der Charakter ist, bleibt er in der Mitte
+        /*
         if (this.isCollidingWith(this.player)) {
             this.checkCollisionWithPlayer();
-        }
+        }*/
         this.drawChicken(ctx, screenX)
     }
 
@@ -76,6 +78,20 @@ export class Chicken extends Animatable(MovableObject) {
         }
         this.player.takeDamage();
         return false;
+    }
+
+    onCollisionEnter(other) {
+        if (this.dead) return;
+        if(other.tag === 'Player') {
+            const charHitbox = other.getHitbox();
+            const enemyHitbox = this.getHitbox();
+             // 1. Prüfe auf Überlappung zwischen Charakter und Gegner
+            const isOverlappingHorizontally = charHitbox.right > enemyHitbox.left && charHitbox.left < enemyHitbox.right;
+            const isOverlappingVertically = charHitbox.bottom > enemyHitbox.top && charHitbox.top < enemyHitbox.bottom;
+            if (isOverlappingHorizontally && isOverlappingVertically) {
+                this.onHit(charHitbox, enemyHitbox) 
+            }
+        }
     }
 
     checkCollisionWithPlayer() {

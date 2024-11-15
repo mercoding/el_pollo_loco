@@ -1,9 +1,10 @@
+import { Chicken } from "./chicken.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
 export class Character extends Animatable(MovableObject) {
     global;
-    constructor(x, y, width, height, animationPaths) {
-        super(animationPaths, x, y, width, height);
+    constructor(animationPaths, collisionManager, ...args ) {
+        super(animationPaths, collisionManager, ...args);
         this.facingRight = true;
         this.onGround = true;
         this.jumpStrength = -200; // Sprungkraft
@@ -16,6 +17,7 @@ export class Character extends Animatable(MovableObject) {
         this.isHurt = false;
         this.ground = 430;
         this.isOnObstacle = false;
+        this.updateCollider();
     }
 
     Start() { }
@@ -27,6 +29,8 @@ export class Character extends Animatable(MovableObject) {
         else this.move(deltaTime);
         this.drawCharacter(ctx, screenX);
         this.updateAnimation(deltaTime);
+        //this.global.updateCollisions();
+        //console.log(this.global.collisionManager.objects);
     }
 
     drawFacingRight(frame, ctx, screenX) {
@@ -184,7 +188,15 @@ export class Character extends Animatable(MovableObject) {
     }*/
 
 
-
+        onCollisionEnter(other) {
+            other.collidingWith = this;
+            if(other.tag === 'Coin')
+                other.onCollisionEnter(this);
+            else if(other.tag === 'Enemy' && other instanceof Chicken) {
+                other.onCollisionEnter(this);
+            }
+            
+        }
 
 
 

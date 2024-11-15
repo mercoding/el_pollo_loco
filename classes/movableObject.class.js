@@ -1,8 +1,8 @@
-import { GameObject } from "./gameObject.class.js";
+import { CollisionCapable, GameObject } from "./gameObject.class.js";
 
-export class MovableObject extends GameObject {
-    constructor(x, y, width, height) {
-        super(x, y, width, height);
+export class MovableObject extends CollisionCapable(GameObject) {
+    constructor(collisionManager, ...args) {
+        super(collisionManager, ...args);
         this.velocity = { x: 0, y: 0 }; // Geschwindigkeit in x- und y-Richtung
         this.speed = 100;
         this.moveSimulation = false;
@@ -64,8 +64,8 @@ export class MovableObject extends GameObject {
 }
 
 export const Animatable = (Base) => class extends Base {
-    constructor(animationPaths, ...args) {
-        super(...args);
+    constructor(animationPaths, collisionManager, ...args) {
+        super(collisionManager, ...args);
         this.state = 'idle';
         this.animations = {};
         for(const [state, pathInfo] of Object.entries(animationPaths)) {
