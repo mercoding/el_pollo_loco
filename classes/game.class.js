@@ -35,7 +35,7 @@ export class Game extends World {
         this.global = new Global();
         this.inGame = false;
         this.gameStarted = false;
-        this.debug = true;
+        this.debug = false;
         this.inputHandler = new InputHandler();
         this.inputCooldown = 0.2;
         this.setSpawnSettings();
@@ -76,6 +76,18 @@ export class Game extends World {
         this.global.pause = true;
     }
 
+    setUI() {
+        this.ui.drawHealthBar(0, 50, 50);
+        this.ui.menuActive = false;
+        this.ui.onStart = false;
+    }
+
+    resetAudio() {
+        this.global.audioManager.stopAll();
+        if (this.global.getMusicOn()) this.global.audioManager.playMusic('El Pollo Loco');
+        this.global.getVolumes();
+    }
+
     StartGame() {
         if (this.ui.onStart && !this.global.inGame) return;
         this.global.reset();
@@ -83,15 +95,11 @@ export class Game extends World {
         this.player.Start();            
         this.scrollSpeedClouds = 0.2;
         this.cloudsOffset = 0;
-        this.ui.drawHealthBar(0, 50, 50);
-        this.ui.menuActive = false;
-        this.ui.onStart = false;
+        this.setUI();
         this.initializeObstacles();
         this.initializeBosses();
         this.cameraX = 0;
-        this.global.audioManager.stopAll();
-        if (this.global.getMusicOn()) this.global.audioManager.playMusic('El Pollo Loco');
-        this.global.getVolumes();
+        this.resetAudio();
         this.inputHandler.deactivate();
         this.inputHandler.activate();
     }
