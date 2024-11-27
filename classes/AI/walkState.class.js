@@ -7,12 +7,15 @@ export class WalkState {
     }
 
     onEnter() {
+        if(this.boss.health <= 0) return;
         this.boss.setState('walk');
     }
 
     onUpdate(deltaTime) {
+        if(this.boss.health <= 0) return;
+        
         // Determine direction and set boss movement toward player
-        const direction = this.boss.player.x < this.boss.x ? -1 : 1;
+        const direction = this.boss.player.x <= this.boss.x ? -1 : 1;
         this.boss.velocity.x = direction * this.boss.speed;
 
         // Calculate distance to player for state transitions
@@ -24,10 +27,10 @@ export class WalkState {
             this.boss.stateMachine.changeState(new AttackState(this.boss));
         } 
         // Transition to IdleState if player is beyond attack distance
-        else if (direction < 0 && distance > this.boss.playerInAttackDistance) {
+        else if (direction < 0 && distance >= this.boss.playerInAttackDistance) {
             this.boss.stateMachine.changeState(new IdleState(this.boss));
         }
-        else if (direction > 0 && distance > this.boss.playerInAttackDistance + 250) {
+        else if (direction > 0 && distance >= this.boss.playerInAttackDistance + 250) {
             this.boss.stateMachine.changeState(new IdleState(this.boss));
         }
     }

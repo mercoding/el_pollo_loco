@@ -1,15 +1,24 @@
 import { pepeAnimations } from "../animations/character.anim.js";
-import { chickenAnimations } from "../animations/chicken.anim.js";
+import { chickenAnimations, smallChickenAnimations } from "../animations/chicken.anim.js";
 import { chickenBossAnimations } from "../animations/chickenBoss.anim.js";
+import { enemyBossPositions, obstaclePositions } from "../js/gameObjectPositions.js";
+import { checkAndSpawnEnemy } from "../js/spawnChicken.js";
+import { adjustCoinPosition, checkAndSpawnCoinRow } from "../js/spawnCoins.js";
+import { AudioManager } from "./AudioManager.class.js";
 import { Character } from "./character.class.js";
 import { Chicken } from "./chicken.class.js";
 import { ChickenBoss } from "./chickenBoss.class.js";
 import { Coin } from "./coin.class.js";
 import { CollisionManager } from "./collisionManager.class.js";
+import { GameObject } from "./gameObject.class.js";
 import { Global } from "./global.class.js";
+import { Ground } from "./ground.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 import { MovableObject } from "./movableObject.class.js";
 import { Obstacle } from "./obstacle.class.js";
+import { Player } from "./player.class.js";
+import { StartMenu } from "./startMenu.class.js";
+import { Trigger } from "./trigger.class.js";
 import { UI } from "./ui.class.js";
 import { World } from "./world.class.js";
 
@@ -21,18 +30,24 @@ export class Game extends World {
         this.global = global;
         this.gameObjects = [];
         this.lastFrameTime = 0;
-        this.gravity = 9.81;
-        this.gravityEnabled = true;
         this.groundLevel = this.canvas.height - 50;
         this.cameraX = 0;
-        this.keysPressed = { left: false, right: false };
+        this.global = new Global();
+        this.inGame = false;
+        this.gameStarted = false;
+        this.debug = true;
+        this.inputHandler = new InputHandler();
+        this.inputCooldown = 0.2;
+        this.setSpawnSettings();
+    }
+
+    setSpawnSettings() {
         this.spawnCooldown = 2; // Sekunden zwischen dem Spawnen eines Gegners
         this.spawnCoinCooldown = 5; // Sekunden zwischen dem Spawnen eines Gegners
         this.lastEnemySpawnTime = 0; // Letzte Spawn-Zeit für Gegner
         this.minDistanceBetweenEnemies = 300; // Mindestabstand zwischen Gegnern
         this.spawnDistance = 350;
         this.lastCharacterX = 0;
-        this.inputHandler = new InputHandler();
         this.coinSpacing = 50;
 
         this.lastObstacleSpawnX = 0; // Track the X position of the last spawned obstacle
@@ -40,55 +55,64 @@ export class Game extends World {
         this.maxObstacleSpacing = 600; // Maximum distance between obstacles
         this.obstacleSpawnCooldown = 3; // Minimum time in seconds between spawns
         this.lastObstacleSpawnTime = 0;
-        this.ui = new UI(this.global);
     }
 
-    addGameObject(gameObject) {
-        this.gameObjects.push(gameObject);
+    StartIntro() {
+        if (!this.ui.onStart || this.global.inGame) return;
+        this.ui.menuActive = false;
+        this.ui.layer = 0; // Startmenü-Ebene
+        this.ui.addMenuListeners();
+        this.ui.drawMenu(); // Zeichne das Startmenü
+        this.global.pause = true;
     }
 
-    Start() {
-        this.collisionManager = new CollisionManager();
-        
-        //this.global.addGameObject(character);
-        this.global = new Global();
-        const character = new Character(pepeAnimations, this.global.collisionManager, 10, 350, 50, 150, 'Player');
-        this.global.addGameObject(character);
-        this.global.gameObjects.forEach(obj => {
-            obj.global = this.global;
-            obj.collisionManager.addObject(obj);
-            obj.Start()
-        });
+    StartMenu() {
+        if (this.ui.onStart || this.global.inGame) return;
+        this.ui.menuActive = true;
+        this.ui.onStart = false;
+        this.ui.layer = 0; // Startmenü-Ebene
+        this.ui.addMenuListeners();
+        this.ui.drawMenu(); // Zeichne das Startmenü
+        this.global.pause = true;
+    }
 
-        this.enemyBossPositions = [-500, 250];
-
-        this.obstaclePositions = [
-            -500,  // X position of the first obstacle
-            -1000, // Second obstacle position
-            -1500, // Continue adding obstacle positions as needed
-            -2000,
-            -3000,
-            500,  // X position of the first obstacle
-            1000, // Second obstacle position
-            1500, // Continue adding obstacle positions as needed
-            2000,
-            3000,
-            // etc.
-        ];
-
-
+    StartGame() {
+        if (this.ui.onStart && !this.global.inGame) return;
+        this.global.reset();
+        this.player = new Player(this.canvas, this.global);
+        this.player.Start();            
+        this.scrollSpeedClouds = 0.2;
+        this.cloudsOffset = 0;
+        this.ui.drawHealthBar(0, 50, 50);
+        this.ui.menuActive = false;
+        this.ui.onStart = false;
         this.initializeObstacles();
         this.initializeBosses();
-        this.ui.drawHealthBar(0,50,50);
+        this.cameraX = 0;
+        this.global.audioManager.stopAll();
+        if (this.global.getMusicOn()) this.global.audioManager.playMusic('El Pollo Loco');
+        this.global.getVolumes();
+        this.inputHandler.deactivate();
+        this.inputHandler.activate();
+    }
 
+
+    Start() {
+        this.ui = new UI(this.global, this, this.global.audioManager.musicVolume, this.global.audioManager.effectsVolume);
+        this.ui.inputHandler.deactivate();
+        this.ui.inputHandler.activate();
+        this.StartIntro();
+        this.StartMenu();
+        this.StartGame();       
         this.lastFrameTime = performance.now();
         this.Update();
     }
 
+
     initializeBosses() {
-         // Create obstacles at predefined positions to make them feel part of the scene
-         const character = this.global.gameObjects.find(obj => obj instanceof Character);
-         this.enemyBossPositions.forEach(positionX => {
+        // Create obstacles at predefined positions to make them feel part of the scene
+        const character = this.global.gameObjects.find(obj => obj instanceof Character);
+        enemyBossPositions.forEach(positionX => {
             const boss = new ChickenBoss(chickenBossAnimations, this.global.collisionManager, character, positionX, this.groundLevel - 245, 250, 250, 'Enemy');
             boss.global = this.global;
             this.global.addGameObject(boss);
@@ -97,48 +121,80 @@ export class Game extends World {
     }
 
     initializeObstacles() {
-        // Create obstacles at predefined positions to make them feel part of the scene
-        this.obstaclePositions.forEach(positionX => {
-            //const obstacle = new Obstacle(positionX, this.groundLevel - 35, 35, 30, "img/obstacles/stone.png", this.collisionManager);
-            const obstacle = new Obstacle("img/obstacles/stone.png", this.global.collisionManager, positionX, this.groundLevel - 35, 35, 30, 'Obstacle');
+        obstaclePositions.forEach(positionX => {
+            const preObstacle = new Obstacle('img/obstacles/stone.png', this.global.collisionManager, positionX, this.groundLevel - 30, 50, 30, 'Obstacle');
+            this.global.addGameObject(preObstacle);
+            this.global.collisionManager.addObject(preObstacle);
 
-            this.global.addGameObject(obstacle);
-            this.global.collisionManager.addObject(obstacle);
+            const preUpperTrigger = new Trigger(this.global.collisionManager, positionX + 25, this.groundLevel - 38, 50, 5, this.groundLevel - 35, 'Trigger');
+            this.global.addGameObject(preUpperTrigger);
+            this.global.collisionManager.addObject(preUpperTrigger);
         });
     }
 
-    handleCollisions() {
-        const character = this.global.gameObjects.find(obj => obj instanceof Character);
-        this.global.gameObjects.forEach(obj => {
-            if (obj instanceof Obstacle) {
-                if (character.isCollidingWith(obj)) {
-                    character.handleObstacleCollision(obj); // New collision method in Character
-                }
-            }
-        });
+
+    resume() {
+        if (!this.global.pause && this.global.getMusicOn()) {
+            this.global.audioManager.playMusic('El Pollo Loco');
+            this.global.getVolumes();
+        }
+        else {
+            this.global.setMusicOn(false);
+            this.global.audioManager.stopMusic('El Pollo Loco');
+        }
     }
 
-    Update() {
-        if (this.global.gameOver) return;
+
+    handleEscapeInput() {
+        if (this.ui.menuActive) return;
+        const input = this.inputHandler.getInput();
+        if (input.esc && this.inputCooldown <= 0) {
+            if (!this.inGame) this.ui.layer = 1;
+            this.inputHandler.deactivate();
+            this.togglePauseMenu();
+            this.ui.toggleMenu();
+            this.inputCooldown = 0.2;
+            return;
+        }
+        if (!this.inputHandler.active)
+            this.inputHandler.activate();
+    }
+
+
+    togglePauseMenu() {
+        this.global.pause = !this.global.pause;
+        this.inputHandler.setMenuActive(this.global.pause);
+    }
+
+    DeltaTime() {
         const currentFrameTime = performance.now();
         const deltaTime = (currentFrameTime - this.lastFrameTime) / 1000;
         this.lastFrameTime = currentFrameTime;
+        this.inputCooldown = this.inputCooldown || 0; // Initialisieren, falls nicht vorhanden
+        this.inputCooldown -= deltaTime;
+        return deltaTime;
+    }
+
+    Update() {
+        this.handleEscapeInput();
+        const deltaTime = this.DeltaTime();
         this.ClearCanvas();
         this.renderBackgrounds();
-        this.drawUI();
+        this.UpdateGameObjects(deltaTime);
         this.setSceneGameObjects(deltaTime);
-        this.setSceneCamera(deltaTime);
-        this.global.collisionManager.updateCollisions(); 
-        
+        this.global.collisionManager.Update();
+        this.drawUI();
+        this.checkIfGameOver();
+        this.ui.Update(deltaTime);
         this.removeOffScreenEnemies();
-        // Regularly spawn obstacles
-        this.handleCollisions();
-        //this.removeDeadCoins();
-               
         requestAnimationFrame(() => this.Update());
     }
-    
 
+    checkIfGameOver() {
+        if(this.global.bossDefeated > 0 || this.global.health <= 0) {
+            this.ui.drawGameOver();
+        }
+    }
 
     drawUI() {
         this.ui.drawBottleBar(this.global.getBottles(), 10, 10);
@@ -146,247 +202,46 @@ export class Game extends World {
         this.ui.drawCoinStatusBar(this.global.coins, 625, 10);
     }
 
-    updateCharacterMovement(deltaTime, character, input) {
-        /*
-        if(character.isHurt || character < 1) {
-            character.velocity.x = 0;
-            return;
-        }*/
-
-        if (input.right) {
-            character.walk(true, 1, 100);
-        }
-        else if (input.left) {
-            character.walk(false, -1, 100);
-        }
-        else {
-            character.idle();
-        }
-        if (input.up) {
-            character.jump();
-        }
-
-        character.move(deltaTime);
-    }
-
     setSceneGameObjects(deltaTime) {
         this.global.gameObjects.forEach(obj => {
-            //obj.Start();
-            if (this.gravityEnabled && obj instanceof MovableObject) obj.velocity.y += this.gravity * deltaTime;
-            if (obj instanceof ChickenBoss) {
-                //obj.move(deltaTime);
-            }
-            if (obj instanceof Chicken) {
-                obj.move(deltaTime, true);
-                this.global.gameObjects.forEach(obstacle => {
-                    if (obstacle instanceof Obstacle) obstacle.handleCollisionWithEnemy(obj);
-                });
-            }
             if (obj instanceof Character) {     // Kamera nur auf den Charakter fokussieren
-                this.handleCameraAndCharacterMovement(obj, deltaTime);
-                this.checkAndSpawnEnemy(obj);
-                this.checkAndSpawnCoinRow(obj);
-
+                checkAndSpawnEnemy(this, performance, obj);
+                checkAndSpawnCoinRow(this, performance, obj);
             }
-            if (obj instanceof Character && obj.y + obj.height >= this.groundLevel) {   // Boden-Kollision für den Charakter
-                obj.y = this.groundLevel - obj.height;
-                obj.land();
-            }
-            obj.updateCollider();
         });
     }
 
-    setSceneCamera(deltaTime) {
+    UpdateGameObjects(deltaTime) {
+        const character = this.global.gameObjects.find(obj => obj instanceof Character);
+        if (this.player) this.player.Update(this.ctx, deltaTime);
         this.global.gameObjects.forEach(obj => {
-            let screenX;
             if (obj instanceof Character) {
-                screenX = this.canvas.width / 2 - obj.width / 2;
+                const screenX = this.cameraX = character.x - this.canvas.width / 2;
+                if (typeof obj.Update === 'function') obj.Update(this.ctx, deltaTime, screenX);
+                if (this.debug && typeof obj.drawCollider === 'function') obj.drawCollider(this.ctx, screenX);
             } else {
-                screenX = obj.x - this.cameraX + this.canvas.width / 2;
-            }
-            obj.Update(this.ctx, deltaTime, screenX);
-        });
-    }
-
-
-
-    handleCameraAndCharacterMovement(character, deltaTime) {
-        if (character.global.health < 1 || character.isHurt) return;
-        this.cameraX = character.x;
-        const input = this.inputHandler.getInput();
-        this.updateCharacterMovement(deltaTime, character, input);
-    }
-
-    setEnemyFacing(enemy, character) {
-        if (character.velocity.x > 0) {
-            enemy.facingRight = true;
-            enemy.setTarget(character);  // Setzt das Ziel auf den Charakter
-            enemy.player = character;
-        }
-        else {
-            enemy.facingRight = false;
-            enemy.setTarget(character);
-            enemy.player = character;
-        }
-    }
-
-    checkAndSpawnEnemy(character) {
-        if(character.x > 9500 || character.x < -9500) return;
-        const currentFrameTime = performance.now() / 1000;
-        if ((currentFrameTime - this.lastEnemySpawnTime >= this.spawnCooldown) &&
-            Math.abs(character.x - this.lastCharacterX) >= this.spawnDistance) {
-            let spawnX = character.x + (character.velocity.x > 0 ? this.spawnDistance : -this.spawnDistance);
-
-            spawnX = this.adjustCoinPosition(spawnX, this.obstaclePositions, 70);
-            if (!this.isChickenNearby(spawnX, this.groundLevel - 50, 500)) {
-                const enemy = new Chicken(chickenAnimations, this.collisionManager, spawnX, this.groundLevel - 50, 50, 50, 'Enemy');
-                enemy.global = this.global;
-                this.setEnemyFacing(enemy, character);
-                this.global.addGameObject(enemy);
-                this.global.collisionManager.addObject(enemy);
-                this.lastEnemySpawnTime = currentFrameTime;
-                this.lastCharacterX = spawnX;
-            }
-        }
-    }
-
-    adjustCoinPosition(coinX, obstaclePositions, minDistance = 50) {
-        // Funktion, die überprüft, ob die Position zu nah an den Hindernissen ist
-        const isTooClose = (x) => obstaclePositions.some(obstacleX => Math.abs(obstacleX - x) < minDistance);
-
-        // Verschiebe `coinX` in die passende Richtung abhängig von seinem Vorzeichen
-        const shiftDirection = coinX < 0 ? -1 : 1; // Negativ für links, positiv für rechts
-
-        // So lange die Münz-Position zu nah an einem Hindernis ist, verschieben
-        while (isTooClose(coinX)) {
-            coinX += shiftDirection * minDistance; // Münze um `minDistance` in die richtige Richtung verschieben
-        }
-
-        return coinX; // Gibt die angepasste Position zurück
-    }
-
-    isCoinNearby(x, y, threshold = 50) {
-        // Prüfe, ob ein Coin in der Nähe der geplanten Position ist
-        return this.global.gameObjects.some(obj => {
-            return obj instanceof Coin &&
-                Math.abs(obj.x - x) < threshold &&  // Horizontal in der Nähe
-                Math.abs(obj.y - y) < threshold;    // Vertikal in der Nähe
-        });
-    }
-
-    isChickenNearby(x, y, threshold = 100) {
-        // Prüfe, ob ein Chicken in der Nähe der geplanten Position ist
-        return this.global.gameObjects.some(obj => {
-            return obj instanceof Chicken &&
-                Math.abs(obj.x - x) < threshold &&  // Horizontal in der Nähe
-                Math.abs(obj.y - y) < threshold;    // Vertikal in der Nähe
-        });
-    }
-
-
-
-    checkAndSpawnCoinRow(character) {
-        if (character.state === 'idle') return;
-        const currentTime = performance.now() / 1000;
-        const direction = character.facingRight ? 1 : -1;
-    
-        // Berechne die Startposition für die Coins, etwas außerhalb des sichtbaren Bereichs
-        const startX = character.x + direction * (this.canvas.width / 2 + 100); // Spawnt Coins außerhalb des Canvas
-        const baseYPosition = this.groundLevel - 80; // Basis-Höhe für die Coin-Reihe
-    
-        // Bedingung für Abklingzeit und Mindestabstand seit dem letzten Spawn
-        if (currentTime - this.lastSpawnTime < this.spawnCoinCooldown) return;
-    
-        // Zufällige Entscheidung, ob die Coins in einer geraden Linie oder in einer gebogenen Reihe spawnen
-        const isCurvedRow = Math.random() < 0.7; // 50% Wahrscheinlichkeit für eine gebogene Reihe
-        const numberOfCoins = Math.floor(Math.random() * 6) + 3;
-    
-        for (let i = 0; i < numberOfCoins; i++) {
-            let x = startX + i * this.coinSpacing * direction;
-    
-            // Berechne die Y-Position für die Coins
-            let y;
-            if (isCurvedRow) {
-                // Startet unten und erreicht in der Mitte den höchsten Punkt
-                const midpoint = Math.floor(numberOfCoins / 2);
-                const curveHeight = 80; // Maximaler Höhenunterschied in der Kurve
-                const distanceFromMidpoint = Math.abs(i - midpoint);
-                y = baseYPosition - (curveHeight - distanceFromMidpoint * 20); // Wert 20 kontrolliert die Steigung zur Mitte hin
-            } else {
-                // Gerade Linie
-                y = baseYPosition;
-            }
-    
-            x = this.adjustCoinPosition(x, this.obstaclePositions, 50);
-            if (!this.isCoinNearby(x, y, 80)) {
-                const coin = new Coin(this.global.collisionManager, 1, x, y, 80, 80, 'Coin'); // Größe und Punktewert der Coins
-                coin.player = character;
-                coin.global = this.global;
-                this.global.addGameObject(coin);
-                
-                this.global.collisionManager.addObject(coin);
-            }
-        }
-    
-        // Aktualisiere die Zeit und Position des letzten Coin-Spawns
-        this.lastSpawnTime = currentTime;
-        this.lastCharacterX = character.x;
-    }
-    
-    
-
-
-    // Prüft, ob ein Hindernis nahe der gewünschten Position ist
-    isNearObstacle(x) {
-        return this.global.gameObjects.some(obj => obj instanceof Obstacle && Math.abs(obj.x - x) < 100);
-    }
-   
-
-    handleObjectCollisions(obj) {
-        this.global.gameObjects.forEach(other => {
-            if (other !== obj && other instanceof Obstacle) {
-                if (obj.isCollidingWith(other)) {
-                    if (obj instanceof Character) {
-                        obj.handleObstacleCollision(other);  // New collision response in Character
-                    }
-                    else obj.resetAfterObstacle();
-                    if (obj instanceof Chicken) {
-                        other.handleCollisionWithEnemy(obj); // Obstacle changes Chicken direction
-                    }
-                }
+                const screenX = obj.x - this.cameraX;
+                if (typeof obj.Update === 'function') obj.Update(this.ctx, deltaTime, screenX);
+                if (this.debug && typeof obj.drawCollider === 'function') obj.drawCollider(this.ctx, this.cameraX);
             }
         });
     }
 
-
-
-    removeDeadCoins() {
-        this.global.gameObjects = this.global.gameObjects.filter(obj => !(obj instanceof Coin && obj.dead));
-    }
 
     removeOffScreenEnemies() {
         const character = this.global.gameObjects.find(player => player instanceof Character);
-        // Definiere die Mindestentfernung, die der Charakter in die entgegengesetzte Richtung laufen muss, um einen Gegner zu löschen
         const minDistanceToRemoveEnemy = 1000; // Mindeststrecke in Pixeln (anpassbar)
-
         this.global.gameObjects = this.global.gameObjects.filter(obj => {
             if (obj instanceof Chicken) {
-                // Berechne die Position des Gegners relativ zur Kamera
                 const screenX = obj.x - this.cameraX + this.canvas.width / 2;
-
-                // Wenn der Gegner außerhalb des Kamera-Sichtfelds ist
                 if (screenX + obj.width < 0 || screenX > this.canvas.width) {
-                    // Prüfe, ob der Charakter genügend Abstand zurückgelegt hat
                     const distanceMoved = Math.abs(character.x - obj.lastCharacterX);
-
                     if (distanceMoved >= minDistanceToRemoveEnemy) {
-                        this.collisionManager.destroy(obj);
+                        this.global.collisionManager.destroy(obj);
                         return false; // Entferne den Gegner
                     }
-                } else {
-                    // Aktualisiere die letzte bekannte Position des Charakters, wenn der Gegner im Sichtfeld ist
-                    obj.lastCharacterX = character.x;
-                }
+                } 
+                else obj.lastCharacterX = character.x;
             }
             return true; // Behalte das Objekt im Spiel, wenn es kein Chicken ist oder nicht entfernt werden soll
         });
@@ -396,5 +251,4 @@ export class Game extends World {
     ClearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-
 }

@@ -1,46 +1,110 @@
+import { bottleAnimations } from "../animations/bottle.anim.js";
+import { AudioManager } from "./AudioManager.class.js";
+import { Bottle } from "./bottle.class.js";
 import { Chicken } from "./chicken.class.js";
+import { Ground } from "./ground.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
+import { Obstacle } from "./obstacle.class.js";
 
 export class Character extends Animatable(MovableObject) {
     global;
-    constructor(animationPaths, collisionManager, ...args ) {
+    constructor(animationPaths, collisionManager, ...args) {
         super(animationPaths, collisionManager, ...args);
         this.facingRight = true;
         this.onGround = true;
-        this.jumpStrength = -200; // Sprungkraft
+        this.jumpStrength = -250; // Sprungkraft
         this.gravity = 800;       // Gravitation (Anpassbar)
         this.health = 3; // Start-Leben des Charakters
         this.isInvincible = false; // Unverwundbarkeit nach Schaden
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
-        this.collider.width -= 60;
-        this.collider.height = 125;
+        //this.collider.width -= 60;
+        //this.collider.height = 120;
+        this.collider.x = this.x;
+        this.collider.y = this.y;
         this.isHurt = false;
-        this.ground = 430;
+        this.ground = 500;
         this.isOnObstacle = false;
+        this.lastFootstepTime = 0;
+        this.footstepInterval = 0.3;
+        this.isLeftFoot = true;
+        this.jumping = false;
+        this.isThrown = false;
+        this.throwDuration = 1.0;
+        //this.audioManager = new AudioManager();
         this.updateCollider();
+
+        //this.Start();
     }
 
-    Start() { }
+    Start() {
+        //this.global.audioManager.setEffectsVolume(0.2);
+        //this.global.audioManager.playMusic('audio/El Pollo Loco.mp3');
+        //this.global.audioManager.setMusicVolume(0.2);
+        //this.global.getVolumes();
+        this.global.audioManager.loadSound('El Pollo Loco', 'audio/El Pollo Loco.mp3', true);
+        this.global.audioManager.loadSound('Left Step', 'audio/Ground_Step3.wav');
+        this.global.audioManager.loadSound('Right Step', 'audio/Ground_Step4.wav');
+        this.global.audioManager.loadSound('Jump', 'audio/Jump.wav');
+        this.global.audioManager.loadSound('Land', 'audio/Land.wav');
+        this.global.audioManager.loadSound('Hurt', 'audio/Voice_Male_V2_Pain_Mono_01.wav');
+    }
 
     Update(ctx, deltaTime, screenX) {
-        this.isOnGround(deltaTime);
-        if (this.global.health < 1) this.setState('dead');
-        else if (this.isHurt) this.setState('hurt');
-        else this.move(deltaTime);
         this.drawCharacter(ctx, screenX);
         this.updateAnimation(deltaTime);
-        //this.global.updateCollisions();
+        if(this.global.pause) {
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+            this.setState('idle');
+            return;
+        }
+        this.isOnGround(deltaTime);
+        if (this.global.health < 1) this.setStateOnce('dead');
+        else if (this.isHurt) this.setStateOnce('hurt');
+        else this.move(deltaTime);
+        this.lastFootstepTime += deltaTime;
+       
+        this.updateCollider();
+       /* if (!this.global.pause) {
+            if (!this.global.audioManager.musicOn) {
+                //this.global.audioManager.loadSound('El Pollo Loco', 'audio/El Pollo Loco.mp3', true);
+                //this.global.audioManager.playSound('El Pollo Loco');
+                this.global.audioManager.musicOn = false;
+            }
+        }*/
         //console.log(this.global.collisionManager.objects);
     }
 
+
+    drawCollider(ctx, cameraX) {
+        ctx.save();
+        ctx.strokeStyle = 'red'; // Collider-Farbe
+        ctx.lineWidth = 1; // Dünne Linie
+        ctx.strokeRect(
+            this.collider.x - cameraX,
+            this.collider.y,
+            this.collider.width,
+            this.collider.height
+        );
+        ctx.restore();
+    }
+
+
+    updateCollider() {
+        super.updateCollider(); // Ruft die GameObject-Logik auf
+        this.collider.x = this.x - this.width / 2; // Zentriert den Collider
+        this.collider.y = this.y - this.height / 2;
+    }
+
+
     drawFacingRight(frame, ctx, screenX) {
-        ctx.translate(screenX, this.y);
+        ctx.translate(this.x - screenX - this.width / 2, this.y - this.height / 2);
         ctx.scale(1, 1);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
     drawFacingLeft(frame, ctx, screenX) {
-        ctx.translate(screenX / 4 - this.width, this.y);
+        ctx.translate(this.x - screenX * 2 + this.width / 2, this.y - this.height / 2);
         ctx.scale(-1, 1);
         ctx.drawImage(frame, -screenX, 0, this.width, this.height);
     }
@@ -63,14 +127,32 @@ export class Character extends Animatable(MovableObject) {
         this.facingRight = facing;
         this.velocity.x = x * speed;
         if (this.onGround) {
-            this.setState('walk');
+            this.setStateOnce('walk');
+            if (this.lastFootstepTime >= this.footstepInterval) {
+                this.playFootstepSound();
+                this.lastFootstepTime = 0;
+            }
         }
+    }
+
+    playFootstepSound() {
+        //this.isLeftFoot ? this.global.audioManager.playEffect('audio/Ground_Step3.wav') : this.global.audioManager.playEffect('audio/Ground_Step4.wav');
+        if (this.isLeftFoot) {
+            //this.global.audioManager.loadSound('Left Step', 'audio/Ground_Step3.wav');
+            this.global.audioManager.playSound('Left Step');
+        }
+        else {
+            //this.global.audioManager.loadSound('Right Step', 'audio/Ground_Step4.wav');
+            this.global.audioManager.playSound('Right Step');
+        }
+
+        this.isLeftFoot = !this.isLeftFoot;
     }
 
     idle() {
         if (this.onGround) {
             this.velocity.x = 0;
-            this.setState('idle');
+            this.setStateOnce('idle');
         }
     }
 
@@ -78,48 +160,99 @@ export class Character extends Animatable(MovableObject) {
         if (this.onGround) {
             this.velocity.y = this.jumpStrength;
             this.onGround = false;
-            this.setState('jump');
+            this.jumping = true;
+            this.global.audioManager.playSound('Jump');
+            this.setStateOnce('jump');
         }
     }
 
     isOnGround(deltaTime) {
         if (!this.onGround) {
-            this.velocity.y += this.gravity * deltaTime; // Gravitationskraft addieren
+            this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
         }
-        // Bodenüberprüfung und Landen
-        if (this.y + this.height >= this.ground) { // Bodenhöhe hier auf `400` festgelegt
-            this.y = this.ground - this.height; // Charakter auf dem Boden halten
-            this.land(); // Charakter landet und Animation wird zurückgesetzt
+
+        const groundY = this.ground; // Standardhöhe für den Boden
+        if (this.y + this.height >= groundY) {
+            this.y = groundY - this.height;
+            this.land();
         }
     }
 
+
+
     land() {
-        this.onGround = true;
-        this.velocity.y = 0;
-        if (this.state == 'jump') this.setState('idle');
-        //else if (this.keyPressed) this.setState('walk');
+        if (!this.onGround) { // Überprüfen, ob der Charakter zuvor nicht auf dem Boden war
+            //this.global.audioManager.loadSound('Land', 'audio/Land.wav');
+            this.global.audioManager.playSound('Land');
+        }
+        this.jumping = false;
+        this.onGround = true; // Charakter ist jetzt auf dem Boden
+        this.velocity.y = 0; // Vertikale Geschwindigkeit auf Null setzen
+        if (this.state == 'jump') this.setStateOnce('idle'); // Status aktualisieren, wenn vorher im Sprung
+    }
+
+
+    throwBottle() {
+        if (!this.isThrown) {
+            if (this.global.bottles > 0) { // Prüfe, ob der Charakter Flaschen hat
+                this.isThrown = true;
+                const velocityX = this.facingRight ? 300 : -300; // Richtung der Flasche
+                const velocityY = -200; // Anfangsaufwärtsbewegung
+                 
+                const bottle = new Bottle(bottleAnimations, this.collisionManager, this.global,
+                    this.x + (this.facingRight ? this.width : -this.width), // Startposition
+                    this.y,
+                    20, 40, // Größe der Flasche
+                    velocityX,
+                    velocityY
+                );
+
+                this.global.addGameObject(bottle);
+                this.global.bottles -= 1; // Verringere die Anzahl der verfügbaren Flaschen
+                this.global.audioManager.playSound('Throw'); // Soundeffekt fürs Werfen
+                setTimeout(() => { this.isThrown = false; }, this.throwDuration * 200);
+            }
+        }
     }
 
     takeDamage() {
+        if (this.global.health <= 0) return;
         if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
-            this.health -= 1; // Reduziert das Leben um 1
             this.global.health -= 20;
             this.isInvincible = true;
             this.isHurt = true;
-            this.setState('hurt');
+            this.setStateOnce('hurt');
+            this.onGround = true;
             this.velocity.x = this.facingRight ? -150 : 150;
+            this.velocity.y = -200;
+            setTimeout(() => { this.velocity.y = 100; }, 250);
+            this.global.audioManager.playSound('Hurt');
             setTimeout(() => {
                 this.isInvincible = false;
                 this.isHurt = false;
-                if (this.global.health > 0) this.setState(this.onGround ? 'idle' : 'jump');
+                if (this.global.health > 0) this.setStateOnce(this.onGround ? 'idle' : 'jump');
             }, this.invincibilityDuration * 1000);
         }
         this.isDead();
     }
 
-    isDead() {        
+    onHit(other) {
+        if (other.dead) return;
+        this.velocity.y = 0;
+        if (other) {
+            this.velocity.y = Math.min(other.velocity.y, -200);;  // Setzt den „Bounce“-Effekt nach oben
+            other.squish();
+            setTimeout(() => {
+                this.velocity.y = 0;
+            }, 300);
+            return;
+        }
+
+    }
+
+    isDead() {
         if (this.global.health <= 0) {
-            this.setState('dead');
+            this.setStateOnce('dead');
             //setTimeout(() => { this.global.gameOver = true;}, 8000);
         }
     }
@@ -129,6 +262,8 @@ export class Character extends Animatable(MovableObject) {
     }
 
     isCharacterOnObstacle(character, obstacle) {
+
+
         // Berechnung der linken und rechten Kanten des Charakters und des Hindernisses
         const characterLeft = character.x;
         const characterRight = character.x + character.width;
@@ -139,134 +274,28 @@ export class Character extends Animatable(MovableObject) {
         return characterRight > obstacleLeft && characterLeft < obstacleRight;
     }
 
-    /*
-    handleObstacleCollision(obstacle) {
-        const charHitbox = this.getHitbox();
-        const obstacleHitbox = obstacle.getHitbox();
-        const buffer = 2;  // Kleiner Abstand, um den Charakter direkt vor dem Hindernis zu platzieren
+   
 
-        // Vertikale Kollisionserkennung (Landen auf dem Hindernis):
-        if (
-            charHitbox.bottom > obstacleHitbox.top &&          // Unterseite des Charakters erreicht Oberseite des Hindernisses
-            charHitbox.top < obstacleHitbox.top &&             // Charakter ist über dem Hindernis
-            this.velocity.y >= 0                               // Charakter fällt oder ist stationär in der y-Richtung
-        ) {
-            this.y = obstacleHitbox.top - this.height;         // Positioniere den Charakter auf dem Hindernis
-            this.velocity.y = 0;                               // Stoppe die vertikale Bewegung
-            this.onGround = true;
-            this.ground = 400;                          // Markiere als "auf dem Boden"
+
+    onCollisionEnter(other) {
+        //console.log(other);
+
+        const direction = this.getCollisionDirection(other);
+        if(other.tag == "Enemy" && !this.onGround) {
+            this.global.audioManager.playSound('Land');
+
         }
-
-        // Prüfen, ob der Charakter die linke Seite des Hindernisses erreicht
-        if (
-            this.velocity.x > 0 &&                          // Charakter bewegt sich nach rechts
-            charHitbox.right > obstacleHitbox.left &&       // Rechte Seite des Charakters berührt linke Seite des Hindernisses
-            charHitbox.left < obstacleHitbox.left           // Linke Seite des Charakters ist links vom Hindernis
-        ) {
-            this.x = obstacle.collider.x - buffer; // Positioniere den Charakter direkt links vom Hindernis
-            this.velocity.x = 0;                                // Stoppe die horizontale Bewegung
-            this.idle();   
-            this.ground = 430;                                    // Setze den Charakter in den "idle"-Zustand
-            return; // Verhindere, dass andere Kollisionen ausgelöst werden
+        if (other.tag === 'Trigger') {
+            //if((other.x >= this.x + 20  || other.x <= this.x - 20) && other.onGround && other.y <= this.y)
+                this.velocity.y = 200;
         }
+    }
 
-        // Prüfen, ob der Charakter die rechte Seite des Hindernisses erreicht
-        if (
-            this.velocity.x < 0 &&                          // Charakter bewegt sich nach links
-            charHitbox.left < obstacleHitbox.right &&       // Linke Seite des Charakters berührt rechte Seite des Hindernisses
-            charHitbox.right > obstacleHitbox.right        // Rechte Seite des Charakters ist rechts vom Hindernis
-        ) {
-            this.x = obstacle.collider.x + obstacle.collider.width;            // Positioniere den Charakter direkt rechts vom Hindernis
-            this.velocity.x = 0;
-            // Stoppe die horizontale Bewegung
-            this.idle();     
-            this.ground = 430;                                  // Setze den Charakter in den "idle"-Zustand
-            return; // Verhindere, dass andere Kollisionen ausgelöst werden
+    onCollisionExit(other) {
+        if(this.collidingWith === null) {
+            this.velocity.y = 200;
         }
-
-
-    }*/
-
-
-        onCollisionEnter(other) {
-            other.collidingWith = this;
-            if(other.tag === 'Coin')
-                other.onCollisionEnter(this);
-            else if(other.tag === 'Enemy' && other instanceof Chicken) {
-                other.onCollisionEnter(this);
-            }
-            
-        }
-
-
-
-
-
-
-
-
-
-        handleObstacleCollision(obstacle) {
-            const charHitbox = this.getHitbox();
-            const obstacleHitbox = obstacle.getHitbox();
-            const buffer = 4; // Kleiner Puffer für die Platzierung
-
-            // Vertikale Kollisionserkennung für das Landen auf dem Hindernis:
-            /*
-        if (
-            charHitbox.bottom > obstacleHitbox.top &&       
-            charHitbox.top < obstacleHitbox.top &&          
-            this.onGround != true                             
-        ) {
-            this.y = obstacleHitbox.top - this.height; // Charakter auf das Hindernis setzen
-            this.velocity.y = 0;
-            this.onGround = true;
-            this.ground = obstacleHitbox.top; // Setze die Bodenhöhe auf die Hindernishöhe
-            this.isOnObstacle = true;
-            this.ground = 400;            
-        }
-        else {
-            this.isOnObstacle = false;
-            this.resetAfterObstacle();
-        }*/
-        
-            // Horizontale Kollision von links nach rechts
-            if (
-                this.velocity.x > 0 &&                      
-                charHitbox.right > obstacleHitbox.left &&   
-                charHitbox.left < obstacleHitbox.left       
-            ) {
-                this.x = obstacle.x - buffer; // Positioniere den Charakter direkt links vom Hindernis
-                this.velocity.x = 0;
-                this.idle();
-                
-            }
-        
-            // Horizontale Kollision von rechts nach links
-            else if (
-                this.velocity.x < 0 &&                     
-                charHitbox.left < obstacleHitbox.right + 10 &&  
-                charHitbox.right > obstacleHitbox.right + 10   
-            ) {
-                this.x = obstacle.collider.x + obstacle.collider.width;            // Positioniere den Charakter direkt rechts vom Hindernis
-                this.velocity.x = 0;
-                this.idle();
-                
-            } 
-            this.resetAfterObstacle();            
-        }
-        
-    
-        resetAfterObstacle() {
-            // Wenn der Charakter nicht mehr auf einem Hindernis ist, setze `ground` auf Standardbodenhöhe zurück
-            if (!this.isOnObstacle) {
-                this.ground = 430; // Setze die Standard-Bodenhöhe
-            } else {
-                this.isOnObstacle = false; // `isOnObstacle` zurücksetzen, wenn kein Hindernis erkannt
-            }
-        }
-
-
+    }
 
 
 }

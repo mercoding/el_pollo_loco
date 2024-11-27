@@ -7,11 +7,14 @@ export class AttackState {
     }
 
     onEnter() {
+        if(this.boss.health <= 0) return;
         this.boss.setState('attack');
         this.attackTriggered = false;
+        this.boss.audioManager.playSound('BotAttack');
     }
 
     onUpdate(deltaTime) {
+        if(this.boss.health <= 0) return;
         if (!this.attackTriggered) {
             // Springbewegung
             this.boss.velocity.y = -400;  // Leichter Sprung

@@ -7,10 +7,12 @@ export class ReturnState {
     }
 
     onEnter() {
+        if(this.boss.health <= 0) return;
         this.boss.setState('walk');
     }
 
     onUpdate(deltaTime) {
+        if(this.boss.health <= 0) return;
         const distance = Math.abs(this.targetReturnPosition);
         const direction =  Math.abs(this.boss.x) >= this.targetReturnPosition ? -1 : 1;     
         const distanceToReturnPosition = Math.abs(this.boss.x - this.targetReturnPosition);

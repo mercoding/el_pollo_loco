@@ -6,8 +6,8 @@ import { Game } from "../classes/game.class.js";
 import { GameObject } from "../classes/gameObject.class.js";
 import { Global } from "../classes/global.class.js";
 
-const global = new Global();
-const game = new Game(global);
+let global = new Global();
+let game = new Game(global);
 let character, chicken;
 const ground = new GameObject(0, 250, 500, 20);
 
