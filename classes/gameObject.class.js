@@ -71,13 +71,6 @@ export const CollisionCapable = (Base) => class extends Base {
 
     onCollisionEnter(other) {
         this.collidingWith = other;
-        /*const direction = this.getCollisionDirection(other);
-
-        if (direction) {
-            console.log(`Collision detected from: ${direction}`);
-        }*/
-
-        // Falls das andere Objekt auch eine `onCollisionEnter`-Methode hat
         if (other && typeof other.onCollisionEnter === 'function' && other.collidingWith !== this) {   
             other.collidingWith = this;
             other.onCollisionEnter(this);

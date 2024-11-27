@@ -143,7 +143,7 @@ export class UI extends World {
         this.selectedOption = 0; // Zurücksetzen der Auswahl
 
         if (this.menuActive) {
-            this.global.audioManager.stopMusic('El Pollo Loco');
+            this.global.audioManager.stopAll();
             this.addMenuListeners();
             this.layer === 2 ? this.drawSettingsMenu : this.layer === 0 ? this.drawStartMenu() : this.drawMenu();
         } else {

@@ -1,23 +1,14 @@
-import { pepeAnimations } from "../animations/character.anim.js";
-import { chickenAnimations, smallChickenAnimations } from "../animations/chicken.anim.js";
 import { chickenBossAnimations } from "../animations/chickenBoss.anim.js";
 import { enemyBossPositions, obstaclePositions } from "../js/gameObjectPositions.js";
 import { checkAndSpawnEnemy } from "../js/spawnChicken.js";
-import { adjustCoinPosition, checkAndSpawnCoinRow } from "../js/spawnCoins.js";
-import { AudioManager } from "./AudioManager.class.js";
+import { checkAndSpawnCoinRow } from "../js/spawnCoins.js";
 import { Character } from "./character.class.js";
 import { Chicken } from "./chicken.class.js";
 import { ChickenBoss } from "./chickenBoss.class.js";
-import { Coin } from "./coin.class.js";
-import { CollisionManager } from "./collisionManager.class.js";
-import { GameObject } from "./gameObject.class.js";
 import { Global } from "./global.class.js";
-import { Ground } from "./ground.class.js";
 import { InputHandler } from "./inputHandler.class.js";
-import { MovableObject } from "./movableObject.class.js";
 import { Obstacle } from "./obstacle.class.js";
 import { Player } from "./player.class.js";
-import { StartMenu } from "./startMenu.class.js";
 import { Trigger } from "./trigger.class.js";
 import { UI } from "./ui.class.js";
 import { World } from "./world.class.js";
@@ -76,7 +67,7 @@ export class Game extends World {
         this.global.pause = true;
     }
 
-    setUI() {
+    setInGameUI() {
         this.ui.drawHealthBar(0, 50, 50);
         this.ui.menuActive = false;
         this.ui.onStart = false;
@@ -92,10 +83,9 @@ export class Game extends World {
         if (this.ui.onStart && !this.global.inGame) return;
         this.global.reset();
         this.player = new Player(this.canvas, this.global);
-        this.player.Start();            
         this.scrollSpeedClouds = 0.2;
         this.cloudsOffset = 0;
-        this.setUI();
+        this.setInGameUI();
         this.initializeObstacles();
         this.initializeBosses();
         this.cameraX = 0;

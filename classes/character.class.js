@@ -1,10 +1,6 @@
 import { bottleAnimations } from "../animations/bottle.anim.js";
-import { AudioManager } from "./AudioManager.class.js";
 import { Bottle } from "./bottle.class.js";
-import { Chicken } from "./chicken.class.js";
-import { Ground } from "./ground.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
-import { Obstacle } from "./obstacle.class.js";
 
 export class Character extends Animatable(MovableObject) {
     global;
@@ -14,33 +10,19 @@ export class Character extends Animatable(MovableObject) {
         this.onGround = true;
         this.jumpStrength = -250; // Sprungkraft
         this.gravity = 800;       // Gravitation (Anpassbar)
-        this.health = 3; // Start-Leben des Charakters
         this.isInvincible = false; // Unverwundbarkeit nach Schaden
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
-        //this.collider.width -= 60;
-        //this.collider.height = 120;
-        this.collider.x = this.x;
-        this.collider.y = this.y;
         this.isHurt = false;
         this.ground = 500;
-        this.isOnObstacle = false;
         this.lastFootstepTime = 0;
         this.footstepInterval = 0.3;
         this.isLeftFoot = true;
-        this.jumping = false;
         this.isThrown = false;
         this.throwDuration = 1.0;
-        //this.audioManager = new AudioManager();
-        this.updateCollider();
-
-        //this.Start();
     }
 
+
     Start() {
-        //this.global.audioManager.setEffectsVolume(0.2);
-        //this.global.audioManager.playMusic('audio/El Pollo Loco.mp3');
-        //this.global.audioManager.setMusicVolume(0.2);
-        //this.global.getVolumes();
         this.global.audioManager.loadSound('El Pollo Loco', 'audio/El Pollo Loco.mp3', true);
         this.global.audioManager.loadSound('Left Step', 'audio/Ground_Step3.wav');
         this.global.audioManager.loadSound('Right Step', 'audio/Ground_Step4.wav');
@@ -49,30 +31,26 @@ export class Character extends Animatable(MovableObject) {
         this.global.audioManager.loadSound('Hurt', 'audio/Voice_Male_V2_Pain_Mono_01.wav');
     }
 
-    Update(ctx, deltaTime, screenX) {
-        this.drawCharacter(ctx, screenX);
-        this.updateAnimation(deltaTime);
+    ifPauseState() {
         if(this.global.pause) {
             this.velocity.x = 0;
             this.velocity.y = 0;
             this.setState('idle');
-            return;
+            return true;
         }
+        return false;
+    }
+
+    Update(ctx, deltaTime, screenX) {
+        this.drawCharacter(ctx, screenX);
+        this.updateAnimation(deltaTime);
+        if(this.ifPauseState()) return;
         this.isOnGround(deltaTime);
         if (this.global.health < 1) this.setStateOnce('dead');
         else if (this.isHurt) this.setStateOnce('hurt');
         else this.move(deltaTime);
         this.lastFootstepTime += deltaTime;
-       
         this.updateCollider();
-       /* if (!this.global.pause) {
-            if (!this.global.audioManager.musicOn) {
-                //this.global.audioManager.loadSound('El Pollo Loco', 'audio/El Pollo Loco.mp3', true);
-                //this.global.audioManager.playSound('El Pollo Loco');
-                this.global.audioManager.musicOn = false;
-            }
-        }*/
-        //console.log(this.global.collisionManager.objects);
     }
 
 
@@ -136,13 +114,10 @@ export class Character extends Animatable(MovableObject) {
     }
 
     playFootstepSound() {
-        //this.isLeftFoot ? this.global.audioManager.playEffect('audio/Ground_Step3.wav') : this.global.audioManager.playEffect('audio/Ground_Step4.wav');
         if (this.isLeftFoot) {
-            //this.global.audioManager.loadSound('Left Step', 'audio/Ground_Step3.wav');
             this.global.audioManager.playSound('Left Step');
         }
         else {
-            //this.global.audioManager.loadSound('Right Step', 'audio/Ground_Step4.wav');
             this.global.audioManager.playSound('Right Step');
         }
 
@@ -191,6 +166,14 @@ export class Character extends Animatable(MovableObject) {
         if (this.state == 'jump') this.setStateOnce('idle'); // Status aktualisieren, wenn vorher im Sprung
     }
 
+    getBottle(velocityX, velocityY) {
+        const bottle = new Bottle(bottleAnimations, this.collisionManager, this.global,
+            this.x + (this.facingRight ? this.width : -this.width),
+            this.y, 20, 40, velocityX, velocityY
+        );
+        return bottle;
+    }
+
 
     throwBottle() {
         if (!this.isThrown) {
@@ -198,21 +181,21 @@ export class Character extends Animatable(MovableObject) {
                 this.isThrown = true;
                 const velocityX = this.facingRight ? 300 : -300; // Richtung der Flasche
                 const velocityY = -200; // Anfangsaufwärtsbewegung
-                 
-                const bottle = new Bottle(bottleAnimations, this.collisionManager, this.global,
-                    this.x + (this.facingRight ? this.width : -this.width), // Startposition
-                    this.y,
-                    20, 40, // Größe der Flasche
-                    velocityX,
-                    velocityY
-                );
-
+                const bottle = this.getBottle(velocityX, velocityY);
                 this.global.addGameObject(bottle);
                 this.global.bottles -= 1; // Verringere die Anzahl der verfügbaren Flaschen
                 this.global.audioManager.playSound('Throw'); // Soundeffekt fürs Werfen
                 setTimeout(() => { this.isThrown = false; }, this.throwDuration * 200);
             }
         }
+    }
+
+    removeInvincible() {
+        setTimeout(() => {
+            this.isInvincible = false;
+            this.isHurt = false;
+            if (this.global.health > 0) this.setStateOnce(this.onGround ? 'idle' : 'jump');
+        }, this.invincibilityDuration * 1000);
     }
 
     takeDamage() {
@@ -227,11 +210,7 @@ export class Character extends Animatable(MovableObject) {
             this.velocity.y = -200;
             setTimeout(() => { this.velocity.y = 100; }, 250);
             this.global.audioManager.playSound('Hurt');
-            setTimeout(() => {
-                this.isInvincible = false;
-                this.isHurt = false;
-                if (this.global.health > 0) this.setStateOnce(this.onGround ? 'idle' : 'jump');
-            }, this.invincibilityDuration * 1000);
+            this.removeInvincible();
         }
         this.isDead();
     }
@@ -260,34 +239,20 @@ export class Character extends Animatable(MovableObject) {
     setStateOnce(newState) {
         if (this.state !== newState) this.setState(newState);
     }
-
-    isCharacterOnObstacle(character, obstacle) {
-
-
-        // Berechnung der linken und rechten Kanten des Charakters und des Hindernisses
-        const characterLeft = character.x;
-        const characterRight = character.x + character.width;
-        const obstacleLeft = obstacle.x;
-        const obstacleRight = obstacle.x + obstacle.width;
-
-        // Überprüft, ob ein Teil des Charakters innerhalb der Breite des Hindernisses liegt
-        return characterRight > obstacleLeft && characterLeft < obstacleRight;
-    }
-
    
 
 
     onCollisionEnter(other) {
-        //console.log(other);
-
         const direction = this.getCollisionDirection(other);
         if(other.tag == "Enemy" && !this.onGround) {
             this.global.audioManager.playSound('Land');
-
         }
         if (other.tag === 'Trigger') {
             //if((other.x >= this.x + 20  || other.x <= this.x - 20) && other.onGround && other.y <= this.y)
                 this.velocity.y = 200;
+        }
+        if(other.tag === "Chicken" && !this.onGround) {
+            this.global.audioManager.playSound('Land');
         }
     }
 

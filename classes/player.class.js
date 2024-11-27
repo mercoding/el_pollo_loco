@@ -7,7 +7,7 @@ export class Player {
         this.canvas = canvas;
         this.global = global;
         this.inputHandler = new InputHandler();
-        //this.initializeCharacter();
+        this.Start();
     }
 
     initializeCharacter() {
@@ -19,14 +19,11 @@ export class Player {
     }
 
     resetCharacter() {
-        // Entferne den bestehenden Charakter
         if (this.character) {
             this.global.destroy(this.character);
             this.global.collisionManager.destroy(this.character);
         }
-
         this.inputHandler.deactivate();
-        // Initialisiere den Charakter neu
         this.initializeCharacter();
     }
 
@@ -47,40 +44,30 @@ export class Player {
         this.handleCameraAndCharacterMovement(this.character, deltaTime);
     }
 
-    handleInput(deltaTime) {
-        if (this.global.health <= 0 || this.global.pause) return;
-
-        const input = this.inputHandler.getInput();
-
+    isHurt(deltaTime) {
         if (this.character.isHurt) {
             this.character.velocity.x = 0;
             this.character.velocity.y = 30;
             this.character.move(deltaTime);
-            return;
+            return true;
         }
+        return false;
+    }
 
-        if (input.right) {
-            this.character.walk(true, 1, 100);
-        } else if (input.left) {
-            this.character.walk(false, -1, 100);
-        } else {
-            this.character.idle();
-        }
-
-        if (input.up) {
-            this.character.jump();
-        }
-
-        if (input.fKey) {
-            this.character.throwBottle();
-        }
-
+    handleInput(deltaTime) {
+        if (this.global.health <= 0 || this.global.pause) return;
+        const input = this.inputHandler.getInput();
+        if (this.isHurt(deltaTime)) return;
+        if (input.right) this.character.walk(true, 1, 100);
+        else if (input.left) this.character.walk(false, -1, 100);
+        else this.character.idle();
+        if (input.up) this.character.jump();
+        if (input.fKey) this.character.throwBottle();
         this.character.move(deltaTime);
     }
 
     handleCameraAndCharacterMovement(character, deltaTime) {
         if (this.global.pause) return;
-
         this.cameraX = character.x; // Zentriere die Kamera auf den Charakter
         this.handleInput(deltaTime);
         character.updateCollider(); // Aktualisiere den Collider des Charakters

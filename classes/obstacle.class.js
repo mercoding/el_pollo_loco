@@ -44,71 +44,33 @@ export class Obstacle extends CollisionCapable(GameObject) {
         ctx.restore();
     }
     
+    isPlayerCollisionFromSide(other, direction) {
+        if (direction === 'left') {            
+            if(other.velocity.x > 0) {
+                other.velocity.x = 0; // Stoppe Bewegung horizontal
+                other.x = this.x - this.width + 40;
+                other.idle();
+            }
+        }
+        else if(direction === 'right') {
+            if(other.velocity.x < 0) {
+                other.velocity.x = 0; // Stoppe Bewegung horizontal
+                other.x = this.x + this.width + 10;
+                other.idle();
+            }
+        }
+    }
 
     
     onCollisionEnter(other) {
         if(other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
-            //console.log(direction);
-            if (direction === 'top') {
-                //console.log(other);
-                other.land();
-            } else if (direction === 'left') {
-                //console.log(other.velocity.x);
-                
-                if(other.velocity.x > 0) {
-                    other.velocity.x = 0; // Stoppe Bewegung horizontal
-                    other.x = this.x - this.width + 40;
-                    other.idle();
-                }
-            }
-            else if(direction === 'right') {
-                if(other.velocity.x < 0) {
-                    other.velocity.x = 0; // Stoppe Bewegung horizontal
-                    other.x = this.x + this.width + 10;
-                    other.idle();
-                }
-            }
+            if (direction === 'top') other.land();
+            else this.isPlayerCollisionFromSide(other, direction);
         }
     }
 
-    isCactus(other) {
-        if(this.tag === "Cactus") {
-            const distanceToPlayer = this.x - other.x;
-            const distance = Math.abs(distanceToPlayer); 
-            if(distance <= 20) {
-                if (!this.isInvincible) {
-                    other.takeDamage();
-                    this.isInvincible = true;
-                    setTimeout(() => { this.isInvincible = false; }, 2000);
-                }
-            }
-            return true;
-        }
-        return false;
-    }
     
-    onCollisionExit(other) {
-        /*if (other.tag === 'Player') {
-            if((other.x >= this.x + 20  || other.x <= this.x - 20) && other.onGround && other.y <= this.y)
-                other.velocity.y = 200;
-        }*/
-    }
-
-    isTouchingTopOfCollider(character, other) {
-        const charHitbox = character.getHitbox();
-        const otherHitbox = other.getHitbox();
-    
-        return (
-            charHitbox.bottom >= otherHitbox.top - 15 &&                 // Charakter berührt die Oberseite des Objekts
-            charHitbox.bottom <= otherHitbox.top + 15 &&            // Ein kleiner Puffer, um nur von oben zu prüfen
-            charHitbox.right > otherHitbox.left + 15 &&                 // Charakter ist horizontal im Bereich des Objekts
-            charHitbox.left < otherHitbox.right - 15 &&                 // Charakter ist horizontal im Bereich des Objekts
-            character.velocity.y >= 0                              // Charakter fällt nach unten
-        );
-    }
-    
-
 
     isVisibleOnCanvas(screenX, canvasWidth) {
         // Check if the obstacle is within the visible canvas area

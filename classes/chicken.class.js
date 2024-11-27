@@ -11,17 +11,8 @@ export class Chicken extends Animatable(MovableObject) {
         this.facingRight = true;
         this.setState('walk');
         this.speed = 50;
-        this.onGround = true;
-        //this.gravity = 800;
-        this.initialX = x;  // Speichere den Startpunkt
-        //this.targetX = null; // Ziel für Gegner
-        this.player = null;
         this.dead = false;
-        this.updateCollider();
         this.touched = false;
-        this.audioManager = new AudioManager();
-        this.audioManager.effectsVolume = 0.2;
-        this.damageFromSide = false;
         this.invincibilityDuration = 2.0;
         this.lastDamageTime = 0;
         this.soundIndex = 0; // Index für den Soundwechsel
@@ -29,11 +20,11 @@ export class Chicken extends Animatable(MovableObject) {
         this.cooldownDuration = 0.5;
         this.soundRepeatCounter = 0;
         this.Start();
-        //this.global.audioManager.loadSound('Squish', 'audio/GGGrasslands - Box Destroy.wav');
     }
 
     Start() {
-        //this.global.audioManager.loadSound('Squish', 'audio/GGGrasslands - Box Destroy.wav');
+        this.audioManager = new AudioManager();
+        this.audioManager.effectsVolume = 0.2;
         this.audioManager.loadSound('Bot1', 'audio/Bot1.wav');
         this.audioManager.loadSound('Bot2', 'audio/Bot2.wav');
         this.audioManager.loadSound('Squish', 'audio/Bakaa4.wav');
@@ -111,21 +102,22 @@ export class Chicken extends Animatable(MovableObject) {
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
+    setBounceAfterSquish(other) {
+        other.velocity.y = 0;
+        if (other.tag === "Player") {
+            other.velocity.y = 200;   // Setzt den „Bounce“-Effekt nach oben
+            setTimeout(() => { other.velocity.y = Math.min(other.velocity.y, -100); }, 100);
+            setTimeout(() => { other.velocity.y = 100; }, 250);
+        }
+    }
+
 
     squish(other) {
         if (!this.isSquished) {
-            this.y += 13;//+= this.height;  // Y-Position anpassen
+            this.y += 13;
             this.collider.y += 25;
             this.collider.height -= 30;
-            other.velocity.y = 0;
-            if (other.tag === "Player") {
-                other.velocity.y = 200;   // Setzt den „Bounce“-Effekt nach oben
-                setTimeout(() => { other.velocity.y = Math.min(other.velocity.y, -100); }, 100);
-                setTimeout(() => { other.velocity.y = 100; }, 250);
-
-            }
-            //setTimeout(() => { this.player.velocity.y = 0; }, 200);
-            //this.global.audioManager.loadSound('Squish', 'audio/GGGrasslands - Box Destroy.wav');
+            this.setBounceAfterSquish(other);
             this.global.audioManager.playSound('Squish');
             this.isSquished = true; // Gegner als zerquetscht markieren
             this.velocity.x = 0;
@@ -140,7 +132,6 @@ export class Chicken extends Animatable(MovableObject) {
     onHit(other) {
         if (this.dead) return;
         if (!this.dead) {
-            //this.global.audioManager.loadSound('Squish', 'audio/GGGrasslands - Box Destroy.wav');
             this.global.audioManager.loadSound('Squish', 'audio/Bakaa4.wav');
             this.global.audioManager.playSound('Squish');
             this.global.audioManager.stopSound('Bot1');

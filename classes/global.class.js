@@ -94,32 +94,29 @@ export class Global {
     destroy(obj) { this.gameObjects = this.gameObjects.filter(o => o !== obj); }
 
 
+
+    setGameStats() {
+         // Zurücksetzen aller wichtigen Zustände
+         this.health = 100;
+         this.bottles = 10;
+         this.points = 0;
+         this.coins = 0;
+         this.inGame = true;
+         this.gameOver = false;
+         this.bossDefeated = 0;
+         this.pause = false;
+         this.groundLevel = 430;
+    }
+
     reset() {
-        // Zurücksetzen aller wichtigen Zustände
-        this.health = 100;
-        this.bottles = 10;
-        this.points = 0;
-        this.coins = 0;
-        this.inGame = true;
-        this.gameOver = false;
-        this.bossDefeated = 0;
-        this.pause = false;
-        this.groundLevel = 430;
-    
-        // GameObjects und Kollisionsmanager leeren
+        this.setGameStats();
         this.collisionManager.clear(); // Methode clear() sollte implementiert sein
         this.collisionManager = new CollisionManager();
         this.gameObjects.length = 0;
         this.gameObjects = [];
-    
-        
-        // Audio zurücksetzen
         this.audioManager.stopAll(); // Stopp alle Sounds und Musik
         this.audioManager = new AudioManager();
         this.audioManager.initializeUserInteractionListener();
-       
-    
-        // InputHandler zurücksetzen
         this.inputHandler.deactivate(); // Entfernt alle Event Listener
     }
     
