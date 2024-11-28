@@ -52,8 +52,8 @@ export class Game extends World {
         if (!this.ui.onStart || this.global.inGame) return;
         this.ui.menuActive = false;
         this.ui.layer = 0; // Startmenü-Ebene
-        this.ui.addMenuListeners();
-        this.ui.drawMenu(); // Zeichne das Startmenü
+        //this.ui.addMenuListeners();
+        //this.ui.drawInGameMenu(); // Zeichne das Startmenü
         this.global.pause = true;
     }
 
@@ -62,8 +62,8 @@ export class Game extends World {
         this.ui.menuActive = true;
         this.ui.onStart = false;
         this.ui.layer = 0; // Startmenü-Ebene
-        this.ui.addMenuListeners();
-        this.ui.drawMenu(); // Zeichne das Startmenü
+        //this.ui.addMenuListeners();
+        //this.ui.drawInGameMenu(); // Zeichne das Startmenü
         this.global.pause = true;
     }
 
@@ -90,18 +90,18 @@ export class Game extends World {
         this.initializeBosses();
         this.cameraX = 0;
         this.resetAudio();
-        this.inputHandler.deactivate();
-        this.inputHandler.activate();
+        //this.inputHandler.deactivate();
+        //this.inputHandler.activate();
     }
 
 
     Start() {
-        this.ui = new UI(this.global, this, this.global.audioManager.musicVolume, this.global.audioManager.effectsVolume);
-        this.ui.inputHandler.deactivate();
-        this.ui.inputHandler.activate();
-        this.StartIntro();
+        this.ui = new UI(this);
+        //this.ui.inputHandler.deactivate();
+        //this.ui.inputHandler.activate();
+       /* this.StartIntro();
         this.StartMenu();
-        this.StartGame();       
+        this.StartGame();    */   
         this.lastFrameTime = performance.now();
         this.Update();
     }
@@ -174,7 +174,7 @@ export class Game extends World {
     }
 
     Update() {
-        this.handleEscapeInput();
+        //this.handleEscapeInput();
         const deltaTime = this.DeltaTime();
         this.ClearCanvas();
         this.renderBackgrounds();

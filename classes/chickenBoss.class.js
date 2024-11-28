@@ -67,7 +67,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.isOnGround(deltaTime);
         this.facingRight = this.player.x < this.x;
         this.currentDistanceToPlayer = this.calculateDistanceToPlayer();
-        this.stateMachine.update(deltaTime);
+        this.stateMachine.Update(deltaTime);
         this.drawChicken(ctx, screenX);
         this.drawHealthBar(ctx, this.calculateBottlePercentage(this.hitCount), screenX + this.width / 2 - 100, this.y - 20);
         if (this.global.pause) return;

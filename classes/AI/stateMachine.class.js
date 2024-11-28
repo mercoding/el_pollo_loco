@@ -13,7 +13,7 @@ export class StateMachine {
         }
     }
 
-    update(deltaTime) {
+    Update(deltaTime) {
         if (this.currentState && this.currentState.onUpdate) {
             this.currentState.onUpdate(deltaTime);
         }

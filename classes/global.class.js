@@ -118,6 +118,8 @@ export class Global {
         this.audioManager = new AudioManager();
         this.audioManager.initializeUserInteractionListener();
         this.inputHandler.deactivate(); // Entfernt alle Event Listener
+        clearInterval();
+        clearTimeout();
     }
     
 }

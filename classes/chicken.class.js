@@ -141,11 +141,7 @@ export class Chicken extends Animatable(MovableObject) {
         }
     }
 
-
-    onCollisionEnter(other) {
-        //console.log(other);
-
-        if (this.dead) return;
+    ifCollisionOnObstacle(other) {
         if (other.tag === 'Obstacle') {
             if (!this.touched) {
                 this.velocity.x *= -1;
@@ -156,34 +152,28 @@ export class Chicken extends Animatable(MovableObject) {
                 }, 2000);
             }
         }
-        else if (other.tag === 'Player') {
+    }
+
+    ifCollisionOnPlayer(other) {
+        if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
-            //other.velocity.y = 0;
-            if ((direction === 'left' || direction === 'right') /*&& other.onGround*/) {
-                //other.velocity.y = 0;
-                setTimeout(() => {
-                    other.takeDamage(); // Charakter nimmt Schaden
-                }, 100);
+            if ((direction === 'left' || direction === 'right')) {
+                setTimeout(() => { other.takeDamage(); }, 100);
             }
             if (direction === 'top' && other.velocity.y > 0 && !other.onGround) {
-
-                this.onHit(other); // Markiere das Huhn als besiegt
+                this.onHit(other); 
             }
-        }
-
-        if (other.tag === 'Explosion') {
-            other.onCollisionEnter(this);
         }
     }
 
-    onCollisionExit(other) {
-        if (other.tag === 'Player') {
-            //other.velocity.y = 0;
-            //console.log(other);
-            //other.y = 430;
-            //other.velocity.y = 200;
-            //other.onGround = false;
-            //other.velocity.y = Math.max(other.velocity.y, 200); // Startgeschwindigkeit nach unten
+
+    onCollisionEnter(other) {
+        if (this.dead) return;
+        this.ifCollisionOnObstacle(other);
+        this.ifCollisionOnPlayer(other);
+
+        if (other.tag === 'Explosion') {
+            other.onCollisionEnter(this);
         }
     }
 
