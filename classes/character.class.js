@@ -14,6 +14,7 @@ export class Character extends Animatable(MovableObject) {
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
         this.isHurt = false;
         this.ground = 500;
+        this.onTop = false;
         this.lastFootstepTime = 0;
         this.footstepInterval = 0.3;
         this.isLeftFoot = true;
@@ -135,7 +136,6 @@ export class Character extends Animatable(MovableObject) {
         if (this.onGround) {
             this.velocity.y = this.jumpStrength;
             this.onGround = false;
-            this.jumping = true;
             this.global.audioManager.playSound('Jump');
             this.setStateOnce('jump');
         }
@@ -249,7 +249,7 @@ export class Character extends Animatable(MovableObject) {
         }
         if (other.tag === 'Trigger') {
             //if((other.x >= this.x + 20  || other.x <= this.x - 20) && other.onGround && other.y <= this.y)
-                this.velocity.y = 200;
+                //this.velocity.y = 200;
         }
         if(other.tag === "Chicken" && !this.onGround) {
             this.global.audioManager.playSound('Land');

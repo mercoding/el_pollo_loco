@@ -61,14 +61,32 @@ export class Obstacle extends CollisionCapable(GameObject) {
         }
     }
 
+    isPlayerAdjacent(other) {
+        const buffer = 5; // Spielraum
+        return (
+            other.x + other.width < this.x - buffer || // Charakter links vom Hindernis
+            other.x > this.x + this.width + buffer     // Charakter rechts vom Hindernis
+        );
+    }
+    
+
     
     onCollisionEnter(other) {
-        if(other.tag === 'Player') {
+        if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
-            if (direction === 'top') other.land();
-            else this.isPlayerCollisionFromSide(other, direction);
+            
+            if (direction === 'top') {
+                // Berechne die Differenz, falls der Charakter über dem Hindernis schwebt
+                const imageOffset = 82; // Passe diesen Wert an die Höhe des Bildes an
+                other.y = this.collider.y - other.collider.height + imageOffset;
+                other.land(); // Charakter landet
+            } else {
+                this.isPlayerCollisionFromSide(other, direction);
+            }
         }
     }
+    
+    
 
     
 

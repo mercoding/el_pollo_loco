@@ -26,7 +26,7 @@ export class Game extends World {
         this.global = new Global();
         this.inGame = false;
         this.gameStarted = false;
-        this.debug = false;
+        this.debug = true;
         this.inputHandler = new InputHandler();
         this.inputCooldown = 0.2;
         this.setSpawnSettings();
