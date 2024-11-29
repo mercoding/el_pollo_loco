@@ -1,26 +1,20 @@
-import { AudioManager } from "./AudioManager.class.js";
-import { Character } from "./character.class.js";
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
 
-export class Coin extends CollisionCapable(GameObject) {
-    global;
-    static coinImage = new Image();
+export class CollectableItem extends CollisionCapable(GameObject) {
     static imageLoaded = false;
+    ctx;
+    deltaTime;
+    global;
 
-    constructor(collisionManager, points, ...args) {
+    constructor(imgPath, collisionManager, ...args) {
         super(collisionManager, ...args);
         this.dead = false;
-        this.points = points;
-        this.player = null;
-
-        // Nur einmal das Bild für alle Coins laden
-        if (!Coin.imageLoaded) {
-            Coin.coinImage.src = 'img/coin/coin_1.png';
-            Coin.imageLoaded = true;
-        }
-        //this.global.audioManager.loadSound('Coin', 'audio/Coins_Single_01.wav');
+        this.imgPath = imgPath;
+        this.itemImage = new Image();
+        this.itemImage.src = imgPath;
+        this.isInvincible = false;
+        setTimeout(() => { this.destroyItem(); }, 5000);
         this.updateCollider();
-        //this.Start();
     }
 
     Start() {
@@ -28,12 +22,15 @@ export class Coin extends CollisionCapable(GameObject) {
     }
 
     Update(ctx, deltaTime, screenX) {
-        if (!this.dead && this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
-            ctx.drawImage(Coin.coinImage, screenX, this.y, this.width, this.height);
+        if (this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
+
+            ctx.drawImage(this.itemImage, screenX, this.y, this.width, this.height);
+
 
         }
-
         this.onCollisionStay();
+        this.updateCollider();
+
     }
 
     // Prüfen, ob Coin im sichtbaren Bereich des Canvas ist
@@ -45,7 +42,7 @@ export class Coin extends CollisionCapable(GameObject) {
     onCollisionStay() {
         if (this.collidingWith == null) return;
         if (this.collidingWith.tag === "Player" && !this.collidingWith.onGround) {
-            this.destroyCoin();
+            if (this.tag === "Bottle" && this.global.bottles < 10) this.destroyItem();
         }
     }
 
@@ -64,24 +61,25 @@ export class Coin extends CollisionCapable(GameObject) {
 
     onCollisionEnter(other) {
         if (other.tag == 'Player') {
+            other.onGround = 505;
             
-            if (this.y > 310 || !other.onGround) {
-                setTimeout(() => {
-                    this.destroyCoin();
-                }, 150); 
+            if (this.tag === "Bottle" && this.global.bottles < 10) {
+                if (this.y > 290) {
+                    this.global.bottles++;
+                    setTimeout(() => {
+                        this.destroyItem();
+                    }, 150);
+                }
             }
         }
     }
 
-    destroyCoin() {
+    destroyItem() {
         if (this.collisionManager && !this.dead) {
             this.dead = true;
-            this.global.coins += this.points;
             this.collidingWith = null;
             this.collisionManager.destroy(this);
             this.global.destroy(this);
-            this.global.audioManager.loadSound('Coin', 'audio/Coins_Single_01.wav');
-            this.global.audioManager.playSound('Coin');
         }
     }
 }

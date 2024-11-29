@@ -2,6 +2,7 @@ import { chickenBossAnimations } from "../animations/chickenBoss.anim.js";
 import { enemyBossPositions, obstaclePositions } from "../js/gameObjectPositions.js";
 import { checkAndSpawnEnemy } from "../js/spawnChicken.js";
 import { checkAndSpawnCoinRow } from "../js/spawnCoins.js";
+import { Cactus } from "./cactus.class.js";
 import { Character } from "./character.class.js";
 import { Chicken } from "./chicken.class.js";
 import { ChickenBoss } from "./chickenBoss.class.js";
@@ -9,7 +10,6 @@ import { Global } from "./global.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 import { Obstacle } from "./obstacle.class.js";
 import { Player } from "./player.class.js";
-import { Trigger } from "./trigger.class.js";
 import { UI } from "./ui.class.js";
 import { World } from "./world.class.js";
 
@@ -26,7 +26,7 @@ export class Game extends World {
         this.global = new Global();
         this.inGame = false;
         this.gameStarted = false;
-        this.debug = true;
+        this.debug = false;
         this.inputHandler = new InputHandler();
         this.inputCooldown = 0.2;
         this.setSpawnSettings();
@@ -48,24 +48,6 @@ export class Game extends World {
         this.lastObstacleSpawnTime = 0;
     }
 
-    StartIntro() {
-        if (!this.ui.onStart || this.global.inGame) return;
-        this.ui.menuActive = false;
-        this.ui.layer = 0; // Startmenü-Ebene
-        //this.ui.addMenuListeners();
-        //this.ui.drawInGameMenu(); // Zeichne das Startmenü
-        this.global.pause = true;
-    }
-
-    StartMenu() {
-        if (this.ui.onStart || this.global.inGame) return;
-        this.ui.menuActive = true;
-        this.ui.onStart = false;
-        this.ui.layer = 0; // Startmenü-Ebene
-        //this.ui.addMenuListeners();
-        //this.ui.drawInGameMenu(); // Zeichne das Startmenü
-        this.global.pause = true;
-    }
 
     setInGameUI() {
         this.ui.drawHealthBar(0, 50, 50);
@@ -90,18 +72,13 @@ export class Game extends World {
         this.initializeBosses();
         this.cameraX = 0;
         this.resetAudio();
-        //this.inputHandler.deactivate();
-        //this.inputHandler.activate();
+        this.inputHandler.deactivate();
+        this.inputHandler.activate();
     }
 
 
     Start() {
         this.ui = new UI(this);
-        //this.ui.inputHandler.deactivate();
-        //this.ui.inputHandler.activate();
-       /* this.StartIntro();
-        this.StartMenu();
-        this.StartGame();    */   
         this.lastFrameTime = performance.now();
         this.Update();
     }
@@ -118,17 +95,29 @@ export class Game extends World {
         });
     }
 
-    initializeObstacles() {
-        obstaclePositions.forEach(positionX => {
-            const preObstacle = new Obstacle('img/obstacles/stone.png', this.global.collisionManager, positionX, this.groundLevel - 30, 50, 30, 'Obstacle');
-            this.global.addGameObject(preObstacle);
-            this.global.collisionManager.addObject(preObstacle);
+    getObstacle(positionX, index) {
+        let obstacle, ground, width;
+        if (index % 3 === 0) {
+            ground = this.groundLevel - 60;
+            width = 45;
+            obstacle = new Cactus('img/obstacles/cactus.png', this.global.collisionManager, positionX, ground, width, 60, 'Cactus');
+        } else {
+            ground = this.groundLevel - 30;
+            width = 50;
+            obstacle = new Obstacle('img/obstacles/stone.png', this.global.collisionManager, positionX, ground, width, 30, 'Obstacle');
+        }
+        return obstacle;
+    }
 
-            const preUpperTrigger = new Trigger(this.global.collisionManager, positionX + 25, this.groundLevel - 38, 50, 5, this.groundLevel - 35, 'Trigger');
-            this.global.addGameObject(preUpperTrigger);
-            this.global.collisionManager.addObject(preUpperTrigger);
+    initializeObstacles() {
+        obstaclePositions.forEach((positionX, index) => {
+            const obstacle = this.getObstacle(positionX, index);
+            obstacle.global = this.global;
+            this.global.addGameObject(obstacle);
+            this.global.collisionManager.addObject(obstacle);
         });
     }
+
 
 
     resume() {
@@ -166,7 +155,9 @@ export class Game extends World {
 
     DeltaTime() {
         const currentFrameTime = performance.now();
-        const deltaTime = (currentFrameTime - this.lastFrameTime) / 1000;
+        const frameRate = (currentFrameTime - this.lastFrameTime) / 1000;
+        const maxDeltaTime = 1 / 30; // Begrenze auf 30 FPS
+        const deltaTime = Math.min(frameRate, maxDeltaTime);
         this.lastFrameTime = currentFrameTime;
         this.inputCooldown = this.inputCooldown || 0; // Initialisieren, falls nicht vorhanden
         this.inputCooldown -= deltaTime;
@@ -180,16 +171,16 @@ export class Game extends World {
         this.renderBackgrounds();
         this.UpdateGameObjects(deltaTime);
         this.setSceneGameObjects(deltaTime);
-        this.global.collisionManager.Update();
         this.drawUI();
         this.checkIfGameOver();
         this.ui.Update(deltaTime);
         this.removeOffScreenEnemies();
+        this.global.collisionManager.Update(deltaTime);
         requestAnimationFrame(() => this.Update());
     }
 
     checkIfGameOver() {
-        if(this.global.bossDefeated > 0 || this.global.health <= 0) {
+        if (this.global.bossDefeated > 0 || this.global.health <= 0) {
             this.ui.drawGameOver();
         }
     }
@@ -238,7 +229,7 @@ export class Game extends World {
                         this.global.collisionManager.destroy(obj);
                         return false; // Entferne den Gegner
                     }
-                } 
+                }
                 else obj.lastCharacterX = character.x;
             }
             return true; // Behalte das Objekt im Spiel, wenn es kein Chicken ist oder nicht entfernt werden soll

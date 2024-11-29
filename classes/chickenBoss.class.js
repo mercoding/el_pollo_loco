@@ -42,7 +42,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
     }
 
     attackSettings() {
-        this.attackDistanceThreshold = 170;
+        this.attackDistanceThreshold = 180;
         this.playerInAttackDistance = 300;
         this.targetPosition = 0;
         this.returning = false;
@@ -210,11 +210,22 @@ export class ChickenBoss extends Animatable(MovableObject) {
         }
     }
 
+    isPlayerAdjacent(other) {
+        if(!other.onGround) return;
+        const buffer = 22; // Spielraum
+        return (
+            other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
+            other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
+        );
+    }
+
+
     onCollisionEnter(other) {
         if (other.tag === "Player" && this.health > 0) {
-            setTimeout(() => {
-                other.takeDamage();
-            }, 800);
+            const direction = this.getCollisionDirection(other);
+            if ((direction === 'left' || direction === 'right')) {
+                if(!this.isPlayerAdjacent(other)) other.takeDamage();
+            }
         }
     }
 

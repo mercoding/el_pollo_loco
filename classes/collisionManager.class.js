@@ -1,6 +1,8 @@
 export class CollisionManager {
     constructor() {
         this.objects = [];
+        this.fixedTimeStep = 1 / 60; // 60 Mal pro Sekunde
+        this.accumulator = 0;
     }
 
     addObject(obj) {
@@ -15,6 +17,15 @@ export class CollisionManager {
                 obj.updateCollider();
             }
         });
+    }
+
+    Update(deltaTime) {
+        this.accumulator += deltaTime;
+
+        while (this.accumulator >= this.fixedTimeStep) {
+            this.checkCollisions();
+            this.accumulator -= this.fixedTimeStep;
+        }
     }
 
     destroy(obj) { this.objects = this.objects.filter(o => o !== obj); }
@@ -34,27 +45,15 @@ export class CollisionManager {
         this.objects.length = 0; // Leert die Liste der Objekte
     }
 
-    Update() {
+    checkCollisions() {
         for (let i = 0; i < this.objects.length; i++) {
-            const objA = this.objects[i];
             for (let j = i + 1; j < this.objects.length; j++) {
+                const objA = this.objects[i];
                 const objB = this.objects[j];
-
                 if (objA.isCollidingWith(objB)) {
-                    if (objA.collidingWith !== objB) {
-                        objA.onCollisionEnter(objB);
-                        objB.onCollisionEnter(objA);
-                        objA.collidingWith = objB;
-                        objB.collidingWith = objA;
-                    }
-                } else {
-                    if (objA.collidingWith === objB) {
-                        objA.onCollisionExit(objB);
-                        objB.onCollisionExit(objA);
-                        objA.collidingWith = null;
-                        objB.collidingWith = null;
-                    }
-                }
+                    objA.onCollisionEnter(objB);
+                    objB.onCollisionEnter(objA);
+                } 
             }
         }
     }

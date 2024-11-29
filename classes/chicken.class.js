@@ -1,13 +1,16 @@
+import { bottleAnimations } from "../animations/bottle.anim.js";
 import { pepeAnimations } from "../animations/character.anim.js";
 import { AudioManager } from "./AudioManager.class.js";
+import { Bottle } from "./bottle.class.js";
 import { Character } from "./character.class.js";
+import { CollectableItem } from "./collectableItem.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
 export class Chicken extends Animatable(MovableObject) {
-    global;
     squishAudio = new Audio('audio/GGGrasslands - Box Destroy.wav');
-    constructor(animationPaths, collisionManager, x, y, ...args) {
+    constructor(animationPaths, collisionManager, global, x, y, ...args) {
         super(animationPaths, collisionManager, x, y, ...args);
+        this.global = global;
         this.facingRight = true;
         this.setState('walk');
         this.speed = 50;
@@ -122,7 +125,7 @@ export class Chicken extends Animatable(MovableObject) {
             this.isSquished = true; // Gegner als zerquetscht markieren
             this.velocity.x = 0;
             this.setState('dead');
-            this.global += 10;
+            this.onDeath();
             this.dead = true;
             this.collidingWith = null;
             this.collisionManager.destroy(this);
@@ -142,7 +145,7 @@ export class Chicken extends Animatable(MovableObject) {
     }
 
     ifCollisionOnObstacle(other) {
-        if (other.tag === 'Obstacle') {
+        if (other.tag === 'Obstacle' || other.tag === 'Cactus') {
             if (!this.touched) {
                 this.velocity.x *= -1;
                 this.facingRight = !this.facingRight;
@@ -158,12 +161,22 @@ export class Chicken extends Animatable(MovableObject) {
         if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
             if ((direction === 'left' || direction === 'right')) {
-                setTimeout(() => { other.takeDamage(); }, 100);
+                if(!this.isPlayerAdjacent(other)) other.takeDamage();
             }
             if (direction === 'top' && other.velocity.y > 0) {
-                this.onHit(other); 
+                other.setState('jump');
+                this.onHit(other);
             }
         }
+    }
+
+    isPlayerAdjacent(other) {
+        if(!other.onGround) return;
+        const buffer = 22; // Spielraum
+        return (
+            other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
+            other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
+        );
     }
 
 
@@ -175,6 +188,16 @@ export class Chicken extends Animatable(MovableObject) {
         if (other.tag === 'Explosion') {
             other.onCollisionEnter(this);
         }
+    }
+
+    onDeath() {
+        // Lasse Flaschen fallen, wenn das Chicken besiegt wurde
+        const numBottles = Math.floor(Math.random(0, 10) * 10); // 1-2 Flaschen        
+        if (numBottles > 3) return;
+        const bottle = new CollectableItem("img/bottle/rotation/R-1.png", this.global.collisionManager, this.x, this.y - 50, 50, 60, 'Bottle');
+        bottle.global = this.global;
+        this.global.addGameObject(bottle);
+        this.global.collisionManager.addObject(bottle);
     }
 
 }

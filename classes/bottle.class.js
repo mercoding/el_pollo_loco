@@ -82,12 +82,20 @@ export class Bottle extends Animatable(MovableObject) {
         }, 200);
     }
 
+    isChickenAdjacent(other) {
+        const buffer = 5; // Spielraum
+        return (
+            other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
+            other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
+        );
+    }
+
     onCollisionEnter(other) {
         if (other.tag === "Ground" || other.tag === "Enemy" || other.tag === "Obstacle") {
             const distanceToPlayer = this.x - other.x;
             const distance = Math.abs(distanceToPlayer);
             if (other instanceof ChickenBoss) this.hitChickenBoss(other);
-            else if (other instanceof Chicken && distance <= 20) {
+            else if (other instanceof Chicken && !this.isChickenAdjacent(other) /*distance <= 20*/) {
                 if (other.tag === "Enemy") other.onHit(this);
                 this.explode();
             }

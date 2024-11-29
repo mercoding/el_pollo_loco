@@ -19,7 +19,8 @@ export class AttackState {
             // Springbewegung
             this.boss.velocity.y = -400;  // Leichter Sprung
             const directionToPlayer = this.boss.player.x <= this.boss.x ? -1 : 1;
-            this.boss.velocity.x = directionToPlayer * this.boss.speed * 3.5;  // Beschleunigte Bewegung auf Spieler zu
+            const strength = directionToPlayer < 0 ? 3.5 : 5.5
+            this.boss.velocity.x = directionToPlayer * this.boss.speed * strength;  // Beschleunigte Bewegung auf Spieler zu
             this.attackTriggered = true;
             this.boss.onGround = false;            
         } 

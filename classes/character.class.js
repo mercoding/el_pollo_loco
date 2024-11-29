@@ -13,13 +13,14 @@ export class Character extends Animatable(MovableObject) {
         this.isInvincible = false; // Unverwundbarkeit nach Schaden
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
         this.isHurt = false;
-        this.ground = 500;
+        this.ground = 505;
         this.onTop = false;
         this.lastFootstepTime = 0;
         this.footstepInterval = 0.3;
         this.isLeftFoot = true;
         this.isThrown = false;
         this.throwDuration = 1.0;
+        this.doubleJump = false;
     }
 
 
@@ -33,7 +34,7 @@ export class Character extends Animatable(MovableObject) {
     }
 
     ifPauseState() {
-        if(this.global.pause) {
+        if (this.global.pause) {
             this.velocity.x = 0;
             this.velocity.y = 0;
             this.setState('idle');
@@ -45,12 +46,13 @@ export class Character extends Animatable(MovableObject) {
     Update(ctx, deltaTime, screenX) {
         this.drawCharacter(ctx, screenX);
         this.updateAnimation(deltaTime);
-        if(this.ifPauseState()) return;
+        if (this.ifPauseState()) return;
         this.isOnGround(deltaTime);
         if (this.global.health < 1) this.setStateOnce('dead');
         else if (this.isHurt) this.setStateOnce('hurt');
         else this.move(deltaTime);
         this.lastFootstepTime += deltaTime;
+        this.updateJumpState(deltaTime);
         this.updateCollider();
     }
 
@@ -115,13 +117,8 @@ export class Character extends Animatable(MovableObject) {
     }
 
     playFootstepSound() {
-        if (this.isLeftFoot) {
-            this.global.audioManager.playSound('Left Step');
-        }
-        else {
-            this.global.audioManager.playSound('Right Step');
-        }
-
+        if (this.isLeftFoot) this.global.audioManager.playSound('Left Step');
+        else this.global.audioManager.playSound('Right Step');
         this.isLeftFoot = !this.isLeftFoot;
     }
 
@@ -134,15 +131,32 @@ export class Character extends Animatable(MovableObject) {
 
     jump() {
         if (this.onGround) {
+            // Erster Sprung vom Boden
             this.velocity.y = this.jumpStrength;
             this.onGround = false;
+            this.canDoubleJump = false; // Doppelsprung vorerst deaktiviert
+            this.reachedApex = false;  // Scheitelpunkt-Überwachung zurücksetzen
             this.global.audioManager.playSound('Jump');
             this.setStateOnce('jump');
+        } else if (this.reachedApex && !this.canDoubleJump) {
+            // Doppelsprung, nur wenn Scheitelpunkt erreicht wurde
+            this.velocity.y = this.jumpStrength + 100;
+            this.canDoubleJump = true; // Doppelsprung kann nur einmal genutzt werden
+            this.global.audioManager.playSound('Jump');
+            this.setStateOnce('jump'); // Animation für den Doppelsprung
         }
     }
 
+    updateJumpState(deltaTime) {
+        if (!this.onGround && !this.reachedApex && this.velocity.y >= 0) {
+            this.reachedApex = true; // Scheitelpunkt wurde erreicht
+        }
+    }
+
+
+
     isOnGround(deltaTime) {
-        if (!this.onGround) {
+        if (!this.onGround || this.collidingWith === null) {
             this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
         }
 
@@ -157,9 +171,9 @@ export class Character extends Animatable(MovableObject) {
 
     land() {
         if (!this.onGround) { // Überprüfen, ob der Charakter zuvor nicht auf dem Boden war
-            //this.global.audioManager.loadSound('Land', 'audio/Land.wav');
             this.global.audioManager.playSound('Land');
         }
+        this.doubleJump = false;
         this.jumping = false;
         this.onGround = true; // Charakter ist jetzt auf dem Boden
         this.velocity.y = 0; // Vertikale Geschwindigkeit auf Null setzen
@@ -219,7 +233,7 @@ export class Character extends Animatable(MovableObject) {
         if (other.dead) return;
         this.velocity.y = 0;
         if (other) {
-            this.velocity.y = Math.min(other.velocity.y, -200);;  // Setzt den „Bounce“-Effekt nach oben
+            this.velocity.y = Math.min(other.velocity.y, -200);  // Setzt den „Bounce“-Effekt nach oben
             other.squish();
             setTimeout(() => {
                 this.velocity.y = 0;
@@ -232,35 +246,22 @@ export class Character extends Animatable(MovableObject) {
     isDead() {
         if (this.global.health <= 0) {
             this.setStateOnce('dead');
-            //setTimeout(() => { this.global.gameOver = true;}, 8000);
         }
     }
 
     setStateOnce(newState) {
         if (this.state !== newState) this.setState(newState);
     }
-   
+
 
 
     onCollisionEnter(other) {
         const direction = this.getCollisionDirection(other);
-        if(other.tag == "Enemy" && !this.onGround) {
+        if (other.tag == "Enemy" && !this.onGround) {
             this.global.audioManager.playSound('Land');
         }
-        if (other.tag === 'Trigger') {
-            //if((other.x >= this.x + 20  || other.x <= this.x - 20) && other.onGround && other.y <= this.y)
-                //this.velocity.y = 200;
-        }
-        if(other.tag === "Chicken" && !this.onGround) {
+        if (other.tag === "Chicken" && !this.onGround) {
             this.global.audioManager.playSound('Land');
         }
     }
-
-    onCollisionExit(other) {
-        if(this.collidingWith === null) {
-            this.velocity.y = 200;
-        }
-    }
-
-
 }

@@ -10,7 +10,10 @@ export class Explosion extends Animatable(MovableObject) {
         this.timer = 0; // Zeit, wie lange die Explosion sichtbar bleibt
         this.duration = 0.5; // 0.5 Sekunden
         this.state = 'explode';
-        this.audioManager = new AudioManager();
+        //this.audioManager = new AudioManager();
+        //this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
+        this.global.audioManager.currentTime = 0;
+        this.global.audioManager.playSound('Explosion'); 
         this.play = false;
         
     }
@@ -42,10 +45,10 @@ export class Explosion extends Animatable(MovableObject) {
         
         //console.log('explode');
     }
-
+/*
     playSound() {
         if(!this.play) {
-            this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
+            //this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
             // Explosionseffekt (visuell und mechanisch)
             this.audioManager.currentTime = 0;
             this.audioManager.playSound('Explosion'); 
@@ -62,5 +65,5 @@ export class Explosion extends Animatable(MovableObject) {
         this.global.destroy(this);
         this.global.collisionManager.destroy(this);
         
-    }
+    }*/
 }
