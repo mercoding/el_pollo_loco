@@ -1,5 +1,6 @@
 import { InputHandler } from "../inputHandler.class.js";
 import { ClosedMenu } from "./closedMenu.class.js";
+import { Controls } from "./controls.class.js";
 import { GameMenu } from "./gameMenu.class.js";
 import { Intro } from "./intro.class.js";
 import { Settings } from "./settings.class.js";
@@ -15,7 +16,7 @@ export class StartMenu {
     }
 
     onStart() {
-        this.menuOptions = ['New Game', 'Settings', 'Quit']; // Menüoptionen
+        this.menuOptions = ['New Game', 'Controls', 'Settings', 'Quit']; // Menüoptionen
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.startMenuBackground.src = "img/wood.jpg";
         this.ui.global.audioManager.musicVolume = this.ui.global.getMusicVolumes();
@@ -79,7 +80,7 @@ export class StartMenu {
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 - 70 + index * 80;
             this.ui.ctx.fillStyle = this.selectedOption === index ? 'yellow' : 'white'; // Highlight
-            if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y + 80);
+            if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
             else this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
         });
     }
@@ -93,6 +94,16 @@ export class StartMenu {
             window.removeEventListener('keydown', this.pressAnyKeyListener);
             this.ui.menu.changeMenu(new ClosedMenu(this.ui));
             this.ui.game.StartGame();
+        }
+    }
+
+    Controls(selected) {
+        if (selected === 'Controls') {
+            this.ui.global.inGame = false;
+            this.ui.menuActive = true;
+            this.ui.intro = false;
+            this.selectedOption = 3;
+            this.ui.menu.changeMenu(new Controls(this.ui));
         }
     }
 
@@ -119,6 +130,7 @@ export class StartMenu {
     startMenu() {
         const selected = this.menuOptions[this.selectedOption];
         this.NewGame(selected);
+        this.Controls(selected);
         this.Settings(selected);
         this.Quit(selected);
     }
