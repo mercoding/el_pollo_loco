@@ -50,18 +50,18 @@ export class Controls {
         if (direction === 'up') {
             // Dreieck nach oben
             this.ui.ctx.moveTo(x, y); // Spitze
-            this.ui.ctx.lineTo(x - 15, y + 30); // Linke Ecke
-            this.ui.ctx.lineTo(x + 15, y + 30); // Rechte Ecke
+            this.ui.ctx.lineTo(x - 15, y + 25); // Linke Ecke
+            this.ui.ctx.lineTo(x + 15, y + 25); // Rechte Ecke
         } else if (direction === 'left') {
             // Dreieck nach links
             this.ui.ctx.moveTo(x, y); // Spitze
-            this.ui.ctx.lineTo(x + 30, y - 15); // Obere Ecke
-            this.ui.ctx.lineTo(x + 30, y + 15); // Untere Ecke
+            this.ui.ctx.lineTo(x + 25, y - 15); // Obere Ecke
+            this.ui.ctx.lineTo(x + 25, y + 15); // Untere Ecke
         } else if (direction === 'right') {
             // Dreieck nach rechts
             this.ui.ctx.moveTo(x, y); // Spitze
-            this.ui.ctx.lineTo(x - 30, y - 15); // Obere Ecke
-            this.ui.ctx.lineTo(x - 30, y + 15); // Untere Ecke
+            this.ui.ctx.lineTo(x - 25, y - 15); // Obere Ecke
+            this.ui.ctx.lineTo(x - 25, y + 15); // Untere Ecke
         }
         this.ui.ctx.closePath();
         this.ui.ctx.fillStyle = 'white';
@@ -96,46 +96,10 @@ export class Controls {
             } else if (control.label === 'Shoot') {
                 // Text für "Shoot"
                 this.ui.ctx.font = '25px Boogaloo';
-                this.ui.ctx.fillText("F", this.ui.canvas.width / 2 + 70, y + 10);
+                this.ui.ctx.fillText("F", this.ui.canvas.width / 2 + 80, y - 2.5);
             }
         });
-        // Zeichne die Steuerungsoptionen
-        /*
-        this.controlsMenu.forEach((control, index) => {
-            const y = 150 + index * 60;
     
-            // Zeichne das Label
-            this.ui.ctx.fillStyle = 'white';
-            this.ui.ctx.textAlign = 'left';
-            this.ui.ctx.fillText(control.label, this.ui.canvas.width / 2 - 90, y);
-    
-            if (control.image) {
-                // Bild laden und zeichnen
-                const img = new Image();
-                img.src = control.image;
-                img.onload = () => {
-                    this.ui.ctx.drawImage(img, this.ui.canvas.width / 2 + 50, y - 25, 50, 50);
-                };
-            } else if (control.label === 'Shoot') {
-                // Text für "Shoot"
-                this.ui.ctx.font = '25px Boogaloo';
-                this.ui.ctx.fillText("F", this.ui.canvas.width / 2 + 50, y + 10);
-            }
-            /*
-            if (control.label === 'Shoot') {
-                // F-Taste als Text darstellen
-                this.ui.ctx.font = '25px Boogaloo';
-                this.ui.ctx.fillText("F", this.ui.canvas.width / 2 + 90, y);
-            } else {
-                // Zeichne das Bild
-                const img = new Image();
-                img.src = control.image;
-                img.onload = () => {
-                    this.ui.ctx.drawImage(img, this.ui.canvas.width / 2 + 90, y, 200, 200);
-                };
-            }*/
-        //});
-
         // Zeichne den Back-Button
         this.ui.ctx.fillStyle = 'yellow';
         this.ui.ctx.textAlign = 'center';
