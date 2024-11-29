@@ -1,5 +1,6 @@
 import { chickenAnimations, smallChickenAnimations } from "../animations/chicken.anim.js";
 import { Chicken } from "../classes/chicken.class.js";
+import { Obstacle } from "../classes/obstacle.class.js";
 import { adjustCoinPosition } from "./spawnCoins.js";
 
 
@@ -62,7 +63,7 @@ export function checkAndSpawnEnemy(game, performance, character) {
         Math.abs(character.x - game.lastCharacterX) >= game.spawnDistance) {
         let spawnX = character.x + (character.velocity.x > 0 ? game.spawnDistance : -game.spawnDistance);
         spawnX = adjustCoinPosition(spawnX, 70);
-        if (!isChickenNearby(game, spawnX, game.groundLevel - 50, 500)) {
+        if (!isChickenNearby(game, spawnX, game.groundLevel - 50, 500) || !isChickenNearbyObstacle(game, spawnX, game.groundLevel - 50, 50)) {
             const enemy = getChicken(game, spawnX);
             enemy.global = game.global;
             setEnemyFacing(enemy, character);

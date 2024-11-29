@@ -81,44 +81,8 @@ export class GameMenu {
         this.drawInGameMenu();
     }
 
-    handleSettingsInput(event) {
-        const currentOption = this.settingsOptions[this.selectedOption];
-        this.ui.global.getVolumes();
-        if (event.key === 'ArrowUp') {
-            this.selectedOption = (this.selectedOption - 1 + this.settingsOptions.length) % this.settingsOptions.length;
-        } else if (event.key === 'ArrowDown') {
-            this.selectedOption = (this.selectedOption + 1) % this.settingsOptions.length;
-        } else if (event.key === 'ArrowLeft' && currentOption.type === 'slider') {
-            currentOption.value = Math.max(0, currentOption.value - 0.1); // Reduziert den Wert
-            if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
-            else if (currentOption.label === "Sound Volume") this.ui.global.setSoundVolumes(currentOption.value);
-        } else if (event.key === 'ArrowRight' && currentOption.type === 'slider') {
-            currentOption.value = Math.min(1, currentOption.value + 0.1); // Erhöht den Wert
-            if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
-            else if (currentOption.label === "Sound Volume") this.ui.global.setSoundVolumes(currentOption.value);
-            //this.global.audioManager.updateVolumes();
-        } else if (event.key === 'Enter' && currentOption.type === 'toggle') {
-            currentOption.value = !currentOption.value; // Umschalten
-            this.ui.global.setMusicOn(currentOption.value);
-        }
-        else if (event.key === 'Enter' && currentOption.type === 'button') {
-            this.lastLayer == 1 ? this.layer = 1 : this.layer = 0;
-            this.selectedOption = 1;
-            this.drawInGameMenu();
-        }
-        else if (event.key === 'Escape') {
-            this.lastLayer == 1 ? this.layer = 1 : this.layer = 0;
-            this.drawInGameMenu();
-        }
-    }
 
-
-
-    handleMenuMouseInput(event) {
-        const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
+    handleMenuMouseOptions(mouseX, mouseY) {
         // In-Game-Menü
         this.inGameMenuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 + index * 40;
@@ -128,8 +92,9 @@ export class GameMenu {
                 this.inGameMenu();
             }
         });
+    }
 
-
+    handleMenuMouseBackButton(mouseX, mouseY) {
         // "Back"-Option
         const backY = this.ui.canvas.height - 70;
         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
@@ -138,25 +103,66 @@ export class GameMenu {
             this.ui.menuActive = true;
             this.selectedOption = 0;
             this.ui.menu.changeMenu(new StartMenu(this.ui));
-            //this.layer === 1 ? this.drawInGameMenu() : this.drawStartMenu();
         }
+    }
 
+
+    handleMenuMouseInput(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        this.handleMenuMouseOptions(mouseX, mouseY);
+        this.handleMenuMouseBackButton(mouseX, mouseY);
     }
 
     applySettings(label, value) {
-        if (label === 'Music Volume') {
-            this.ui.global.audioManager.musicVolume = value;
-        } else if (label === 'Sound Volume') {
-            this.ui.global.audioManager.effectsVolume = value;
-        } else if (label === 'Music On/Off') {
+        if (label === 'Music Volume') this.ui.global.audioManager.musicVolume = value;
+        else if (label === 'Sound Volume') this.ui.global.audioManager.effectsVolume = value;
+        else if (label === 'Music On/Off') {
             this.ui.global.audioManager.musicOn = value;
-            if (value) {
-                this.ui.global.audioManager.playMusic('El Pollo Loco');
-            } else {
-                this.ui.global.audioManager.stopMusic('El Pollo Loco');
-            }
+            if (value) this.ui.global.audioManager.playMusic('El Pollo Loco');
+            else this.ui.global.audioManager.stopMusic('El Pollo Loco');
         }
-        else if(label === "Exit") {
+        else if(label === "Exit") this.ui.menu.changeMenu(new StartMenu(this.ui));
+    }
+
+    Resume(selected) {
+        if (selected === 'Resume' && !this.ui.global.gameOver) {
+            this.ui.global.inGame = true;
+            this.ui.menuActive = false;
+            this.ui.global.pause = false;
+            this.layer = 1;
+            this.ui.menu.changeMenu(new ClosedMenu(this.ui));
+        } 
+    }
+
+    NewGame(selected) {
+        if (selected === 'New Game') {
+            this.ui.global.inGame = true;
+            this.ui.menuActive = false;
+            this.ui.menu.changeMenu(new ClosedMenu(this.ui));
+            this.ui.game.StartGame();
+        } 
+    }
+
+
+    Settings(selected) {
+        if (selected === 'Settings') {
+            this.layer = 2; // Wechsel ins Settings-Menü
+            this.selectedOption = 0;
+            this.ui.menuActive = true;
+            this.ui.global.pause = true;
+            this.ui.menu.changeMenu(new Settings(this.ui));
+        }
+    }
+
+    Exit(selected) {
+        if (selected === 'Exit') {
+            this.ui.global.inGame = false;
+            this.ui.menuActive = true;
+            this.ui.global.pause = true;
+            this.selectedOption = 0;
+            this.layer = 0;
             this.ui.menu.changeMenu(new StartMenu(this.ui));
         }
     }
@@ -165,32 +171,10 @@ export class GameMenu {
 
     inGameMenu() {
         const selected = this.inGameMenuOptions[this.selectedOption];
-
-        if (selected === 'Resume' && !this.ui.global.gameOver) {
-            this.ui.global.inGame = true;
-            this.ui.menuActive = false;
-            this.ui.global.pause = false;
-            this.layer = 1;
-            this.ui.menu.changeMenu(new ClosedMenu(this.ui));
-        } else if (selected === 'New Game') {
-            this.ui.global.inGame = true;
-            this.ui.menuActive = false;
-            this.ui.menu.changeMenu(new ClosedMenu(this.ui));
-            this.ui.game.StartGame();
-        } else if (selected === 'Settings') {
-            this.layer = 2; // Wechsel ins Settings-Menü
-            this.selectedOption = 0;
-            this.ui.menuActive = true;
-            this.ui.global.pause = true;
-            this.ui.menu.changeMenu(new Settings(this.ui));
-        } else if (selected === 'Exit') {
-            this.ui.global.inGame = false;
-            this.ui.menuActive = true;
-            this.ui.global.pause = true;
-            this.selectedOption = 0;
-            this.layer = 0;
-            this.ui.menu.changeMenu(new StartMenu(this.ui));
-        }
+        this.Resume(selected);
+        this.NewGame(selected);
+        this.Settings(selected);
+        this.Exit(selected);
     }
 
     addMenuListeners() {

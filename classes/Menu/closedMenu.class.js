@@ -13,7 +13,8 @@ export class ClosedMenu {
         this.ui.global.pause = false;
         this.ui.menuAktive = false;
         this.ui.intro = false;
-        this.addMenuListeners();        
+        this.addMenuListeners();    
+        if (this.ui.global.getMusicOn()) this.ui.global.audioManager.playMusic('El Pollo Loco');    
     }
     onUpdate(deltaTime) {}
     onExit() {

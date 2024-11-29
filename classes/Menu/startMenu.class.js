@@ -84,36 +84,43 @@ export class StartMenu {
         });
     }
 
-    startMenu() {
-        //if (this.onStart) return;
-        this.lastLayer = 0;
-        const selected = this.menuOptions[this.selectedOption];
-
+    NewGame(selected) {
         if (selected === 'New Game') {
             this.ui.global.inGame = true;
             this.ui.menuActive = false;
             this.ui.intro = false;
             this.ui.global.pause = false;
             window.removeEventListener('keydown', this.pressAnyKeyListener);
-            //this.ui.game.StartGame();
             this.ui.menu.changeMenu(new ClosedMenu(this.ui));
             this.ui.game.StartGame();
-            //this.layer = 0;
-        } else if (selected === 'Settings') {
-            this.layer = 2; // Wechsel ins Settings-Menü
-            //this.drawSettingsMenu();
+        }
+    }
+
+    Settings(selected) {
+        if (selected === 'Settings') {
             this.ui.global.inGame = false;
-            this.ui.menuActive = false;
+            this.ui.menuActive = true;
+            this.ui.intro = false;
+            this.selectedOption = 0;
             this.ui.menu.changeMenu(new Settings(this.ui));
-        } else if (selected === 'Quit') {
+        }
+    }
+
+    Quit(selected) {
+        if (selected === 'Quit') {
             this.ui.global.inGame = false;
             this.ui.menuActive = false;
             this.ui.intro = true;
-            //this.onStart = true;
             this.selectedOption = 0;
-            //this.layer = 0;
             this.ui.menu.changeMenu(new Intro(this.ui));
         }
+    }
+
+    startMenu() {
+        const selected = this.menuOptions[this.selectedOption];
+        this.NewGame(selected);
+        this.Settings(selected);
+        this.Quit(selected);
     }
 
     drawStartMenu() {
@@ -158,39 +165,34 @@ export class StartMenu {
         }
     }
 
+    handleMenuMouseOptions(mouseX, mouseY) {
+        this.menuOptions.forEach((option, index) => {
+            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
+                mouseY > y - 20 && mouseY < y + 20) {
+                this.selectedOption = index;
+                this.startMenu();
+            }
+        });
+    }
 
-
-
-
-
+    handleMenuMouseQuitButton(mouseX, mouseY) {
+         const backY = this.ui.canvas.height - 70;
+         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
+             mouseY > backY - 20 && mouseY < backY + 20) {
+             this.layer = this.lastLayer;
+             this.ui.intro = true;
+             this.ui.menuActive = false;
+             this.selectedOption = 0;
+             this.ui.menu.changeMenu(new Intro(this.ui));
+         }
+    }
 
     handleMenuMouseInput(event) {
-        //if (!this.ui.menuActive) return;
-
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
-
-        //if (this.layer === 0) { // Startmenü
-            this.menuOptions.forEach((option, index) => {
-                const y = this.ui.canvas.height / 2 - 70 + index * 80;
-                if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-                    mouseY > y - 20 && mouseY < y + 20) {
-                    this.selectedOption = index;
-                    this.startMenu();
-                }
-            });
-        //}
-
-        // "Back"-Option
-        const backY = this.ui.canvas.height - 70;
-        if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > backY - 20 && mouseY < backY + 20) {
-            this.layer = this.lastLayer;
-            this.ui.intro = true;
-            this.ui.menuActive = false;
-            this.selectedOption = 0;
-            this.ui.menu.changeMenu(new Intro(this.ui));
-        }
+        this.handleMenuMouseOptions(mouseX, mouseY);
+        this.handleMenuMouseQuitButton(mouseX, mouseY);
     }
 }

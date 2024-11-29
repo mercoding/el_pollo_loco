@@ -103,10 +103,10 @@ export class Chicken extends Animatable(MovableObject) {
     }
 
     setBounceAfterSquish(other) {
-        other.velocity.y = 0;
+        //other.velocity.y = 0;
         if (other.tag === "Player") {
-            other.velocity.y = 200;   // Setzt den „Bounce“-Effekt nach oben
-            setTimeout(() => { other.velocity.y = Math.min(other.velocity.y, -100); }, 100);
+            //other.velocity.y = 200;   // Setzt den „Bounce“-Effekt nach oben
+            setTimeout(() => { other.velocity.y = Math.min(other.velocity.y, -150); }, 100);
             setTimeout(() => { other.velocity.y = 100; }, 250);
         }
     }
@@ -160,7 +160,7 @@ export class Chicken extends Animatable(MovableObject) {
             if ((direction === 'left' || direction === 'right')) {
                 setTimeout(() => { other.takeDamage(); }, 100);
             }
-            if (direction === 'top' && other.velocity.y > 0 && !other.onGround) {
+            if (direction === 'top' && other.velocity.y > 0) {
                 this.onHit(other); 
             }
         }

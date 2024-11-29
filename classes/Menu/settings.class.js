@@ -73,8 +73,54 @@ export class Settings {
         ctx.restore();
     }
 
+
+
+    drawSlider(option, isSelected, y) {
+        if (option.type === 'slider') {
+            const sliderX = this.ui.canvas.width / 2 - 100;
+            const sliderY = y + 10;
+            const sliderWidth = 200;
+            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            this.ui.ctx.fillText(option.label, this.ui.canvas.width / 2, y - 5);
+            this.ui.ctx.fillStyle = 'grey';
+            this.ui.ctx.fillRect(sliderX, sliderY, sliderWidth, 10);
+            const handleX = sliderX + option.value * sliderWidth;
+            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            this.ui.ctx.beginPath();
+            this.ui.ctx.arc(handleX, sliderY + 5, 8, 0, Math.PI * 2);
+            this.ui.ctx.fill();
+        } 
+    }
+
+    drawToggle(option, isSelected, y) {
+        if (option.type === 'toggle') {
+            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            const status = option.value ? 'On' : 'Off';
+            this.ui.ctx.fillText(`${option.label}: ${status}`, this.ui.canvas.width / 2, y);
+        }
+    }
+
+    drawButton(option, isSelected) {
+        if (option.type === 'button') {
+            // "Back"-Option zeichnen
+            const backY = this.ui.canvas.height - 70;
+            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, backY);
+        }
+    }
+
+    drawSettingsOptions() {
+        this.settingsOptions.forEach((option, index) => {
+            const y = 170 + index * 80;
+            const isSelected = this.selectedOption === index;
+
+            this.drawToggle(option, isSelected, y);
+            this.drawSlider(option, isSelected, y);
+            this.drawButton(option, isSelected);
+        });
+    }
+
     drawSettingsMenu() {
-        // Hintergrund zeichnen
         if (this.ui.global.inGame) {
             this.ui.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             this.ui.ctx.fillRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
@@ -82,51 +128,12 @@ export class Settings {
             this.drawBackground(this.background);
             this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 200, 300, 400, 20, "transparent", 2, 0.85);
         }
-
-        // Menü-Optionen zeichnen
-        this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.fillStyle = 'white';
-        this.ui.ctx.textAlign = 'center';
-
+        this.setFont();
         this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, 90);
-
-        this.settingsOptions.forEach((option, index) => {
-            const y = 170 + index * 80;
-            const isSelected = this.selectedOption === index;
-
-            if (option.type === 'slider') {
-                const sliderX = this.ui.canvas.width / 2 - 100;
-                const sliderY = y + 10;
-                const sliderWidth = 200;
-
-                this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-                this.ui.ctx.fillText(option.label, this.ui.canvas.width / 2, y - 5);
-
-                this.ui.ctx.fillStyle = 'grey';
-                this.ui.ctx.fillRect(sliderX, sliderY, sliderWidth, 10);
-
-                const handleX = sliderX + option.value * sliderWidth;
-                this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-                this.ui.ctx.beginPath();
-                this.ui.ctx.arc(handleX, sliderY + 5, 8, 0, Math.PI * 2);
-                this.ui.ctx.fill();
-            } else if (option.type === 'toggle') {
-                this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-                const status = option.value ? 'On' : 'Off';
-                this.ui.ctx.fillText(`${option.label}: ${status}`, this.ui.canvas.width / 2, y);
-            }
-            else if (option.type === 'button') {
-                // "Back"-Option zeichnen
-                const backY = this.ui.canvas.height - 70;
-                this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-                this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, backY);
-            }
-        });
+        this.drawSettingsOptions();
     }
 
     executeMenuOption() {
-        //if (this.onStart) return;
-
         this.ui.menuActive = true;
         this.ui.global.pause = true;
         if (!this.ui.global.inGame) this.ui.menu.changeMenu(new StartMenu(this.ui));
@@ -134,37 +141,46 @@ export class Settings {
 
     }
 
-    handleSettingsInput(event) {
-        const currentOption = this.settingsOptions[this.selectedOption];
-        this.ui.global.getVolumes();
-        if (event.key === 'ArrowUp') {
-            this.selectedOption = (this.selectedOption - 1 + this.settingsOptions.length) % this.settingsOptions.length;
-        } else if (event.key === 'ArrowDown') {
-            this.selectedOption = (this.selectedOption + 1) % this.settingsOptions.length;
-        } else if (event.key === 'ArrowLeft' && currentOption.type === 'slider') {
+    handleArrowKeyInput(event, currentOption) {
+        if (event.key === 'ArrowUp') this.selectedOption = (this.selectedOption - 1 + this.settingsOptions.length) % this.settingsOptions.length;
+        else if (event.key === 'ArrowDown') this.selectedOption = (this.selectedOption + 1) % this.settingsOptions.length;
+        else if (event.key === 'ArrowLeft' && currentOption.type === 'slider') {
             currentOption.value = Math.max(0, currentOption.value - 0.1); // Reduziert den Wert
             if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
             else if (currentOption.label === "Sound Volume") this.ui.global.setSoundVolumes(currentOption.value);
-        } else if (event.key === 'ArrowRight' && currentOption.type === 'slider') {
+        } 
+        else if (event.key === 'ArrowRight' && currentOption.type === 'slider') {
             currentOption.value = Math.min(1, currentOption.value + 0.1); // Erhöht den Wert
             if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
             else if (currentOption.label === "Sound Volume") this.ui.global.setSoundVolumes(currentOption.value);
-            //this.global.audioManager.updateVolumes();
-        } else if (event.key === 'Enter' && currentOption.type === 'toggle') {
+        }
+    }
+
+    handleEnterKeyInput(event, currentOption) {
+        if (event.key === 'Enter' && currentOption.type === 'toggle') {
             currentOption.value = !currentOption.value; // Umschalten
             this.ui.global.setMusicOn(currentOption.value);
         }
         else if (event.key === 'Enter' && currentOption.type === 'button') {
-            this.lastLayer == 1 ? this.layer = 1 : this.layer = 0;
             this.selectedOption = 1;
             if (!this.ui.global.inGame) this.ui.menu.changeMenu(new StartMenu(this.ui));
             else this.ui.menu.changeMenu(new GameMenu(this.ui));
 
         }
-        else if (event.key === 'Escape') {
-            this.lastLayer == 1 ? this.layer = 1 : this.layer = 0;
-            this.ui.menu.changeMenu(new StartMenu(this.ui));
+    }
+
+    handleEscapeKeyInput(event) {
+        if (event.key === 'Escape') {
+            this.ui.global.inGame ? this.ui.menu.changeMenu(new GameMenu(this.ui)) : this.ui.menu.changeMenu(new StartMenu(this.ui));
         }
+    }
+
+    handleSettingsInput(event) {
+        const currentOption = this.settingsOptions[this.selectedOption];
+        this.ui.global.getVolumes();
+        this.handleArrowKeyInput(event, currentOption);
+        this.handleEnterKeyInput(event, currentOption);
+        this.handleEscapeKeyInput(event);
     }
 
     handleSlider(option, mouseX, mouseY, y) {
@@ -216,17 +232,12 @@ export class Settings {
     }
 
     applySettings(label, value) {
-        if (label === 'Music Volume') {
-            this.ui.global.audioManager.musicVolume = value;
-        } else if (label === 'Sound Volume') {
-            this.ui.global.audioManager.effectsVolume = value;
-        } else if (label === 'Music On/Off') {
+        if (label === 'Music Volume') this.ui.global.audioManager.musicVolume = value;
+        else if (label === 'Sound Volume') this.ui.global.audioManager.effectsVolume = value;
+        else if (label === 'Music On/Off') {
             this.ui.global.audioManager.musicOn = value;
-            if (value) {
-                this.ui.global.audioManager.playMusic('El Pollo Loco');
-            } else {
-                this.ui.global.audioManager.stopMusic('El Pollo Loco');
-            }
+            if (value) this.ui.global.audioManager.playMusic('El Pollo Loco');
+            else this.ui.global.audioManager.stopMusic('El Pollo Loco');
         }
         else if (label === "Back") {
             if (!this.ui.global.inGame) this.ui.menu.changeMenu(new StartMenu(this.ui));
