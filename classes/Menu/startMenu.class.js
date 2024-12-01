@@ -11,6 +11,7 @@ export class StartMenu {
         this.inputHandler = new InputHandler();
         this.background = new Image();
         this.startMenuBackground = new Image();
+        this.buttonBackground = new Image();
         this.selectedOption = 0;
         this.onStart();
     }
@@ -18,7 +19,8 @@ export class StartMenu {
     onStart() {
         this.menuOptions = ['New Game', 'Controls', 'Settings', 'Quit']; // Menüoptionen
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
-        this.startMenuBackground.src = "img/wood.jpg";
+        this.startMenuBackground.src = "img/ui/panel.png";
+        this.buttonBackground.src = "img/ui/button.png";
         this.ui.global.audioManager.musicVolume = this.ui.global.getMusicVolumes();
         this.ui.global.audioManager.effectsVolume = this.ui.global.getSoundVolumes();
         this.ui.intro = false;
@@ -79,6 +81,7 @@ export class StartMenu {
         // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = this.selectedOption === index ? 'yellow' : 'white'; // Highlight
             if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
             else this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
@@ -137,10 +140,10 @@ export class StartMenu {
 
     drawStartMenu() {
         this.drawBackground(this.background);
-        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 200, 300, 400, 20, "transparent", 2, 0.85);
+        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
         this.setFont();
         const title = "Main Menu";
-        this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 150);
+        this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 140);
         this.drawStartMenuOptions();
     }
 
@@ -189,15 +192,15 @@ export class StartMenu {
     }
 
     handleMenuMouseQuitButton(mouseX, mouseY) {
-         const backY = this.ui.canvas.height - 70;
-         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-             mouseY > backY - 20 && mouseY < backY + 20) {
-             this.layer = this.lastLayer;
-             this.ui.intro = true;
-             this.ui.menuActive = false;
-             this.selectedOption = 0;
-             this.ui.menu.changeMenu(new Intro(this.ui));
-         }
+        const backY = this.ui.canvas.height - 70;
+        if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
+            mouseY > backY - 20 && mouseY < backY + 20) {
+            this.layer = this.lastLayer;
+            this.ui.intro = true;
+            this.ui.menuActive = false;
+            this.selectedOption = 0;
+            this.ui.menu.changeMenu(new Intro(this.ui));
+        }
     }
 
     handleMenuMouseInput(event) {
@@ -207,4 +210,21 @@ export class StartMenu {
         this.handleMenuMouseOptions(mouseX, mouseY);
         this.handleMenuMouseQuitButton(mouseX, mouseY);
     }
+
+    drawRoundedButton(ctx, x, y, width, height, radius) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+        ctx.fillStyle = '#3498db';
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + width, y, x + width, y + height, radius);
+        ctx.arcTo(x + width, y + height, x, y + height, radius);
+        ctx.arcTo(x, y + height, x, y, radius);
+        ctx.arcTo(x, y, x + width, y, radius);
+        ctx.closePath();
+        ctx.fill();
+    }
+
 }

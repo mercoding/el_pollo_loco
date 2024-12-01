@@ -15,6 +15,9 @@ export class Chicken extends Animatable(MovableObject) {
         this.setState('walk');
         this.speed = 50;
         this.dead = false;
+        this.gravity = 800; 
+        this.ground = 430;
+        this.onGround = true;
         this.touched = false;
         this.invincibilityDuration = 2.0;
         this.lastDamageTime = 0;
@@ -37,7 +40,8 @@ export class Chicken extends Animatable(MovableObject) {
         this.drawChicken(ctx, screenX);
         if (this.dead) return;
         if (this.global.pause || this.global.gameOver) return;
-        this.move(deltaTime, true);
+        this.isOnGround(deltaTime);
+        this.move(deltaTime);
         this.updateAnimation(deltaTime);
 
         if (this.soundCooldown > 0) {
@@ -98,11 +102,13 @@ export class Chicken extends Animatable(MovableObject) {
         ctx.translate(screenX + this.width, this.y);
         ctx.scale(-1, 1);  // Flipped für "nach links"
         ctx.drawImage(frame, 0, 0, this.width, this.height);
+        this.setVelocity(1, 0);
     }
 
     moveRight(frame, ctx, screenX) {
         ctx.translate(screenX, this.y);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
+        this.setVelocity(-1, 0);
     }
 
     setBounceAfterSquish(other) {
@@ -200,4 +206,23 @@ export class Chicken extends Animatable(MovableObject) {
         this.global.collisionManager.addObject(bottle);
     }
 
+    isOnGround(deltaTime) {
+        if (!this.onGround || this.collidingWith === null) {
+            this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
+        }
+
+        const groundY = this.ground; // Standardhöhe für den Boden
+        if (this.y + this.height >= groundY) {
+            this.y = groundY - this.height;
+            this.land();
+        }
+    }
+
+    land() {
+        if (!this.onGround) { // Überprüfen, ob der Charakter zuvor nicht auf dem Boden war
+            this.global.audioManager.playSound('Land');
+        }
+        this.onGround = true; // Charakter ist jetzt auf dem Boden
+        this.velocity.y = 0; // Vertikale Geschwindigkeit auf Null setzen
+    }
 }

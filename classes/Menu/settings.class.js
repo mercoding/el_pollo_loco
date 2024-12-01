@@ -8,6 +8,7 @@ export class Settings {
         this.inputHandler = new InputHandler();
         this.background = new Image();
         this.startMenuBackground = new Image();
+        this.buttonBackground = new Image();
         this.selectedOption = 0;
         this.onStart();
     }
@@ -20,7 +21,8 @@ export class Settings {
             { label: 'Back', type: 'button' },
         ];
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
-        this.startMenuBackground.src = "img/wood.jpg";
+        this.startMenuBackground.src = "img/ui/panel.png";
+        this.buttonBackground.src = "img/ui/button.png";
         this.ui.menuActive = true;
         this.addMenuListeners();
     }
@@ -94,6 +96,7 @@ export class Settings {
 
     drawToggle(option, isSelected, y) {
         if (option.type === 'toggle') {
+            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 110, y - 35, 220, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
             const status = option.value ? 'On' : 'Off';
             this.ui.ctx.fillText(`${option.label}: ${status}`, this.ui.canvas.width / 2, y);
@@ -104,6 +107,7 @@ export class Settings {
         if (option.type === 'button') {
             // "Back"-Option zeichnen
             const backY = this.ui.canvas.height - 70;
+            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 110, backY - 35, 220, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
             this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, backY);
         }
@@ -113,7 +117,6 @@ export class Settings {
         this.settingsOptions.forEach((option, index) => {
             const y = 170 + index * 80;
             const isSelected = this.selectedOption === index;
-
             this.drawToggle(option, isSelected, y);
             this.drawSlider(option, isSelected, y);
             this.drawButton(option, isSelected);
@@ -126,7 +129,7 @@ export class Settings {
             this.ui.ctx.fillRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
         } else {
             this.drawBackground(this.background);
-            this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 200, 300, 400, 20, "transparent", 2, 0.85);
+            this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
         }
         this.setFont();
         this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, 90);
@@ -268,5 +271,21 @@ export class Settings {
 
     clearCanvas() {
         this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
+    }
+
+    drawRoundedButton(ctx, x, y, width, height, radius) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+        ctx.fillStyle = '#3498db';
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + width, y, x + width, y + height, radius);
+        ctx.arcTo(x + width, y + height, x, y + height, radius);
+        ctx.arcTo(x, y + height, x, y, radius);
+        ctx.arcTo(x, y, x + width, y, radius);
+        ctx.closePath();
+        ctx.fill();
     }
 }

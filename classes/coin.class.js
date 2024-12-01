@@ -1,26 +1,20 @@
 import { AudioManager } from "./AudioManager.class.js";
 import { Character } from "./character.class.js";
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
+import { Animatable, MovableObject } from "./movableObject.class.js";
 
-export class Coin extends CollisionCapable(GameObject) {
+export class Coin extends Animatable(CollisionCapable(GameObject)) {
     global;
     static coinImage = new Image();
     static imageLoaded = false;
 
-    constructor(collisionManager, points, ...args) {
-        super(collisionManager, ...args);
+    constructor(animationPaths, collisionManager, points, ...args) {
+        super(animationPaths, collisionManager, ...args);
         this.dead = false;
         this.points = points;
         this.player = null;
-
-        // Nur einmal das Bild für alle Coins laden
-        if (!Coin.imageLoaded) {
-            Coin.coinImage.src = 'img/coin/coin_1.png';
-            Coin.imageLoaded = true;
-        }
-        //this.global.audioManager.loadSound('Coin', 'audio/Coins_Single_01.wav');
+        this.setState('idle');        
         this.updateCollider();
-        //this.Start();
     }
 
     Start() {
@@ -28,12 +22,22 @@ export class Coin extends CollisionCapable(GameObject) {
     }
 
     Update(ctx, deltaTime, screenX) {
-        if (!this.dead && this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
-            ctx.drawImage(Coin.coinImage, screenX, this.y, this.width, this.height);
-
-        }
-
+        this.drawCoin(ctx, screenX);
+        this.updateAnimation(deltaTime);
         this.onCollisionStay();
+        this.updateCollider();
+    }
+
+    drawCoin(ctx, screenX) {
+        const frame = this.getCurrentFrame();
+
+        if (frame) {
+            ctx.save();
+            ctx.translate(screenX, this.y);
+            ctx.scale(1, 1);
+            ctx.drawImage(frame, -15, -15, this.width + 30, this.height + 30);
+            ctx.restore();
+        }
     }
 
     // Prüfen, ob Coin im sichtbaren Bereich des Canvas ist

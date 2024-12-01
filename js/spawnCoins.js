@@ -1,3 +1,4 @@
+import { coinAnimations } from "../animations/coin.anim.js";
 import { Coin } from "../classes/coin.class.js";
 import { obstaclePositions } from "./gameObjectPositions.js";
 
@@ -48,7 +49,7 @@ function spawnCoin(game, character, direction, startX, baseYPosition, numberOfCo
         let y = isCurved(isCurvedRow, i, baseYPosition, numberOfCoins);
         x = adjustCoinPosition(x, 50);
         if (!isCoinNearby(game, x, y, 80)) {
-            const coin = new Coin(game.global.collisionManager, 1, x, y, 30, 30, 'Coin'); // Größe und Punktewert der Coins
+            const coin = new Coin(coinAnimations, game.global.collisionManager, 1, x, y, 30, 30, 'Coin'); // Größe und Punktewert der Coins
             coin.player = character;
             coin.global = game.global;
             game.global.addGameObject(coin);

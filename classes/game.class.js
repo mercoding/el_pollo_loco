@@ -7,6 +7,7 @@ import { Character } from "./character.class.js";
 import { Chicken } from "./chicken.class.js";
 import { ChickenBoss } from "./chickenBoss.class.js";
 import { Global } from "./global.class.js";
+import { Ground } from "./ground.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 import { Obstacle } from "./obstacle.class.js";
 import { Player } from "./player.class.js";
@@ -26,7 +27,7 @@ export class Game extends World {
         this.global = new Global();
         this.inGame = false;
         this.gameStarted = false;
-        this.debug = false;
+        this.debug = true;
         this.inputHandler = new InputHandler();
         this.inputCooldown = 0.2;
         this.setSpawnSettings();
@@ -64,6 +65,9 @@ export class Game extends World {
     StartGame() {
         if (this.ui.onStart && !this.global.inGame) return;
         this.global.reset();
+        const ground = new Ground('', this.global.collisionManager, -20000, this.groundLevel, 40000, 50, 'Ground');
+        this.global.addGameObject(ground);
+        this.global.collisionManager.addObject(ground);
         this.player = new Player(this.canvas, this.global);
         this.scrollSpeedClouds = 0.2;
         this.cloudsOffset = 0;

@@ -8,6 +8,7 @@ export class Controls {
         this.inputHandler = new InputHandler();
         this.background = new Image();
         this.startMenuBackground = new Image();
+        this.buttonBackground = new Image();
         this.upImg = new Image();
         this.leftImg = new Image();
         this.rightImg = new Image();
@@ -24,7 +25,8 @@ export class Controls {
         ];
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.upImg.src = "img/ui/up.png";
-        this.startMenuBackground.src = "img/wood.jpg";
+        this.startMenuBackground.src = "img/ui/panel.png";
+        this.buttonBackground.src = "img/ui/button.png";
         this.ui.menuActive = true;
         this.selectedOption = 6;
 
@@ -71,7 +73,7 @@ export class Controls {
 
     drawControlsMenu() {
         this.drawBackground(this.background);
-        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 200, 300, 400, 20, "transparent", 2, 0.85);
+        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
         this.setFont();
         
 
@@ -101,6 +103,8 @@ export class Controls {
         });
     
         // Zeichne den Back-Button
+        const backY = this.ui.canvas.height - 70;
+        this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, backY - 35, 200, 50, 20);
         this.ui.ctx.fillStyle = 'yellow';
         this.ui.ctx.textAlign = 'center';
         this.ui.ctx.font = '30px Boogaloo';
@@ -217,5 +221,22 @@ export class Controls {
 
     clearCanvas() {
         this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
+    }
+
+
+    drawRoundedButton(ctx, x, y, width, height, radius) {
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 5;
+        ctx.shadowOffsetY = 5;
+        ctx.fillStyle = '#3498db';
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + width, y, x + width, y + height, radius);
+        ctx.arcTo(x + width, y + height, x, y + height, radius);
+        ctx.arcTo(x, y + height, x, y, radius);
+        ctx.arcTo(x, y, x + width, y, radius);
+        ctx.closePath();
+        ctx.fill();
     }
 }
