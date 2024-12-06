@@ -1,4 +1,3 @@
-import { Character } from "./character.class.js";
 
 export class GameObject {
     constructor(x, y, width, height, tag = 'untagged') {

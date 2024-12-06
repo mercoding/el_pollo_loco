@@ -1,5 +1,5 @@
 import { pepeAnimations } from "../animations/character.anim.js";
-import { Character } from "./character.class.js";
+import { Charakter } from "./charakter.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 
 export class Player {
@@ -12,7 +12,7 @@ export class Player {
 
     initializeCharacter() {
         // Erstelle und füge den Charakter hinzu
-        this.character = new Character(pepeAnimations, this.global.collisionManager, this.canvas.width, 430, 50, 150, 'Player');
+        this.character = new Charakter(pepeAnimations, this.global.collisionManager, this.canvas.width, this.global.groundLevel, 50, 150, 'Player');
         this.character.global = this.global;
         this.global.addGameObject(this.character);
         this.global.collisionManager.addObject(this.character);

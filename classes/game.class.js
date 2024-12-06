@@ -3,12 +3,13 @@ import { enemyBossPositions, obstaclePositions } from "../js/gameObjectPositions
 import { checkAndSpawnEnemy } from "../js/spawnChicken.js";
 import { checkAndSpawnCoinRow } from "../js/spawnCoins.js";
 import { Cactus } from "./cactus.class.js";
-import { Character } from "./character.class.js";
+import { Charakter } from "./charakter.class.js";
 import { Chicken } from "./chicken.class.js";
 import { ChickenBoss } from "./chickenBoss.class.js";
 import { Global } from "./global.class.js";
 import { Ground } from "./ground.class.js";
 import { InputHandler } from "./inputHandler.class.js";
+import { ClosedMenu } from "./Menu/closedMenu.class.js";
 import { Obstacle } from "./obstacle.class.js";
 import { Player } from "./player.class.js";
 import { UI } from "./ui.class.js";
@@ -17,17 +18,17 @@ import { World } from "./world.class.js";
 export class Game extends World {
     obstacles = [];
     collisionManager;
-    constructor(global) {
+    constructor() {
         super();
-        this.global = global;
         this.gameObjects = [];
         this.lastFrameTime = 0;
-        this.groundLevel = this.canvas.height - 50;
+        //this.global.groundLevel = window.innerHeight - 64;
+        
         this.cameraX = 0;
-        this.global = new Global();
+        this.global = new Global(this.canvas);
         this.inGame = false;
         this.gameStarted = false;
-        this.debug = true;
+        this.debug = false;
         this.inputHandler = new InputHandler();
         this.inputCooldown = 0.2;
         this.setSpawnSettings();
@@ -63,19 +64,14 @@ export class Game extends World {
     }
 
     StartGame() {
-        if (this.ui.onStart && !this.global.inGame) return;
         this.global.reset();
-        const ground = new Ground('', this.global.collisionManager, -20000, this.groundLevel, 40000, 50, 'Ground');
+        const ground = new Ground('', this.global.collisionManager, -20000, this.global.groundLevel, 40000, 50, 'Ground');
         this.global.addGameObject(ground);
         this.global.collisionManager.addObject(ground);
         this.player = new Player(this.canvas, this.global);
-        this.scrollSpeedClouds = 0.2;
-        this.cloudsOffset = 0;
-        this.setInGameUI();
         this.initializeObstacles();
         this.initializeBosses();
         this.cameraX = 0;
-        this.resetAudio();
         this.inputHandler.deactivate();
         this.inputHandler.activate();
     }
@@ -84,15 +80,24 @@ export class Game extends World {
     Start() {
         this.ui = new UI(this);
         this.lastFrameTime = performance.now();
+        window.addEventListener('resize', () => this.resizeCanvas());
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.checkOrientation());
+        this.checkOrientation();
+        /*this.ui.global.inGame = true;
+        this.ui.global.pause = false;
+        this.ui.menuAktive = false;
+        this.ui.intro = false;*/
+        //this.StartGame();
         this.Update();
     }
 
 
     initializeBosses() {
         // Create obstacles at predefined positions to make them feel part of the scene
-        const character = this.global.gameObjects.find(obj => obj instanceof Character);
+        const character = this.global.gameObjects.find(obj => obj instanceof Charakter);
         enemyBossPositions.forEach(positionX => {
-            const boss = new ChickenBoss(chickenBossAnimations, this.global.collisionManager, character, positionX, this.groundLevel - 245, 250, 250, 'Enemy');
+            const boss = new ChickenBoss(chickenBossAnimations, this.global.collisionManager, character, positionX, this.global.groundLevel - 245, 250, 250, 'Enemy');
             boss.global = this.global;
             this.global.addGameObject(boss);
             this.global.collisionManager.addObject(boss);
@@ -102,11 +107,11 @@ export class Game extends World {
     getObstacle(positionX, index) {
         let obstacle, ground, width;
         if (index % 3 === 0) {
-            ground = this.groundLevel - 60;
+            ground = this.global.groundLevel - 60;
             width = 45;
             obstacle = new Cactus('img/obstacles/cactus.png', this.global.collisionManager, positionX, ground, width, 60, 'Cactus');
         } else {
-            ground = this.groundLevel - 30;
+            ground = this.global.groundLevel - 30;
             width = 50;
             obstacle = new Obstacle('img/obstacles/stone.png', this.global.collisionManager, positionX, ground, width, 30, 'Obstacle');
         }
@@ -168,20 +173,27 @@ export class Game extends World {
         return deltaTime;
     }
 
-    Update() {
-        //this.handleEscapeInput();
-        const deltaTime = this.DeltaTime();
-        this.ClearCanvas();
+    updateScene(deltaTime) {
+        if(!this.global.inGame) return;
+        this.setCamera();
         this.renderBackgrounds();
         this.UpdateGameObjects(deltaTime);
-        this.setSceneGameObjects(deltaTime);
+        this.setSceneGameObjects();
         this.drawUI();
         this.checkIfGameOver();
-        this.ui.Update(deltaTime);
         this.removeOffScreenEnemies();
         this.global.collisionManager.Update(deltaTime);
+    }
+
+    Update() {
+        const deltaTime = this.DeltaTime();
+        this.ClearCanvas();
+        this.updateScene(deltaTime);
+        this.ui.Update(deltaTime);
         requestAnimationFrame(() => this.Update());
     }
+
+    
 
     checkIfGameOver() {
         if (this.global.bossDefeated > 0 || this.global.health <= 0) {
@@ -192,23 +204,29 @@ export class Game extends World {
     drawUI() {
         this.ui.drawBottleBar(this.global.getBottles(), 10, 10);
         this.ui.drawHealthBar(this.global.health, 10, 45);
-        this.ui.drawCoinStatusBar(this.global.coins, 625, 10);
+        this.ui.drawCoinStatusBar(this.global.coins, this.canvas.width - 100, 10);
     }
 
-    setSceneGameObjects(deltaTime) {
+    setSceneGameObjects() {
         this.global.gameObjects.forEach(obj => {
-            if (obj instanceof Character) {     // Kamera nur auf den Charakter fokussieren
+            if (obj instanceof Charakter) {     // Kamera nur auf den Charakter fokussieren
                 checkAndSpawnEnemy(this, performance, obj);
                 checkAndSpawnCoinRow(this, performance, obj);
             }
         });
     }
 
+    setCamera() {
+        const character = this.global.gameObjects.find(obj => obj instanceof Charakter);
+        if (character === null) return;
+        this.cameraX = character.x - this.canvas.width / 2;
+    }
+
     UpdateGameObjects(deltaTime) {
-        const character = this.global.gameObjects.find(obj => obj instanceof Character);
+        const character = this.global.gameObjects.find(obj => obj instanceof Charakter);
         if (this.player) this.player.Update(this.ctx, deltaTime);
         this.global.gameObjects.forEach(obj => {
-            if (obj instanceof Character) {
+            if (obj instanceof Charakter) {
                 const screenX = this.cameraX = character.x - this.canvas.width / 2;
                 if (typeof obj.Update === 'function') obj.Update(this.ctx, deltaTime, screenX);
                 if (this.debug && typeof obj.drawCollider === 'function') obj.drawCollider(this.ctx, screenX);
@@ -222,19 +240,19 @@ export class Game extends World {
 
 
     removeOffScreenEnemies() {
-        const character = this.global.gameObjects.find(player => player instanceof Character);
+        const charakter = this.global.gameObjects.find(player => player instanceof Charakter);
         const minDistanceToRemoveEnemy = 1000; // Mindeststrecke in Pixeln (anpassbar)
         this.global.gameObjects = this.global.gameObjects.filter(obj => {
             if (obj instanceof Chicken) {
                 const screenX = obj.x - this.cameraX + this.canvas.width / 2;
                 if (screenX + obj.width < 0 || screenX > this.canvas.width) {
-                    const distanceMoved = Math.abs(character.x - obj.lastCharacterX);
+                    const distanceMoved = Math.abs(charakter.x - obj.lastCharacterX);
                     if (distanceMoved >= minDistanceToRemoveEnemy) {
                         this.global.collisionManager.destroy(obj);
                         return false; // Entferne den Gegner
                     }
                 }
-                else obj.lastCharacterX = character.x;
+                else obj.lastCharacterX = charakter.x;
             }
             return true; // Behalte das Objekt im Spiel, wenn es kein Chicken ist oder nicht entfernt werden soll
         });
@@ -243,5 +261,47 @@ export class Game extends World {
 
     ClearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    resizeCanvas() {
+        const aspectRatio = 16 / 9; // Beispiel: 16:9-Seitenverhältnis
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        if (windowWidth / windowHeight > aspectRatio) {
+            this.canvas.height = windowHeight;
+            this.canvas.width = windowHeight * aspectRatio;
+        } else {
+            this.canvas.width = windowWidth;
+            this.canvas.height = windowWidth / aspectRatio;
+        }
+        this.ctx.scale(this.canvas.width / this.defaultWidth, this.canvas.height / this.defaultHeight);
+        this.updateGroundLevel();
+    }
+
+    updateGroundLevel() {
+        this.global.groundLevel = this.canvas.height * 0.87;
+        this.global.gameObjects.forEach(obj => {
+            if(obj.tag === "Obstacle") obj.y = this.global.groundLevel - 30;
+            if(obj.tag === "Cactus") obj.y = this.global.groundLevel - 60;
+            if(obj.tag === "PLayer") obj.y = this.global.groundLevel - obj.height;
+            if(obj.tag === "Enemy") obj.y = this.global.groundLevel - obj.height;
+            if(obj.tag === "Ground") obj.y = this.global.groundLevel;
+            if(obj.tag === "Coin") obj.y = this.global.groundLevel - 100;
+        });
+    }
+
+
+    checkOrientation() {
+        if (window.innerWidth < 720) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.font = '20px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillStyle = 'white';
+            this.ctx.fillText(
+                'Please rotate your device to play.',
+                this.canvas.width / 2,
+                this.canvas.height / 2
+            );
+        }
     }
 }

@@ -21,6 +21,7 @@ export class GameMenu {
         this.ui.global.audioManager.musicVolume = this.ui.global.getMusicVolumes();
         this.ui.global.audioManager.effectsVolume = this.ui.global.getSoundVolumes();
         this.ui.global.pause = true;
+        this.ui.global.inGame = true;
         this.addMenuListeners();
     }
 
@@ -30,6 +31,7 @@ export class GameMenu {
 
     onExit() {
         this.removeMenuListeners();
+        this.ui.canvas.style.cursor = 'default';
     }
 
     setFont() {
@@ -140,6 +142,7 @@ export class GameMenu {
         if (selected === 'New Game') {
             this.ui.global.inGame = true;
             this.ui.menuActive = false;
+            this.ui.global.pause = false;
             this.ui.menu.changeMenu(new ClosedMenu(this.ui));
             this.ui.game.StartGame();
         } 
@@ -181,9 +184,12 @@ export class GameMenu {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.menuKeyInputInGameMenu(event);
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
+        this.mouseHoverListener = (event) => this.handleMouseHover(event);
+
 
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
+        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
     removeMenuListeners() {
@@ -196,9 +202,33 @@ export class GameMenu {
             this.ui.canvas.removeEventListener('click', this.mouseListener);
             this.mouseListener = null;
         }
+        if (this.mouseHoverListener) {
+            this.ui.canvas.removeEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
+            this.mouseHoverListener = null;
+        }
     }
 
     clearCanvas() {
         this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
+    }
+
+    handleMouseHover(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+    
+        let isHovering = false;
+    
+        this.inGameMenuOptions.forEach((option, index) => {
+            const y = this.ui.canvas.height / 2 + index * 40;
+            if (mouseX > this.ui.canvas.width / 2 - 50 && mouseX < this.ui.canvas.width / 2 + 50 &&
+                mouseY > y - 20 && mouseY < y + 10) {
+                isHovering = true;
+                this.selectedOption = index;
+            }
+        });
+    
+        // Setze den Cursor basierend auf Hover-Zustand
+        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
 }

@@ -32,7 +32,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.startPosition = x;
         this.speed = 50;
         this.gravity = 800;
-        this.ground = 435;
+        //this.ground = 435;
         this.onGround = true;
         this.dead = false;
         this.frameDuration = 0.3;
@@ -61,9 +61,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.soundCooldown = 0;
         this.cooldownDuration = 0.5;
         this.soundRepeatCounter = 0;
+        //this.ground = this.global.groundLevel + 100;
+
     }
 
     Update(ctx, deltaTime, screenX) {
+        this.audioManager.effectsVolume = this.global.getSoundVolumes();
         this.isOnGround(deltaTime);
         this.facingRight = this.player.x < this.x;
         this.currentDistanceToPlayer = this.calculateDistanceToPlayer();

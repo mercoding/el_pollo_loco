@@ -25,6 +25,8 @@ export class StartMenu {
         this.ui.global.audioManager.effectsVolume = this.ui.global.getSoundVolumes();
         this.ui.intro = false;
         this.ui.menuActive = true;
+        this.ui.global.inGame = false;
+        this.ui.global.pause = true;
         this.addMenuListeners();
     }
 
@@ -35,6 +37,7 @@ export class StartMenu {
 
     onExit() {
         this.removeMenuListeners();
+        this.ui.canvas.style.cursor = 'default';
     }
 
     setFont() {
@@ -163,9 +166,11 @@ export class StartMenu {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.menuKeyInputInStartMenu(event);
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
+        this.mouseHoverListener = (event) => this.handleMouseHover(event);
 
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
+        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
     removeMenuListeners() {
@@ -178,13 +183,17 @@ export class StartMenu {
             this.ui.canvas.removeEventListener('click', this.mouseListener);
             this.mouseListener = null;
         }
+        if (this.mouseHoverListener) {
+            this.ui.canvas.removeEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
+            this.mouseHoverListener = null;
+        }
     }
 
     handleMenuMouseOptions(mouseX, mouseY) {
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 - 70 + index * 80;
             if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-                mouseY > y - 20 && mouseY < y + 20) {
+                mouseY > y - 40 && mouseY < y + 20) {
                 this.selectedOption = index;
                 this.startMenu();
             }
@@ -227,4 +236,25 @@ export class StartMenu {
         ctx.fill();
     }
 
+    handleMouseHover(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+    
+        let isHovering = false;
+    
+        this.menuOptions.forEach((option, index) => {
+            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            if (mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
+                mouseY > y - 40 && mouseY < y + 20) {
+                isHovering = true;
+                this.selectedOption = index;
+            }
+        });
+    
+        // Setze den Cursor basierend auf Hover-Zustand
+        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
+    }
+    
+    
 }

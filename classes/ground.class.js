@@ -21,9 +21,11 @@ export class Ground extends CollisionCapable(GameObject) {
     Update(ctx, deltaTime, screenX) {
         this.ctx = ctx;
         deltaTime = deltaTime;
+        
         // Only render the obstacle if it is visible on the canvas
         if (this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
             ctx.drawImage(this.obstacleImage, screenX, this.y, this.width, this.height);
+            //this.y = this.global.groundLevel;
         }
         this.updateCollider();
     }
@@ -76,9 +78,9 @@ export class Ground extends CollisionCapable(GameObject) {
             if (direction === 'top') {
                 // Berechne die Differenz, falls der Charakter über dem Hindernis schwebt
                 const imageOffset = 82; // Passe diesen Wert an die Höhe des Bildes an
-                other.y = this.collider.y - other.collider.height + imageOffset;
-                
-                if(!this.isPlayerAdjacent(other))
+                if (other.tag === 'Player') other.y = this.collider.y - other.collider.height / 2;
+                else other.y = this.collider.y - other.collider.height;
+                //if(!this.isPlayerAdjacent(other))
                     other.land(); // Charakter landet
             } else {
                 this.isPlayerCollisionFromSide(other, direction);

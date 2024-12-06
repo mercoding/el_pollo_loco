@@ -42,7 +42,7 @@ function getChicken(game, spawnX) {
     const chicken = rand < 5 ? chickenAnimations : smallChickenAnimations;
     const height = rand < 5 ? 50 : 35;
     const width = rand < 5 ? 50 : 35;
-    const groundLevel = rand < 5 ? game.groundLevel - 50 : game.groundLevel - 35;
+    const groundLevel = rand < 5 ? game.global.groundLevel - 50 : game.global.groundLevel - 35;
     const enemy = new Chicken(chicken, game.global.collisionManager, game.global, spawnX, groundLevel, width, height, 'Enemy');
     return enemy;
 }
@@ -63,7 +63,7 @@ export function checkAndSpawnEnemy(game, performance, character) {
         Math.abs(character.x - game.lastCharacterX) >= game.spawnDistance) {
         let spawnX = character.x + (character.velocity.x > 0 ? game.spawnDistance : -game.spawnDistance);
         spawnX = adjustCoinPosition(spawnX, 70);
-        if (!isChickenNearby(game, spawnX, game.groundLevel - 50, 500) || !isChickenNearbyObstacle(game, spawnX, game.groundLevel - 50, 150)) {
+        if (!isChickenNearby(game, spawnX, game.global.groundLevel, 500) ^ !isChickenNearbyObstacle(game, spawnX, game.global.groundLevel, 500)) {
             const enemy = getChicken(game, spawnX);
             enemy.global = game.global;
             setEnemyFacing(enemy, character);

@@ -2,7 +2,6 @@ import { bottleAnimations } from "../animations/bottle.anim.js";
 import { pepeAnimations } from "../animations/character.anim.js";
 import { AudioManager } from "./AudioManager.class.js";
 import { Bottle } from "./bottle.class.js";
-import { Character } from "./character.class.js";
 import { CollectableItem } from "./collectableItem.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
@@ -16,7 +15,6 @@ export class Chicken extends Animatable(MovableObject) {
         this.speed = 50;
         this.dead = false;
         this.gravity = 800; 
-        this.ground = 430;
         this.onGround = true;
         this.touched = false;
         this.invincibilityDuration = 2.0;
@@ -34,10 +32,13 @@ export class Chicken extends Animatable(MovableObject) {
         this.audioManager.loadSound('Bot1', 'audio/Bot1.wav');
         this.audioManager.loadSound('Bot2', 'audio/Bot2.wav');
         this.audioManager.loadSound('Squish', 'audio/Bakaa4.wav');
+        //this.ground = this.global.groundLevel;
+
     }
 
     Update(ctx, deltaTime, screenX) {
         this.drawChicken(ctx, screenX);
+        this.audioManager.effectsVolume = this.global.getSoundVolumes();
         if (this.dead) return;
         if (this.global.pause || this.global.gameOver) return;
         this.isOnGround(deltaTime);
@@ -84,7 +85,6 @@ export class Chicken extends Animatable(MovableObject) {
 
     playWalkingSound() {
         let sound;
-
         if (this.soundRepeatCounter < 3) {
             // Spiele den ersten Sound zweimal
             sound = 'Bot2';
@@ -210,18 +210,9 @@ export class Chicken extends Animatable(MovableObject) {
         if (!this.onGround || this.collidingWith === null) {
             this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
         }
-
-        const groundY = this.ground; // Standardhöhe für den Boden
-        if (this.y + this.height >= groundY) {
-            this.y = groundY - this.height;
-            this.land();
-        }
     }
 
     land() {
-        if (!this.onGround) { // Überprüfen, ob der Charakter zuvor nicht auf dem Boden war
-            this.global.audioManager.playSound('Land');
-        }
         this.onGround = true; // Charakter ist jetzt auf dem Boden
         this.velocity.y = 0; // Vertikale Geschwindigkeit auf Null setzen
     }

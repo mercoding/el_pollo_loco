@@ -2,18 +2,17 @@ import { bottleAnimations } from "../animations/bottle.anim.js";
 import { Bottle } from "./bottle.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
-export class Character extends Animatable(MovableObject) {
+export class Charakter extends Animatable(MovableObject) {
     global;
     constructor(animationPaths, collisionManager, ...args) {
         super(animationPaths, collisionManager, ...args);
         this.facingRight = true;
-        this.onGround = true;
+        this.onGround = false;
         this.jumpStrength = -250; // Sprungkraft
         this.gravity = 800;       // Gravitation (Anpassbar)
         this.isInvincible = false; // Unverwundbarkeit nach Schaden
         this.invincibilityDuration = 1.0; // 1 Sekunde Unverwundbarkeit
         this.isHurt = false;
-        this.ground = 505;
         this.onTop = false;
         this.lastFootstepTime = 0;
         this.footstepInterval = 0.3;
@@ -31,6 +30,8 @@ export class Character extends Animatable(MovableObject) {
         this.global.audioManager.loadSound('Jump', 'audio/Jump.wav');
         this.global.audioManager.loadSound('Land', 'audio/Land.wav');
         this.global.audioManager.loadSound('Hurt', 'audio/Voice_Male_V2_Pain_Mono_01.wav');
+        //this.ground = this.global.groundLevel;
+
     }
 
     ifPauseState() {
@@ -159,12 +160,12 @@ export class Character extends Animatable(MovableObject) {
         if (!this.onGround || this.collidingWith === null) {
             this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
         }
-
+/*
         const groundY = this.ground; // Standardhöhe für den Boden
         if (this.y + this.height >= groundY) {
             this.y = groundY - this.height;
             this.land();
-        }
+        }*/
     }
 
 

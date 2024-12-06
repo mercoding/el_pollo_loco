@@ -65,7 +65,7 @@ export function checkAndSpawnCoinRow(game, performance, character) {
     const currentTime = performance.now() / 1000;
     const direction = character.facingRight ? 1 : -1;
     const startX = character.x + direction * (game.canvas.width / 2 + 100); // Spawnt Coins außerhalb des Canvas
-    const baseYPosition = game.groundLevel - 80; // Basis-Höhe für die Coin-Reihe
+    const baseYPosition = game.global.groundLevel - 100; // Basis-Höhe für die Coin-Reihe
     if (currentTime - game.lastSpawnTime < game.spawnCoinCooldown) return;
     const isCurvedRow = Math.random() < 0.7; // 50% Wahrscheinlichkeit für eine gebogene Reihe
     const numberOfCoins = Math.floor(Math.random() * 6) + 3;

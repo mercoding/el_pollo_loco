@@ -40,7 +40,7 @@ export class World {
     }
 
     setMountains() {
-        const mountainX = -(this.cameraX * this.scrollSpeedMountains) % this.canvas.width;
+        const mountainX = Math.floor(-(this.cameraX * this.scrollSpeedMountains) % this.canvas.width);
         this.ctx.drawImage(this.backgroundImageMountains, mountainX, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.backgroundImageMountains, mountainX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
         if (mountainX > 0) {
@@ -49,7 +49,7 @@ export class World {
     }
 
     setFarLayer() {
-        const farX = -(this.cameraX * this.scrollSpeedFar) % this.canvas.width;
+        const farX = Math.floor(-(this.cameraX * this.scrollSpeedFar) % this.canvas.width);
         this.ctx.drawImage(this.backgroundImageFar, farX, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.backgroundImageFar, farX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
         if (farX > 0) {
@@ -57,14 +57,17 @@ export class World {
         }
     }
 
+    
     setNearLayer() {
-        const nearX = -(this.cameraX * this.scrollSpeedNear) % this.canvas.width;
-         this.ctx.drawImage(this.backgroundImageNear, nearX, 0, this.canvas.width, this.canvas.height);
-         this.ctx.drawImage(this.backgroundImageNear, nearX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
-         if (nearX > 0) {
-             this.ctx.drawImage(this.backgroundImageNear, nearX - this.canvas.width, 0, this.canvas.width, this.canvas.height);
-         }
+        const nearX = Math.floor(-(this.cameraX * this.scrollSpeedNear) % this.canvas.width);
+    
+        this.ctx.drawImage(this.backgroundImageNear, nearX, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(this.backgroundImageNear, nearX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
+        if (nearX > 0) {
+            this.ctx.drawImage(this.backgroundImageNear, nearX - this.canvas.width, 0, this.canvas.width, this.canvas.height);
+        }
     }
+    
 
     renderBackgrounds() {
         this.setSky();

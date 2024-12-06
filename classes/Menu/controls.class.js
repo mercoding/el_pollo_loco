@@ -18,10 +18,10 @@ export class Controls {
 
     onStart() {
         this.controlsMenu = [
-            { label: 'Jump', image: 'triangle-up' },
+            { label: 'Jump/Double', image: 'triangle-up' },
             { label: 'Move Left', image: 'triangle-left' },
             { label: 'Move Right', image: 'triangle-right' },
-            { label: 'Shoot' },
+            { label: 'Shoot' }, { label: 'Back', type: 'button' },
         ];
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.upImg.src = "img/ui/up.png";
@@ -39,6 +39,7 @@ export class Controls {
 
     onExit() {
         this.removeMenuListeners();
+        this.ui.canvas.style.cursor = 'default';
     }
 
     setFont() {
@@ -47,68 +48,103 @@ export class Controls {
         this.ui.ctx.textAlign = 'center';
     }
 
-    drawTriangle(x, y, direction) {
-        this.ui.ctx.beginPath();
+    drawTriangleUp(x, y, direction) {
         if (direction === 'up') {
             // Dreieck nach oben
             this.ui.ctx.moveTo(x, y); // Spitze
             this.ui.ctx.lineTo(x - 15, y + 25); // Linke Ecke
             this.ui.ctx.lineTo(x + 15, y + 25); // Rechte Ecke
-        } else if (direction === 'left') {
+        }
+    }
+
+    drawTriangleLeft(x, y, direction) {
+        if (direction === 'left') {
             // Dreieck nach links
             this.ui.ctx.moveTo(x, y); // Spitze
             this.ui.ctx.lineTo(x + 25, y - 15); // Obere Ecke
             this.ui.ctx.lineTo(x + 25, y + 15); // Untere Ecke
-        } else if (direction === 'right') {
+        }
+    }
+
+    drawTriangleRight(x, y, direction) {
+        if (direction === 'right') {
             // Dreieck nach rechts
             this.ui.ctx.moveTo(x, y); // Spitze
             this.ui.ctx.lineTo(x - 25, y - 15); // Obere Ecke
             this.ui.ctx.lineTo(x - 25, y + 15); // Untere Ecke
         }
+    }
+
+    drawTriangle(x, y, direction) {
+        this.ui.ctx.beginPath();
+        this.drawTriangleUp(x, y, direction);
+        this.drawTriangleLeft(x, y, direction);
+        this.drawTriangleRight(x, y, direction);
         this.ui.ctx.closePath();
         this.ui.ctx.fillStyle = 'white';
         this.ui.ctx.fill();
     }
-    
+
+    drawButton(option, isSelected, y) {
+        if (option.type === 'button') {
+            // "Back"-Option zeichnen
+            this.selectedOption = 4;
+            this.ui.ctx.textAlign = 'center';
+            this.ui.ctx.font = '30px Boogaloo';
+            const backY = this.ui.canvas.height - 70;
+            if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 5, 200, 50, 20);
+            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, y + 30);
+        }
+    }
+
+    drawTriangles(option, y) {
+        if (option.image === 'triangle-up') {
+            this.drawTriangle(this.ui.canvas.width / 2 + 85, y - 25, 'up');
+        } else if (option.image === 'triangle-left') {
+            this.drawTriangle(this.ui.canvas.width / 2 + 70, y - 10, 'left');
+        } else if (option.image === 'triangle-right') {
+            this.drawTriangle(this.ui.canvas.width / 2 + 100, y - 10, 'right');
+        }
+    }
+
+    drawShootInput(option, y) {
+        if (option.label === 'Shoot') {
+            // Text für "Shoot"
+            this.ui.ctx.font = '25px Boogaloo';
+            this.ui.ctx.fillText("F", this.ui.canvas.width / 2 + 80, y - 2.5);
+        }
+    }
+
+    drawControls(option, index, y) {
+        //const y = 150 + index * 60;
+
+        // Zeichne das Label
+        this.ui.ctx.fillStyle = 'white';
+        this.ui.ctx.textAlign = 'left';
+        this.ui.ctx.fillText(option.label, this.ui.canvas.width / 2 - 100, y);
+        this.drawTriangles(option, y);
+        this.drawShootInput(option, y);
+    }
+
+    drawControlsOptions() {
+        this.controlsMenu.forEach((option, index) => {
+            const y = this.ui.canvas.height / 2 - 80 + index * 55;
+
+            const isSelected = this.selectedOption === index;
+            if (option.label !== 'Back') this.drawControls(option, index, y);
+            this.drawButton(option, isSelected, y);
+        });
+    }
+
 
     drawControlsMenu() {
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
         this.setFont();
-        
-
         this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.fillText("Controls", this.ui.canvas.width / 2, 90);
-
-        this.controlsMenu.forEach((control, index) => {
-            const y = 150 + index * 60;
-    
-            // Zeichne das Label
-            this.ui.ctx.fillStyle = 'white';
-            this.ui.ctx.textAlign = 'left';
-            this.ui.ctx.fillText(control.label, this.ui.canvas.width / 2 - 100, y);
-    
-            // Zeichne ein gezeichnetes Dreieck für die Steuerung
-            if (control.image === 'triangle-up') {
-                this.drawTriangle(this.ui.canvas.width / 2 + 85, y - 25, 'up');
-            } else if (control.image === 'triangle-left') {
-                this.drawTriangle(this.ui.canvas.width / 2 + 70, y - 10, 'left');
-            } else if (control.image === 'triangle-right') {
-                this.drawTriangle(this.ui.canvas.width / 2 + 100, y - 10, 'right');
-            } else if (control.label === 'Shoot') {
-                // Text für "Shoot"
-                this.ui.ctx.font = '25px Boogaloo';
-                this.ui.ctx.fillText("F", this.ui.canvas.width / 2 + 80, y - 2.5);
-            }
-        });
-    
-        // Zeichne den Back-Button
-        const backY = this.ui.canvas.height - 70;
-        this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, backY - 35, 200, 50, 20);
-        this.ui.ctx.fillStyle = 'yellow';
-        this.ui.ctx.textAlign = 'center';
-        this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, this.ui.canvas.height - 70);
+        this.ui.ctx.fillText("Controls", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 140);
+        this.drawControlsOptions();
     }
 
     drawBackground(background) {
@@ -146,7 +182,7 @@ export class Controls {
     }
 
 
-    
+
 
     executeMenuOption() {
         this.ui.menuActive = true;
@@ -156,7 +192,7 @@ export class Controls {
 
     }
 
-    
+
 
     handleEscapeKeyInput(event) {
         if (event.key === 'Escape') {
@@ -169,13 +205,13 @@ export class Controls {
         this.ui.menu.changeMenu(new StartMenu(this.ui));
     }
 
-    
-    handleButton(option, mouseX, mouseY) {
+
+    handleButton(option, mouseX, mouseY, y) {
         const backY = this.ui.canvas.height - 70;
-        if ((option.type === 'button') && mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > backY - 20 && mouseY < backY + 20) {
+        if ((option.type === 'button') && mouseX > this.ui.canvas.width / 2 - 95 && mouseX < this.ui.canvas.width / 2 + 110 &&
+            mouseY > y - 20 && mouseY < y + 30) {
             this.ui.menuActive = true;
-            this.applySettings(option.label, option.value);            
+            this.applySettings(option.label, option.value);
             this.selectedOption = 0;
         }
     }
@@ -187,8 +223,9 @@ export class Controls {
 
         // Settings-Menü
         this.controlsMenu.forEach((option, index) => {
-            const y = 170 + index * 80;
-            this.handleButton(option, mouseX, mouseY);
+            const y = this.ui.canvas.height / 2 - 80 + index * 60;
+
+            this.handleButton(option, mouseX, mouseY, y);
         });
     }
 
@@ -202,9 +239,12 @@ export class Controls {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.handleSettingsInput(event);
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
+        this.mouseHoverListener = (event) => this.handleMouseHover(event);
+
 
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
+        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
     removeMenuListeners() {
@@ -216,6 +256,10 @@ export class Controls {
         if (this.mouseListener) {
             this.ui.canvas.removeEventListener('click', this.mouseListener);
             this.mouseListener = null;
+        }
+        if (this.mouseHoverListener) {
+            this.ui.canvas.removeEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
+            this.mouseHoverListener = null;
         }
     }
 
@@ -238,5 +282,27 @@ export class Controls {
         ctx.arcTo(x, y, x + width, y, radius);
         ctx.closePath();
         ctx.fill();
+    }
+
+    handleMouseHover(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        let isHovering = false;
+
+        this.controlsMenu.forEach((option, index) => {
+            const y = this.ui.canvas.height / 2 - 80 + index * 65;
+
+            if (option.type === 'button') {
+                if (mouseX > this.ui.canvas.width / 2 - 95 && mouseX < this.ui.canvas.width / 2 + 110 &&
+                    mouseY > y - 40 && mouseY < y + 10) {
+                    isHovering = true;
+                }
+            }
+        });
+
+        // Setze den Cursor basierend auf Hover-Zustand
+        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
 }

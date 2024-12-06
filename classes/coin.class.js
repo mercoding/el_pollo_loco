@@ -1,5 +1,4 @@
 import { AudioManager } from "./AudioManager.class.js";
-import { Character } from "./character.class.js";
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
@@ -69,7 +68,7 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
     onCollisionEnter(other) {
         if (other.tag == 'Player') {
             
-            if (this.y > 310 || !other.onGround) {
+            if (this.y >= other.y + other.height / 2 - 100) {
                 setTimeout(() => {
                     this.destroyCoin();
                 }, 150); 

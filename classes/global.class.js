@@ -1,13 +1,10 @@
 import { AudioManager } from "./AudioManager.class.js";
-import { Character } from "./character.class.js";
-import { Chicken } from "./chicken.class.js";
-import { ChickenBoss } from "./chickenBoss.class.js";
-import { Coin } from "./coin.class.js";
 import { CollisionManager } from "./collisionManager.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 
 export class Global {
-    constructor() {
+    constructor(canvas) {
+        this.canvas = canvas;
         this.health = 100;
         this.bossDefeated = 0;
         this.bottles = 10;
@@ -25,7 +22,7 @@ export class Global {
         this.inputHandler = new InputHandler();
         this.pause = false;
         this.musicOn = true;
-        this.groundLevel = 430;
+        this.groundLevel = this.canvas.height * 0.87;
         this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
 
     }
@@ -105,7 +102,7 @@ export class Global {
          this.gameOver = false;
          this.bossDefeated = 0;
          this.pause = false;
-         this.groundLevel = 430;
+         this.groundLevel = this.canvas.height * 0.87;
     }
 
     reset() {

@@ -9,6 +9,8 @@ export class Settings {
         this.background = new Image();
         this.startMenuBackground = new Image();
         this.buttonBackground = new Image();
+        this.musicImage = new Image();
+        this.soundImage = new Image();
         this.selectedOption = 0;
         this.onStart();
     }
@@ -23,6 +25,9 @@ export class Settings {
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.startMenuBackground.src = "img/ui/panel.png";
         this.buttonBackground.src = "img/ui/button.png";
+        this.musicImage.src = 'img/ui/Music.png';
+        this.soundImage.src = 'img/ui/Sound.png';
+
         this.ui.menuActive = true;
         this.addMenuListeners();
     }
@@ -33,6 +38,7 @@ export class Settings {
 
     onExit() {
         this.removeMenuListeners();
+        this.ui.canvas.style.cursor = 'default';
     }
 
     setFont() {
@@ -79,11 +85,11 @@ export class Settings {
 
     drawSlider(option, isSelected, y) {
         if (option.type === 'slider') {
-            const sliderX = this.ui.canvas.width / 2 - 100;
-            const sliderY = y + 10;
-            const sliderWidth = 200;
-            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-            this.ui.ctx.fillText(option.label, this.ui.canvas.width / 2, y - 5);
+            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
+            option.label === 'Music Volume' ? this.ui.ctx.drawImage(this.musicImage, this.ui.canvas.width / 2 - 80, y - 30, 40, 40) : this.ui.ctx.drawImage(this.soundImage, this.ui.canvas.width / 2 - 75, y - 28, 35, 35);
+            const sliderX = this.ui.canvas.width / 2 - 30;
+            const sliderY = y - 15;
+            const sliderWidth = 100;
             this.ui.ctx.fillStyle = 'grey';
             this.ui.ctx.fillRect(sliderX, sliderY, sliderWidth, 10);
             const handleX = sliderX + option.value * sliderWidth;
@@ -96,30 +102,33 @@ export class Settings {
 
     drawToggle(option, isSelected, y) {
         if (option.type === 'toggle') {
-            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 110, y - 35, 220, 50, 20);
+            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
             const status = option.value ? 'On' : 'Off';
-            this.ui.ctx.fillText(`${option.label}: ${status}`, this.ui.canvas.width / 2, y);
+            this.ui.ctx.fillText(`Music: `, this.ui.canvas.width / 2 - 20, y);
+            this.ui.ctx.fillText(`${status}`, this.ui.canvas.width / 2 + 35, y);
         }
     }
 
-    drawButton(option, isSelected) {
+    drawButton(option, isSelected, y) {
         if (option.type === 'button') {
             // "Back"-Option zeichnen
             const backY = this.ui.canvas.height - 70;
-            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 110, backY - 35, 220, 50, 20);
+            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-            this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, backY);
+            this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, y);
         }
     }
 
     drawSettingsOptions() {
         this.settingsOptions.forEach((option, index) => {
-            const y = 170 + index * 80;
+            //const y = 170 + index * 80;
+            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+
             const isSelected = this.selectedOption === index;
             this.drawToggle(option, isSelected, y);
             this.drawSlider(option, isSelected, y);
-            this.drawButton(option, isSelected);
+            this.drawButton(option, isSelected, y);
         });
     }
 
@@ -132,7 +141,7 @@ export class Settings {
             this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
         }
         this.setFont();
-        this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, 90);
+        this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 140);
         this.drawSettingsOptions();
     }
 
@@ -189,7 +198,7 @@ export class Settings {
     handleSlider(option, mouseX, mouseY, y) {
         if (option.type === 'slider') {
             const sliderX = this.ui.canvas.width / 2 - 100;
-            const sliderY = y + 10;
+            const sliderY = y - 10;
             const sliderWidth = 200;
 
             if (mouseX > sliderX && mouseX < sliderX + sliderWidth &&
@@ -203,20 +212,19 @@ export class Settings {
 
     handleToggle(option, mouseX, mouseY, y) {
         if (option.type === 'toggle' &&
-            mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > y - 20 && mouseY < y + 20) {
+            mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
+            mouseY > y - 40 && mouseY < y + 20) {
             option.value = !option.value;
             this.applySettings(option.label, option.value);
         }
     }
 
-    handleButton(option, mouseX, mouseY) {
-        const backY = this.ui.canvas.height - 70;
-        if ((option.type === 'button') && mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > backY - 20 && mouseY < backY + 20) {
+    handleButton(option, mouseX, mouseY, y) {
+        if (option.type === 'button' &&
+            mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
+            mouseY > y - 40 && mouseY < y + 20) {
             this.ui.menuActive = true;
             this.applySettings(option.label, option.value);
-            this.selectedOption = 0;
         }
     }
 
@@ -227,10 +235,10 @@ export class Settings {
 
         // Settings-Menü
         this.settingsOptions.forEach((option, index) => {
-            const y = 170 + index * 80;
+            const y = this.ui.canvas.height / 2 - 70 + index * 80;
             this.handleSlider(option, mouseX, mouseY, y);
             this.handleToggle(option, mouseX, mouseY, y);
-            this.handleButton(option, mouseX, mouseY);
+            this.handleButton(option, mouseX, mouseY, y);
         });
     }
 
@@ -238,9 +246,7 @@ export class Settings {
         if (label === 'Music Volume') this.ui.global.audioManager.musicVolume = value;
         else if (label === 'Sound Volume') this.ui.global.audioManager.effectsVolume = value;
         else if (label === 'Music On/Off') {
-            this.ui.global.audioManager.musicOn = value;
-            if (value) this.ui.global.audioManager.playMusic('El Pollo Loco');
-            else this.ui.global.audioManager.stopMusic('El Pollo Loco');
+            this.ui.global.setMusicOn(value);
         }
         else if (label === "Back") {
             if (!this.ui.global.inGame) this.ui.menu.changeMenu(new StartMenu(this.ui));
@@ -252,9 +258,12 @@ export class Settings {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.handleSettingsInput(event);
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
+        this.mouseHoverListener = (event) => this.handleMouseHover(event);
+
 
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
+        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
     removeMenuListeners() {
@@ -266,6 +275,10 @@ export class Settings {
         if (this.mouseListener) {
             this.ui.canvas.removeEventListener('click', this.mouseListener);
             this.mouseListener = null;
+        }
+        if (this.mouseHoverListener) {
+            this.ui.canvas.removeEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
+            this.mouseHoverListener = null;
         }
     }
 
@@ -287,5 +300,26 @@ export class Settings {
         ctx.arcTo(x, y, x + width, y, radius);
         ctx.closePath();
         ctx.fill();
+    }
+
+    handleMouseHover(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+    
+        let isHovering = false;
+    
+        this.settingsOptions.forEach((option, index) => {
+            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            if (mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
+                mouseY > y - 40 && mouseY < y + 20) {
+                isHovering = true;
+                this.selectedOption = index;
+
+            }
+        });
+    
+        // Setze den Cursor basierend auf Hover-Zustand
+        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
 }
