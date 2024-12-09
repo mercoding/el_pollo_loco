@@ -84,7 +84,7 @@ export class Player {
         if (input.right) this.character.walk(true, 1, 100);
         else if (input.left) this.character.walk(false, -1, 100);
         else this.character.idle();
-        if (input.up) this.character.jump();
+        if (input.space || input.up) this.character.jump();
         if (input.fKey) this.character.throwBottle();
         this.character.move(deltaTime);
     }
@@ -198,7 +198,10 @@ export class Player {
             this.inputHandler.keysPressed.right = true;
             this.inputHandler.keysPressed.left = false;
         }
-        if (dy <= -1) this.inputHandler.keysPressed.up = true;
+        if (dy <= -1) {
+            this.inputHandler.keysPressed.up = true;
+            this.inputHandler.keysPressed.space = true;
+        }
     }
 
 
@@ -209,7 +212,7 @@ export class Player {
         this.character.velocity.y = 0; // Stoppe den Charakter, wenn der Finger losgelassen wird
         this.inputHandler.keysPressed.right = false;
         this.inputHandler.keysPressed.left = false;
-        this.inputHandler.keysPressed.up = false;
+        this.inputHandler.keysPressed.space = false;
     }
 
     detectMobileDevice() {

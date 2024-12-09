@@ -1,7 +1,7 @@
 export class InputHandler {
     constructor() {
         this.anyKey = false;
-        this.keysPressed = { left: false, right: false, up: false, down: false, enter: false, fKey: false, esc: false, any: false };
+        this.keysPressed = { left: false, right: false, up: false, down: false, enter: false, fKey: false, esc: false, any: false, space: false };
         this.keyDownListener = this.handleKeyDown.bind(this);
         this.keyUpListener = this.handleKeyUp.bind(this);
         this.active = false;
@@ -22,13 +22,14 @@ export class InputHandler {
 
     gameKeys(e) {
         switch (e.key) {
-            case 'ArrowRight':  this.keysPressed.right = true;  break;
-            case 'ArrowLeft':   this.keysPressed.left = true;   break;
-            case 'ArrowUp':     this.keysPressed.up = true;     break;
-            case 'ArrowDown':   this.keysPressed.down = true;   break;
-            case 'Enter':       this.keysPressed.enter = true;  break;
-            case 'Escape':      this.keysPressed.esc = true;    break;
-            case 'f':           this.keysPressed.fKey = true;   break;
+            case 'ArrowRight':  this.keysPressed.right = true;      break;
+            case 'ArrowLeft':   this.keysPressed.left = true;       break;
+            case 'ArrowUp':     this.keysPressed.up = true;         break;
+            case 'ArrowDown':   this.keysPressed.down = true;       break;
+            case 'Enter':       this.keysPressed.enter = true;      break;
+            case 'Escape':      this.keysPressed.esc = true;        break;
+            case ' ':           this.keysPressed.space = true;      break;
+            case 'f':           this.keysPressed.fKey = true;       break;
         }
     }
 
@@ -41,13 +42,14 @@ export class InputHandler {
     handleKeyUp(e) {
         this.keysPressed.any = false;
         switch (e.key) {
-            case 'ArrowRight':  this.keysPressed.right = false; break;
-            case 'ArrowLeft':   this.keysPressed.left = false;  break;
-            case 'ArrowUp':     this.keysPressed.up = false;    break;
-            case 'ArrowDown':   this.keysPressed.down = false;  break;
-            case 'Enter':       this.keysPressed.enter = false; break;
-            case 'Escape':      this.keysPressed.esc = false;   break;
-            case 'f':           this.keysPressed.fKey = false;  break;
+            case 'ArrowRight':  this.keysPressed.right = false;     break;
+            case 'ArrowLeft':   this.keysPressed.left = false;      break;
+            case 'ArrowUp':     this.keysPressed.up = false;        break;
+            case 'ArrowDown':   this.keysPressed.down = false;      break;
+            case 'Enter':       this.keysPressed.enter = false;     break;
+            case 'Escape':      this.keysPressed.esc = false;       break;
+            case ' ':           this.keysPressed.space = false;     break;
+            case 'f':           this.keysPressed.fKey = false;      break;
         }
     }
 
@@ -70,7 +72,7 @@ export class InputHandler {
 
     setMenuActive(active) {
         this.menuActive = active;
-        this.keysPressed = { left: false, right: false, up: false, down: false, enter: false, fKey: false, esc: false }; // Reset keys
+        this.keysPressed = { left: false, right: false, up: false, down: false, enter: false, fKey: false, esc: false, space: false }; // Reset keys
     }
 
     getInput() {
