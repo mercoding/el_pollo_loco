@@ -30,6 +30,13 @@ export class Controls {
         this.ui.menuActive = true;
         this.selectedOption = 6;
 
+        this.buttonPositions = this.controlsMenu.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 100,
+            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            width: 200,
+            height: 50,
+        }));
+
         this.addMenuListeners();
     }
 
@@ -218,8 +225,8 @@ export class Controls {
 
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
 
         // Settings-Menü
         this.controlsMenu.forEach((option, index) => {
@@ -286,23 +293,33 @@ export class Controls {
 
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
 
         let isHovering = false;
 
-        this.controlsMenu.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 80 + index * 65;
-
-            if (option.type === 'button') {
-                if (mouseX > this.ui.canvas.width / 2 - 95 && mouseX < this.ui.canvas.width / 2 + 110 &&
-                    mouseY > y - 40 && mouseY < y + 10) {
+        this.buttonPositions.forEach((button, index) => {
+            if (
+                mouseX > button.x &&
+                mouseX < button.x + button.width &&
+                mouseY > button.y &&
+                mouseY < button.y + button.height
+            ) {
+                if(index === 3) {
                     isHovering = true;
                 }
             }
         });
 
-        // Setze den Cursor basierend auf Hover-Zustand
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
+    }
+
+    updateUIPositions() {
+        this.buttonPositions = this.controlsMenu.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 100,
+            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            width: 200,
+            height: 50,
+        }));
     }
 }

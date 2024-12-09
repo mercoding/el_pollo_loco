@@ -75,5 +75,6 @@ export class InputHandler {
 
     getInput() {
         return this.keysPressed;
-    }
+    }    
+
 }

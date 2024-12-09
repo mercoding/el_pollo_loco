@@ -16,6 +16,7 @@ export class Bottle extends Animatable(MovableObject) {
         this.explosionRadius = 50; // Explosionsradius
         this.global.collisionManager.addObject(this);
         this.state = 'rotation';
+        this.hit = false;
         this.audioManager = new AudioManager();
         this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
         this.audioManager.effectsVolume = 0.5;
@@ -94,7 +95,10 @@ export class Bottle extends Animatable(MovableObject) {
         if (other.tag === "Ground" || other.tag === "Enemy" || other.tag === "Obstacle") {
             const distanceToPlayer = this.x - other.x;
             const distance = Math.abs(distanceToPlayer);
-            if (other instanceof ChickenBoss) this.hitChickenBoss(other);
+            if (other instanceof ChickenBoss && !this.hit) {
+                this.hitChickenBoss(other);
+                this.hit = true;
+            }
             else if (other instanceof Chicken && !this.isChickenAdjacent(other) /*distance <= 20*/) {
                 if (other.tag === "Enemy") other.onHit(this);
                 this.explode();

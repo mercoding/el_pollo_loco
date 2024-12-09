@@ -66,7 +66,7 @@ export class Cactus extends CollisionCapable(GameObject) {
     }
 
     isPlayerAdjacent(other) {
-        const buffer = 5; // Spielraum
+        const buffer = 55; // Spielraum
         return (
             other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
             other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis

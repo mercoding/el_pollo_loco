@@ -22,11 +22,18 @@ export class GameMenu {
         this.ui.global.audioManager.effectsVolume = this.ui.global.getSoundVolumes();
         this.ui.global.pause = true;
         this.ui.global.inGame = true;
+        this.buttonPositions = this.settingsOptions.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 50,
+            y: this.ui.canvas.height / 2 - 30 + index * 40,
+            width: 100,
+            height: 30,
+        }));
         this.addMenuListeners();
     }
 
     onUpdate(deltaTime) {
         this.drawInGameMenu();
+        this.updateUIPositions();
     }
 
     onExit() {
@@ -111,8 +118,8 @@ export class GameMenu {
 
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
         this.handleMenuMouseOptions(mouseX, mouseY);
         this.handleMenuMouseBackButton(mouseX, mouseY);
     }
@@ -212,23 +219,36 @@ export class GameMenu {
         this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
     }
 
+
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
     
         let isHovering = false;
     
-        this.inGameMenuOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 + index * 40;
-            if (mouseX > this.ui.canvas.width / 2 - 50 && mouseX < this.ui.canvas.width / 2 + 50 &&
-                mouseY > y - 20 && mouseY < y + 10) {
+        this.buttonPositions.forEach((button, index) => {
+            if (
+                mouseX > button.x &&
+                mouseX < button.x + button.width &&
+                mouseY > button.y &&
+                mouseY < button.y + button.height
+            ) {
                 isHovering = true;
                 this.selectedOption = index;
             }
         });
     
-        // Setze den Cursor basierend auf Hover-Zustand
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
+    }
+    
+
+    updateUIPositions() {
+        this.buttonPositions = this.settingsOptions.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 50,
+            y: this.ui.canvas.height / 2 - 30 + index * 40,
+            width: 100,
+            height: 30,
+        }));
     }
 }

@@ -23,7 +23,7 @@ export class Game extends World {
         this.gameObjects = [];
         this.lastFrameTime = 0;
         //this.global.groundLevel = window.innerHeight - 64;
-        
+
         this.cameraX = 0;
         this.global = new Global(this.canvas);
         this.inGame = false;
@@ -39,7 +39,7 @@ export class Game extends World {
         this.spawnCoinCooldown = 5; // Sekunden zwischen dem Spawnen eines Gegners
         this.lastEnemySpawnTime = 0; // Letzte Spawn-Zeit für Gegner
         this.minDistanceBetweenEnemies = 300; // Mindestabstand zwischen Gegnern
-        this.spawnDistance = 350;
+        this.spawnDistance = 650;
         this.lastCharacterX = 0;
         this.coinSpacing = 50;
 
@@ -80,8 +80,8 @@ export class Game extends World {
     Start() {
         this.ui = new UI(this);
         this.lastFrameTime = performance.now();
-        window.addEventListener('resize', () => this.resizeCanvas());
-        this.resizeCanvas();
+        //window.addEventListener('resize', () => this.resizeCanvas());
+        //this.resizeCanvas();
         window.addEventListener('resize', () => this.checkOrientation());
         this.checkOrientation();
         /*this.ui.global.inGame = true;
@@ -174,7 +174,7 @@ export class Game extends World {
     }
 
     updateScene(deltaTime) {
-        if(!this.global.inGame) return;
+        if (!this.global.inGame) return;
         this.setCamera();
         this.renderBackgrounds();
         this.UpdateGameObjects(deltaTime);
@@ -189,11 +189,11 @@ export class Game extends World {
         const deltaTime = this.DeltaTime();
         this.ClearCanvas();
         this.updateScene(deltaTime);
-        this.ui.Update(deltaTime);
+        this.ui.Update(deltaTime);        
         requestAnimationFrame(() => this.Update());
     }
 
-    
+
 
     checkIfGameOver() {
         if (this.global.bossDefeated > 0 || this.global.health <= 0) {
@@ -264,29 +264,39 @@ export class Game extends World {
     }
 
     resizeCanvas() {
-        const aspectRatio = 16 / 9; // Beispiel: 16:9-Seitenverhältnis
+        const aspectRatio = 16 / 9; // 16:9-Seitenverhältnis
+    
+        // Aktuelle Fenstergröße
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
+    
+        // Berechne die ideale Breite und Höhe basierend auf dem Seitenverhältnis
         if (windowWidth / windowHeight > aspectRatio) {
+            // Fenster ist breiter als 16:9
             this.canvas.height = windowHeight;
             this.canvas.width = windowHeight * aspectRatio;
         } else {
+            // Fenster ist schmaler oder gleich 16:9
             this.canvas.width = windowWidth;
             this.canvas.height = windowWidth / aspectRatio;
         }
-        this.ctx.scale(this.canvas.width / this.defaultWidth, this.canvas.height / this.defaultHeight);
-        this.updateGroundLevel();
+    
+    
+        // Aktualisiere Skalierungsfaktoren für UI und Spielobjekte
+        this.scaleX = this.canvas.width / 1280; // Basierend auf der Design-Breite
+        this.scaleY = this.canvas.height / 720; // Basierend auf der Design-Höhe
     }
+    
 
     updateGroundLevel() {
         this.global.groundLevel = this.canvas.height * 0.87;
         this.global.gameObjects.forEach(obj => {
-            if(obj.tag === "Obstacle") obj.y = this.global.groundLevel - 30;
-            if(obj.tag === "Cactus") obj.y = this.global.groundLevel - 60;
-            if(obj.tag === "PLayer") obj.y = this.global.groundLevel - obj.height;
-            if(obj.tag === "Enemy") obj.y = this.global.groundLevel - obj.height;
-            if(obj.tag === "Ground") obj.y = this.global.groundLevel;
-            if(obj.tag === "Coin") obj.y = this.global.groundLevel - 100;
+            if (obj.tag === "Obstacle") obj.y = this.global.groundLevel - 30;
+            if (obj.tag === "Cactus") obj.y = this.global.groundLevel - 60;
+            if (obj.tag === "PLayer") obj.y = this.global.groundLevel - obj.height;
+            if (obj.tag === "Enemy") obj.y = this.global.groundLevel - obj.height;
+            if (obj.tag === "Ground") obj.y = this.global.groundLevel;
+            if (obj.tag === "Coin") obj.y = this.global.groundLevel - 100;
         });
     }
 
@@ -303,5 +313,15 @@ export class Game extends World {
                 this.canvas.height / 2
             );
         }
+    }
+
+    detectMobileDevice() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+
+        // Kombiniere User-Agent-Abfrage und Touch-Unterstützung
+        const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+
+        return isMobile || isTouch;
     }
 }

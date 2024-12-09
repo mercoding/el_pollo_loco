@@ -27,12 +27,19 @@ export class StartMenu {
         this.ui.menuActive = true;
         this.ui.global.inGame = false;
         this.ui.global.pause = true;
+        this.buttonPositions = this.menuOptions.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 110,
+            y: this.ui.canvas.height / 2 - (index * 80),
+            width: 200,
+            height: 50,
+        }));
         this.addMenuListeners();
     }
 
     onUpdate(deltaTime) {
 
         this.drawStartMenu();
+        this.updateUIPositions();
     }
 
     onExit() {
@@ -133,7 +140,7 @@ export class StartMenu {
         }
     }
 
-    startMenu() {
+    selectOption() {
         const selected = this.menuOptions[this.selectedOption];
         this.NewGame(selected);
         this.Controls(selected);
@@ -141,7 +148,28 @@ export class StartMenu {
         this.Quit(selected);
     }
 
-    drawStartMenu() {
+    getPanelWidth() {
+        const height = this.getPanelHeight();
+        const diff = height < 450 ? height / 6 : height / 3;         
+        let width = this.getPanelHeight() - diff;
+        return width;
+    }
+
+    getPanelHeight() {
+        if(window.innerHeight > 460) return 450;
+        else return 350;
+    }
+
+    centerPanelX() {
+        const width = this.getPanelWidth();                
+        return this.ui.canvas.width / 2 - width / 2;
+    }
+    centerPanelY() {
+        const height = this.getPanelHeight();
+        return this.ui.canvas.height / 2 - height / 2;
+    }
+
+    drawStartMenu() {        
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
         this.setFont();
@@ -154,7 +182,7 @@ export class StartMenu {
         const input = this.inputHandler.getInput();
         if (input.up) this.selectedOption = (this.selectedOption - 1 + this.menuOptions.length) % this.menuOptions.length;
         else if (input.down) this.selectedOption = (this.selectedOption + 1) % this.menuOptions.length;
-        else if (input.enter) this.startMenu();
+        else if (input.enter) this.selectOption();
     }
 
 
@@ -188,20 +216,35 @@ export class StartMenu {
             this.mouseHoverListener = null;
         }
     }
-
+/*
     handleMenuMouseOptions(mouseX, mouseY) {
         this.menuOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            const y = this.ui.canvas.height / 2 - 110 + index * 80;
             if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
                 mouseY > y - 40 && mouseY < y + 20) {
                 this.selectedOption = index;
                 this.startMenu();
             }
         });
-    }
+    }*/
+/*
+    handleMenuMouseOptions(mouseX, mouseY) {    
+        this.buttonPositions.forEach((button, index) => {
+            if (
+                mouseX > button.x &&
+                mouseX < button.x + button.width &&
+                mouseY > button.y &&
+                mouseY < button.y + button.height
+            ) {
+                this.selectedOption = index;
+                this.startMenu();
+            }
+        });
+    }*/
+    
 
     handleMenuMouseQuitButton(mouseX, mouseY) {
-        const backY = this.ui.canvas.height - 70;
+        const backY = this.ui.canvas.height - 80;
         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
             mouseY > backY - 20 && mouseY < backY + 20) {
             this.layer = this.lastLayer;
@@ -214,10 +257,21 @@ export class StartMenu {
 
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-        this.handleMenuMouseOptions(mouseX, mouseY);
-        this.handleMenuMouseQuitButton(mouseX, mouseY);
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
+    
+        this.buttonPositions.forEach((button, index) => {
+            if (
+                mouseX > button.x &&
+                mouseX < button.x + button.width &&
+                mouseY > button.y &&
+                mouseY < button.y + button.height
+            ) {
+                this.selectedOption = index;
+                this.selectOption();
+            }
+        });
+        
     }
 
     drawRoundedButton(ctx, x, y, width, height, radius) {
@@ -236,6 +290,7 @@ export class StartMenu {
         ctx.fill();
     }
 
+    /*
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = event.clientX - rect.left;
@@ -254,7 +309,38 @@ export class StartMenu {
     
         // Setze den Cursor basierend auf Hover-Zustand
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
+    }*/
+
+    handleMouseHover(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
+    
+        let isHovering = false;
+    
+        this.buttonPositions.forEach((button, index) => {
+            if (
+                mouseX > button.x &&
+                mouseX < button.x + button.width &&
+                mouseY > button.y &&
+                mouseY < button.y + button.height
+            ) {
+                isHovering = true;
+                this.selectedOption = index;
+            }
+        });
+    
+        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
     
+
+    updateUIPositions() {
+        this.buttonPositions = this.menuOptions.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 100,
+            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            width: 200,
+            height: 50,
+        }));
+    }
     
 }

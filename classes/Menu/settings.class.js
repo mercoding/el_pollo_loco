@@ -27,6 +27,12 @@ export class Settings {
         this.buttonBackground.src = "img/ui/button.png";
         this.musicImage.src = 'img/ui/Music.png';
         this.soundImage.src = 'img/ui/Sound.png';
+        this.buttonPositions = this.settingsOptions.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 110,
+            y: this.ui.canvas.height / 2 - (index * 80),
+            width: 200,
+            height: 50,
+        }));
 
         this.ui.menuActive = true;
         this.addMenuListeners();
@@ -34,6 +40,7 @@ export class Settings {
 
     onUpdate(deltaTime) {
         this.drawSettingsMenu();
+        this.updateUIPositions();
     }
 
     onExit() {
@@ -85,7 +92,7 @@ export class Settings {
 
     drawSlider(option, isSelected, y) {
         if (option.type === 'slider') {
-            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
+            if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             option.label === 'Music Volume' ? this.ui.ctx.drawImage(this.musicImage, this.ui.canvas.width / 2 - 80, y - 30, 40, 40) : this.ui.ctx.drawImage(this.soundImage, this.ui.canvas.width / 2 - 75, y - 28, 35, 35);
             const sliderX = this.ui.canvas.width / 2 - 30;
             const sliderY = y - 15;
@@ -97,12 +104,12 @@ export class Settings {
             this.ui.ctx.beginPath();
             this.ui.ctx.arc(handleX, sliderY + 5, 8, 0, Math.PI * 2);
             this.ui.ctx.fill();
-        } 
+        }
     }
 
     drawToggle(option, isSelected, y) {
         if (option.type === 'toggle') {
-            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
+            if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
             const status = option.value ? 'On' : 'Off';
             this.ui.ctx.fillText(`Music: `, this.ui.canvas.width / 2 - 20, y);
@@ -114,7 +121,7 @@ export class Settings {
         if (option.type === 'button') {
             // "Back"-Option zeichnen
             const backY = this.ui.canvas.height - 70;
-            if(!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
+            if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
             this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, y);
         }
@@ -160,7 +167,7 @@ export class Settings {
             currentOption.value = Math.max(0, currentOption.value - 0.1); // Reduziert den Wert
             if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
             else if (currentOption.label === "Sound Volume") this.ui.global.setSoundVolumes(currentOption.value);
-        } 
+        }
         else if (event.key === 'ArrowRight' && currentOption.type === 'slider') {
             currentOption.value = Math.min(1, currentOption.value + 0.1); // Erhöht den Wert
             if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
@@ -230,8 +237,8 @@ export class Settings {
 
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
 
         // Settings-Menü
         this.settingsOptions.forEach((option, index) => {
@@ -241,6 +248,7 @@ export class Settings {
             this.handleButton(option, mouseX, mouseY, y);
         });
     }
+
 
     applySettings(label, value) {
         if (label === 'Music Volume') this.ui.global.audioManager.musicVolume = value;
@@ -301,25 +309,56 @@ export class Settings {
         ctx.closePath();
         ctx.fill();
     }
+    /*
+        handleMouseHover(event) {
+            const rect = this.ui.canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+        
+            let isHovering = false;
+        
+            this.settingsOptions.forEach((option, index) => {
+                const y = this.ui.canvas.height / 2 - 70 + index * 80;
+                if (mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
+                    mouseY > y - 40 && mouseY < y + 20) {
+                    isHovering = true;
+                    this.selectedOption = index;
+    
+                }
+            });
+        
+            // Setze den Cursor basierend auf Hover-Zustand
+            this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
+        }*/
 
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-    
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
+
         let isHovering = false;
-    
-        this.settingsOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 80;
-            if (mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
-                mouseY > y - 40 && mouseY < y + 20) {
+
+        this.buttonPositions.forEach((button, index) => {
+            if (
+                mouseX > button.x &&
+                mouseX < button.x + button.width &&
+                mouseY > button.y &&
+                mouseY < button.y + button.height
+            ) {
                 isHovering = true;
                 this.selectedOption = index;
-
             }
         });
-    
-        // Setze den Cursor basierend auf Hover-Zustand
+
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
+    }
+
+    updateUIPositions() {
+        this.buttonPositions = this.settingsOptions.map((_, index) => ({
+            x: this.ui.canvas.width / 2 - 100,
+            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            width: 200,
+            height: 50,
+        }));
     }
 }
