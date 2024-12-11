@@ -19,6 +19,6 @@ export class Menu extends World {
     Update(deltaTime) {
         if (this.currentMenu && this.currentMenu.onUpdate) {
             this.currentMenu.onUpdate(deltaTime);
-        }        
+        }    
     }
 }

@@ -49,18 +49,6 @@ export class Game extends World {
         this.lastObstacleSpawnTime = 0;
     }
 
-    /*
-        setInGameUI() {
-            this.ui.drawHealthBar(0, 50, 50);
-            this.ui.menuActive = false;
-            this.ui.onStart = false;
-        }*/
-    /*
-        resetAudio() {
-            this.global.audioManager.stopAll();
-            if (this.global.getMusicOn()) this.global.audioManager.playMusic('El Pollo Loco');
-            this.global.getVolumes();
-        }*/
 
     StartGame() {
         this.global.reset();
@@ -81,20 +69,12 @@ export class Game extends World {
         this.lastFrameTime = performance.now();
         window.addEventListener('resize', () => this.resizeCanvas());
         this.resizeCanvas();
-        window.addEventListener('resize', () => this.checkOrientation());
-        this.checkOrientation();
 
         if (this.hasTouchSupport()) {
             document.getElementById('title').style.display = "none";
             document.getElementById('fullscreen').style.display = "none";
-            //this.canvas.width = window.innerWidth;
-            //this.canvas.height = window.innerHeight;
         }
-        /*this.ui.global.inGame = true;
-        this.ui.global.pause = false;
-        this.ui.menuAktive = false;
-        this.ui.intro = false;*/
-        //this.StartGame();
+
         this.Update();
     }
 
@@ -134,18 +114,6 @@ export class Game extends World {
     }
 
 
-    /*
-        resume() {
-            if (!this.global.pause && this.global.getMusicOn()) {
-                this.global.audioManager.playMusic('El Pollo Loco');
-                this.global.getVolumes();
-            }
-            else {
-                this.global.setMusicOn(false);
-                this.global.audioManager.stopMusic('El Pollo Loco');
-            }
-        }*/
-
     redrawGameObjects() {
         const deltaTime = this.DeltaTime();
         this.global.groundLevel = this.canvas.height * 0.87;
@@ -159,28 +127,6 @@ export class Game extends World {
         this.updateScene(deltaTime);
     }
 
-    /*
-    
-        handleEscapeInput() {
-            if (this.ui.menuActive) return;
-            const input = this.inputHandler.getInput();
-            if (input.pKey && this.inputCooldown <= 0) {
-                if (!this.inGame) this.ui.layer = 1;
-                this.inputHandler.deactivate();
-                this.togglePauseMenu();
-                this.ui.toggleMenu();
-                this.inputCooldown = 0.2;
-                return;
-            }
-            if (!this.inputHandler.active)
-                this.inputHandler.activate();
-        }*/
-
-    /*
-        togglePauseMenu() {
-            this.global.pause = !this.global.pause;
-            this.inputHandler.setMenuActive(this.global.pause);
-        }*/
 
     DeltaTime() {
         const currentFrameTime = performance.now();
@@ -213,6 +159,7 @@ export class Game extends World {
         this.ClearCanvas();
         this.updateScene(deltaTime);
         this.ui.Update(deltaTime);
+        this.checkOrientation();
         requestAnimationFrame(() => this.Update());
     }
 
@@ -286,35 +233,16 @@ export class Game extends World {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    
+
     resizeCanvas() {
         if (!this.hasTouchSupport()) return;
-        const aspectRatio = 16 / 9; // 16:9-Seitenverhältnis
-    
-        // Aktuelle Fenstergröße
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-        this.checkOrientation();
-        // Berechne die ideale Breite und Höhe basierend auf dem Seitenverhältnis
-       /* if (windowWidth / windowHeight > aspectRatio) {
-            // Fenster ist breiter als 16:9
-            this.canvas.height = windowHeight;
-            this.canvas.width = windowHeight * aspectRatio;
-        } else {*/
-            // Fenster ist schmaler oder gleich 16:9
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-            this.redrawGameObjects();
-            if(this.player) {
-                this.player.setTouchControls();
-                this.player.checkIfOnMobile(this.ctx);
-            }
-       // }
-    
-    
-        // Aktualisiere Skalierungsfaktoren für UI und Spielobjekte
-        this.scaleX = this.canvas.width / 1280; // Basierend auf der Design-Breite
-        this.scaleY = this.canvas.height / 720; // Basierend auf der Design-Höhe
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.redrawGameObjects();
+        if (this.player) {
+            this.player.setTouchControls();
+            this.player.checkIfOnMobile(this.ctx);
+        }
     }
 
 
@@ -332,9 +260,9 @@ export class Game extends World {
 
 
     checkOrientation() {
-        if (window.innerWidth < 769) {
+        if (this.isPortrait() && this.hasTouchSupport()) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.font = '20px Arial';
+            this.ctx.font = (this.canvas.width > 430) ? '40px Arial' : '20px Arial';
             this.ctx.textAlign = 'center';
             this.ctx.fillStyle = 'white';
             this.ctx.fillText(
@@ -345,24 +273,16 @@ export class Game extends World {
         }
     }
 
+
+    isLandscape() {
+        return window.matchMedia("(orientation: landscape)").matches;
+    }
+
+    isPortrait() {
+        return window.matchMedia("(orientation: portrait)").matches;
+    }
+
     hasTouchSupport() {
         return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-    }
-
-    isMobileDevice() {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-
-        // Prüfen auf typische mobile Geräte
-        return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-    }
-
-    detectMobileDevice() {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-
-        // Kombiniere User-Agent-Abfrage und Touch-Unterstützung
-        const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-
-        return isMobile || isTouch;
     }
 }

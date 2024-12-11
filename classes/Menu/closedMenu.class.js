@@ -13,16 +13,16 @@ export class ClosedMenu {
         this.ui.global.pause = false;
         this.ui.menuAktive = false;
         this.ui.intro = false;
-        this.addMenuListeners();    
-        if (this.ui.global.getMusicOn()) this.ui.global.audioManager.playMusic('El Pollo Loco');  
+        this.addMenuListeners();
+        if (this.ui.global.getMusicOn()) this.ui.global.audioManager.playMusic('El Pollo Loco');
         this.ui.ctx.shadowColor = 'transparent';
         this.ui.ctx.shadowBlur = 0;
         this.ui.ctx.shadowOffsetX = 0;
-        this.ui.ctx.shadowOffsetY = 0;  
+        this.ui.ctx.shadowOffsetY = 0;
     }
 
     onUpdate(deltaTime) {}
-    
+
 
     onExit() {
         this.removeMenuListeners();
@@ -30,7 +30,7 @@ export class ClosedMenu {
 
     toggleMenu(event) {
         const input = this.inputHandler.getInput()
-        if(!input.pKey) return;
+        if (!input.pKey) return;
         this.ui.menuActive = !this.menuActive;
         this.ui.global.pause = this.menuActive;
         this.selectedOption = 0; // Zurücksetzen der Auswahl
@@ -62,4 +62,5 @@ export class ClosedMenu {
             this.mouseListener = null;
         }
     }
+
 }

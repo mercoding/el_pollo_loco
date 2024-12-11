@@ -309,27 +309,6 @@ export class Settings {
         ctx.closePath();
         ctx.fill();
     }
-    /*
-        handleMouseHover(event) {
-            const rect = this.ui.canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-        
-            let isHovering = false;
-        
-            this.settingsOptions.forEach((option, index) => {
-                const y = this.ui.canvas.height / 2 - 70 + index * 80;
-                if (mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
-                    mouseY > y - 40 && mouseY < y + 20) {
-                    isHovering = true;
-                    this.selectedOption = index;
-    
-                }
-            });
-        
-            // Setze den Cursor basierend auf Hover-Zustand
-            this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
-        }*/
 
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
