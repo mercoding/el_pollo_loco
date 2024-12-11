@@ -30,6 +30,7 @@ export class InputHandler {
             case 'Escape':      this.keysPressed.esc = true;        break;
             case ' ':           this.keysPressed.space = true;      break;
             case 'f':           this.keysPressed.fKey = true;       break;
+            case 'p':           this.keysPressed.pKey = true;       break;
         }
     }
 
@@ -50,6 +51,7 @@ export class InputHandler {
             case 'Escape':      this.keysPressed.esc = false;       break;
             case ' ':           this.keysPressed.space = false;     break;
             case 'f':           this.keysPressed.fKey = false;      break;
+            case 'p':           this.keysPressed.pKey = false;      break;
         }
     }
 
@@ -72,7 +74,7 @@ export class InputHandler {
 
     setMenuActive(active) {
         this.menuActive = active;
-        this.keysPressed = { left: false, right: false, up: false, down: false, enter: false, fKey: false, esc: false, space: false }; // Reset keys
+        this.keysPressed = { left: false, right: false, up: false, down: false, enter: false, fKey: false, pKey: false, esc: false, space: false }; // Reset keys
     }
 
     getInput() {

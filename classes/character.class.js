@@ -2,7 +2,7 @@ import { bottleAnimations } from "../animations/bottle.anim.js";
 import { Bottle } from "./bottle.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
-export class Charakter extends Animatable(MovableObject) {
+export class Character extends Animatable(MovableObject) {
     global;
     constructor(animationPaths, collisionManager, ...args) {
         super(animationPaths, collisionManager, ...args);

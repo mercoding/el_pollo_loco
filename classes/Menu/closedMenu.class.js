@@ -30,7 +30,7 @@ export class ClosedMenu {
 
     toggleMenu(event) {
         const input = this.inputHandler.getInput()
-        if(!input.esc) return;
+        if(!input.pKey) return;
         this.ui.menuActive = !this.menuActive;
         this.ui.global.pause = this.menuActive;
         this.selectedOption = 0; // Zurücksetzen der Auswahl

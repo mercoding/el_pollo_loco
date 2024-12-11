@@ -12,7 +12,7 @@ export class Controls {
         this.upImg = new Image();
         this.leftImg = new Image();
         this.rightImg = new Image();
-        this.selectedOption = 0;
+        this.selectedOption = 5;
         this.onStart();
     }
 
@@ -21,7 +21,8 @@ export class Controls {
             { label: 'Jump/Double', image: 'triangle-up' },
             { label: 'Move Left', image: 'triangle-left' },
             { label: 'Move Right', image: 'triangle-right' },
-            { label: 'Shoot' }, { label: 'Back', type: 'button' },
+            { label: 'Shoot' }, { label: 'Menu/Pause' },
+            { label: 'Back', type: 'button' },
         ];
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.upImg.src = "img/ui/up.png";
@@ -32,7 +33,7 @@ export class Controls {
 
         this.buttonPositions = this.controlsMenu.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
-            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            y: this.ui.canvas.height / 2 - 110 + index * 70,
             width: 200,
             height: 50,
         }));
@@ -42,6 +43,7 @@ export class Controls {
 
     onUpdate(deltaTime) {
         this.drawControlsMenu();
+        this.selectedOption = 5;
     }
 
     onExit() {
@@ -51,7 +53,7 @@ export class Controls {
 
     setFont() {
         this.ui.ctx.fillStyle = 'white';
-        this.ui.ctx.font = '20px Boogaloo';
+        this.ui.ctx.font = '30px Boogaloo';
         this.ui.ctx.textAlign = 'center';
     }
 
@@ -121,6 +123,11 @@ export class Controls {
             this.ui.ctx.font = '25px Boogaloo';
             this.ui.ctx.fillText("F", this.ui.canvas.width / 2 + 80, y - 2.5);
         }
+        if (option.label === 'Menu/Pause') {
+            // Text für "Shoot"
+            this.ui.ctx.font = '25px Boogaloo';
+            this.ui.ctx.fillText("P", this.ui.canvas.width / 2 + 80, y - 2.5);
+        }
     }
 
     drawControls(option, index, y) {
@@ -136,21 +143,21 @@ export class Controls {
 
     drawControlsOptions() {
         this.controlsMenu.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 80 + index * 55;
+            const y = this.ui.canvas.height / 2 - 80 + index * 40;
 
             const isSelected = this.selectedOption === index;
             if (option.label !== 'Back') this.drawControls(option, index, y);
-            this.drawButton(option, isSelected, y);
+            this.drawButton(option, isSelected, y-10);
         });
     }
 
 
     drawControlsMenu() {
         this.drawBackground(this.background);
-        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
+        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
         this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.fillText("Controls", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 140);
+        this.ui.ctx.fillText("Controls", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
         this.drawControlsOptions();
     }
 
@@ -214,7 +221,7 @@ export class Controls {
 
 
     handleButton(option, mouseX, mouseY, y) {
-        const backY = this.ui.canvas.height - 70;
+        const backY = (window.innerWidth < 1024) ? this.ui.canvas.height - 80 : this.ui.canvas.height - 70;
         if ((option.type === 'button') && mouseX > this.ui.canvas.width / 2 - 95 && mouseX < this.ui.canvas.width / 2 + 110 &&
             mouseY > y - 20 && mouseY < y + 30) {
             this.ui.menuActive = true;
@@ -230,7 +237,7 @@ export class Controls {
 
         // Settings-Menü
         this.controlsMenu.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 80 + index * 60;
+            const y = this.ui.canvas.height / 2 - 80 + index * 40;
 
             this.handleButton(option, mouseX, mouseY, y);
         });
@@ -309,15 +316,15 @@ export class Controls {
                     isHovering = true;
                 }
             }
+            
         });
-
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
 
     updateUIPositions() {
         this.buttonPositions = this.controlsMenu.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
-            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            y: this.ui.canvas.height / 2 - 110 + index * 70,
             width: 200,
             height: 50,
         }));

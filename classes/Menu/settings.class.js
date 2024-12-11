@@ -29,7 +29,7 @@ export class Settings {
         this.soundImage.src = 'img/ui/Sound.png';
         this.buttonPositions = this.settingsOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
-            y: this.ui.canvas.height / 2 - (index * 80),
+            y: this.ui.canvas.height / 2 - (index * 70),
             width: 200,
             height: 50,
         }));
@@ -130,7 +130,7 @@ export class Settings {
     drawSettingsOptions() {
         this.settingsOptions.forEach((option, index) => {
             //const y = 170 + index * 80;
-            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            const y = this.ui.canvas.height / 2 - 70 + index * 70;
 
             const isSelected = this.selectedOption === index;
             this.drawToggle(option, isSelected, y);
@@ -145,10 +145,10 @@ export class Settings {
             this.ui.ctx.fillRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
         } else {
             this.drawBackground(this.background);
-            this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
+            this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         }
         this.setFont();
-        this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 140);
+        this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
         this.drawSettingsOptions();
     }
 
@@ -242,7 +242,7 @@ export class Settings {
 
         // Settings-Menü
         this.settingsOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            const y = this.ui.canvas.height / 2 - 70 + index * 70;
             this.handleSlider(option, mouseX, mouseY, y);
             this.handleToggle(option, mouseX, mouseY, y);
             this.handleButton(option, mouseX, mouseY, y);
@@ -356,7 +356,7 @@ export class Settings {
     updateUIPositions() {
         this.buttonPositions = this.settingsOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
-            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            y: this.ui.canvas.height / 2 - 110 + index * 70,
             width: 200,
             height: 50,
         }));

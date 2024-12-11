@@ -29,7 +29,7 @@ export class StartMenu {
         this.ui.global.pause = true;
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
-            y: this.ui.canvas.height / 2 - (index * 80),
+            y: this.ui.canvas.height / 2 - (index * 70),
             width: 200,
             height: 50,
         }));
@@ -90,7 +90,7 @@ export class StartMenu {
     drawStartMenuOptions() {
         // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 80;
+            const y = this.ui.canvas.height / 2 - 70 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = this.selectedOption === index ? 'yellow' : 'white'; // Highlight
             if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
@@ -171,10 +171,10 @@ export class StartMenu {
 
     drawStartMenu() {        
         this.drawBackground(this.background);
-        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 225, 300, 450, 20, "transparent", 2, 0.85);
+        this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
         const title = "Main Menu";
-        this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 140);
+        this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
         this.drawStartMenuOptions();
     }
 
@@ -244,7 +244,7 @@ export class StartMenu {
     
 
     handleMenuMouseQuitButton(mouseX, mouseY) {
-        const backY = this.ui.canvas.height - 80;
+        const backY = this.ui.canvas.height - 60;
         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
             mouseY > backY - 20 && mouseY < backY + 20) {
             this.layer = this.lastLayer;
@@ -337,7 +337,7 @@ export class StartMenu {
     updateUIPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
-            y: this.ui.canvas.height / 2 - 110 + index * 80,
+            y: this.ui.canvas.height / 2 - 110 + index * 70,
             width: 200,
             height: 50,
         }));
