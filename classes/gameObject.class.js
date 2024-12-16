@@ -1,4 +1,11 @@
 
+/**
+ * Class for game objects with main description like position x, y or width and height
+ *
+ * @export
+ * @class GameObject
+ * @typedef {GameObject}
+ */
 export class GameObject {
     constructor(x, y, width, height, tag = 'untagged') {
         this.x = x; // Mitte des Objekts
@@ -9,21 +16,26 @@ export class GameObject {
     }
 }
 
+/**
+ * Descripes if game object has collider
+ *
+ * @param {*} Base
+ * @returns {typeof (Anonymous class)}
+ */
 export const CollisionCapable = (Base) => class extends Base {
     constructor(collisionManager, ...args) { 
         super(...args);
         this.collisionManager = collisionManager;
-
-        // Collider wird als quadratisches Rechteck definiert
         this.collider = {
             x: this.x - this.width / 2,
             y: this.y + this.height / 2,
             width: this.width,
             height: this.height
         };
-        this.collidingWith = null; //
+        this.collidingWith = null; 
     }
 
+    /** Update collider */
     updateCollider() {
         this.collider.x = this.x;
         this.collider.y = this.y;
@@ -34,13 +46,22 @@ export const CollisionCapable = (Base) => class extends Base {
     
     
 
-    // Zeichne das Objekt basierend auf der Mitte
+    /**
+     * Draw collider
+     *
+     * @param {*} ctx
+     */
     draw(ctx) {
         ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
     }
     
 
-    // Prüfe auf Kollision mit einem anderen Objekt
+    /**
+     * Check if collider colliding with each other collider
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
     isCollidingWith(other) {
         if (!other || !other.collider) return false;
         return (
@@ -51,6 +72,12 @@ export const CollisionCapable = (Base) => class extends Base {
         );
     }
 
+    /**
+     * Get collision direction
+     *
+     * @param {*} other
+     * @returns {("left" | "right" | "top" | "bottom")}
+     */
     getCollisionDirection(other) {
         if (!this.isCollidingWith(other)) return null;
     
@@ -68,6 +95,11 @@ export const CollisionCapable = (Base) => class extends Base {
     }
     
 
+    /**
+     * Check if an object enter collider
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         this.collidingWith = other;
         if (other && typeof other.onCollisionEnter === 'function' && other.collidingWith !== this) {   
@@ -76,6 +108,11 @@ export const CollisionCapable = (Base) => class extends Base {
         }
     }
 
+    /**
+     * Check if an object leave collider
+     *
+     * @param {*} other
+     */
     onCollisionExit(other) {
         if (other.tag === "Player" && other.velocity) {
             other.velocity.x = 0;
@@ -85,7 +122,11 @@ export const CollisionCapable = (Base) => class extends Base {
     }
     
 
-    // Prüfe und verwalte Kollisionen
+    /**
+     * Update collision
+     *
+     * @param {*} other
+     */
     updateCollision(other) {
         if (!other || !other.collider) return;
 

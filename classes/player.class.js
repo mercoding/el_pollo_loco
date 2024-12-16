@@ -12,6 +12,7 @@ export class Player {
         this.Start();
     }
 
+    /** Draw small touch controls on small mobile devices */
     getSmallTouchControls() {
         this.touchControls = {
             joystick: { x: 30, y: this.global.canvas.height - 25, radius: 20, },
@@ -20,6 +21,7 @@ export class Player {
         };
     }
 
+    /** Draw large touch controls on large mobile devices */
     getLargeTouchControls() {
         this.touchControls = {
             joystick: { x: 60, y: this.global.canvas.height - 45, radius: 40, },
@@ -28,11 +30,13 @@ export class Player {
         };
     }
 
+    /** Set touch controls on mobile devices */
     setTouchControls() {
         if (window.innerWidth < 1024) this.getSmallTouchControls();
         else this.getLargeTouchControls();
     }
 
+    /** Initialize Character and spawn into scene */
     initializeCharacter() {
         // Erstelle und füge den Charakter hinzu
         this.character = new Character(pepeAnimations, this.global.collisionManager, this.canvas.width, this.global.groundLevel, 50, 150, 'Player');
@@ -42,6 +46,7 @@ export class Player {
         this.global.collisionManager.addObject(this.character);
     }
 
+    /** Reset character position by restart game */
     resetCharacter() {
         if (this.character) {
             this.global.destroy(this.character);
@@ -51,12 +56,19 @@ export class Player {
         this.initializeCharacter();
     }
 
+    /** Function on start game */
     Start() {
         // Initiale Logik bei Spielstart, falls nötig
         this.initializeCharacter();
         this.character.Start();
     }
 
+    /**
+     * Update function to update player class
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     */
     Update(ctx, deltaTime) {
         if (this.global.pause) return;
         if (this.global.gameOver) {
@@ -69,6 +81,11 @@ export class Player {
         this.handleCameraAndCharacterMovement(this.character, deltaTime);
     }
 
+    /**
+     * Check if game is on mobile device
+     *
+     * @param {*} ctx
+     */
     checkIfOnMobile(ctx) {
         if (this.hasTouchSupport()) {
             this.drawControls(ctx);
@@ -77,6 +94,12 @@ export class Player {
         else this.removeTouchControls();
     }
 
+    /**
+     * Set velocity if player is hurt
+     *
+     * @param {*} deltaTime
+     * @returns {boolean}
+     */
     isHurt(deltaTime) {
         if (this.character.isHurt) {
             this.character.velocity.x = 0;
@@ -87,6 +110,11 @@ export class Player {
         return false;
     }
 
+    /**
+     * Handle input and player state for animation
+     *
+     * @param {*} deltaTime
+     */
     handleInput(deltaTime) {
         if (this.global.health <= 0 || this.global.pause) return;
         const input = this.inputHandler.getInput();
@@ -99,6 +127,12 @@ export class Player {
         this.character.move(deltaTime);
     }
 
+    /**
+     * Handle camera and character movement 
+     *
+     * @param {*} character
+     * @param {*} deltaTime
+     */
     handleCameraAndCharacterMovement(character, deltaTime) {
         if (this.global.pause) return;
         this.cameraX = character.x; // Zentriere die Kamera auf den Charakter
@@ -106,22 +140,30 @@ export class Player {
         character.updateCollider(); // Aktualisiere den Collider des Charakters
     }
 
+    /**
+     * Draw joystick if on mobile device
+     *
+     * @param {*} ctx
+     */
     drawJoystick(ctx) {
         const joystick = this.touchControls.joystick;
         ctx.beginPath();
         ctx.arc(joystick.x, joystick.y, joystick.radius, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
         ctx.fill();
-
         const innerX = joystick.x + this.joystickOffset.x;
         const innerY = joystick.y + this.joystickOffset.y;
-
         ctx.beginPath();
         ctx.arc(innerX, innerY, joystick.radius / 2, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.fill();
     }
 
+    /**
+     * Draw fire button if on mobile device
+     *
+     * @param {*} ctx
+     */
     drawFireButton(ctx) {
         // Zeichne den Feuerknopf
         const fireButton = this.touchControls.fireButton;
@@ -135,6 +177,11 @@ export class Player {
         ctx.fillText("F", fireButton.x, fireButton.y + 8);
     }
 
+    /**
+     * Draw jump button if on mobile device
+     *
+     * @param {*} ctx
+     */
     drawJumpButton(ctx) {
         const jumpButton = this.touchControls.jumpButton;
         ctx.beginPath();
@@ -147,6 +194,11 @@ export class Player {
         ctx.fillText("J", jumpButton.x, jumpButton.y + 8);
     }
 
+    /**
+     * Draw controls if on mobile device
+     *
+     * @param {*} ctx
+     */
     drawControls(ctx) {
         this.drawJoystick(ctx)
         this.drawFireButton(ctx);
@@ -154,23 +206,29 @@ export class Player {
     }
 
 
+    /** Initilize listeners for mobile controls */
     initializeTouchControls() {
         this.global.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
         this.global.canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
         this.global.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
-
         this.joystickActive = false;
         this.joystickOffset = { x: 0, y: 0 };
     }
 
+    /** Remove listeners for mobile controls */
     removeTouchControls() {
         this.global.canvas.removeEventListener('touchstart', this.handleTouchStart.bind(this));
         this.global.canvas.removeEventListener('touchmove', this.handleTouchMove.bind(this));
         this.global.canvas.removeEventListener('touchend', this.handleTouchEnd.bind(this));
     }
 
+    /**
+     * Handle touch on joystich
+     *
+     * @param {*} touchX
+     * @param {*} touchY
+     */
     touchOnJoystick(touchX, touchY) {
-        // Überprüfe, ob der Touch im Joystick-Bereich ist
         const joystick = this.touchControls.joystick;
         const dx = touchX - joystick.x;
         const dy = touchY - joystick.y;
@@ -180,6 +238,12 @@ export class Player {
         }
     }
 
+    /**
+     * Handle touch on fire button
+     *
+     * @param {*} touchX
+     * @param {*} touchY
+     */
     touchOnFireButton(touchX, touchY) {
         const fireButton = this.touchControls.fireButton;
         if (
@@ -192,6 +256,12 @@ export class Player {
         }
     }
 
+    /**
+     * Handle touch on jump button
+     *
+     * @param {*} touchX
+     * @param {*} touchY
+     */
     touchOnJumpButton(touchX, touchY) {
         const jumpButton = this.touchControls.jumpButton;
         if (
@@ -204,6 +274,11 @@ export class Player {
         }
     }
 
+    /**
+     * Handle touch start on mobile controls
+     *
+     * @param {*} event
+     */
     handleTouchStart(event) {
         const rect = this.global.canvas.getBoundingClientRect();
         const touches = event.touches;
@@ -219,6 +294,13 @@ export class Player {
     }
 
 
+    /**
+     * Calculate joystick touch direction
+     *
+     * @param {*} joystick
+     * @param {*} dx
+     * @param {*} dy
+     */
     calculateJoystickTouchDirection(joystick, dx, dy) {
         const magnitude = Math.sqrt(dx * dx + dy * dy);
         if (magnitude <= joystick.radius) {
@@ -231,6 +313,11 @@ export class Player {
         }
     }
 
+    /**
+     * Translate joystick movement into input
+     *
+     * @param {*} dx
+     */
     translateJoystickMovementIntoInput(dx) {
         if (dx < 0) {
             this.inputHandler.keysPressed.right = false;
@@ -242,6 +329,11 @@ export class Player {
         }
     }
 
+    /**
+     * Handle touch move
+     *
+     * @param {*} event
+     */
     handleTouchMove(event) {
         const rect = this.global.canvas.getBoundingClientRect();
         const touch = event.touches[0];
@@ -259,6 +351,11 @@ export class Player {
     }
 
 
+    /**
+     * Handle touch end
+     *
+     * @param {*} event
+     */
     handleTouchEnd(event) {
         this.joystickActive = false;
         this.joystickOffset = { x: 0, y: 0 };
@@ -269,6 +366,11 @@ export class Player {
         this.inputHandler.keysPressed.space = false;
     }
 
+    /**
+     * Detect if game plays on mobile device
+     *
+     * @returns {*}
+     */
     detectMobileDevice() {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
@@ -279,6 +381,11 @@ export class Player {
         return isMobile || isTouch;
     }
 
+    /**
+     * Check if device has touch support
+     *
+     * @returns {boolean}
+     */
     hasTouchSupport() {
         return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }

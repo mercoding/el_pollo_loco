@@ -1,3 +1,10 @@
+/**
+ * Class for handle user inputs
+ *
+ * @export
+ * @class InputHandler
+ * @typedef {InputHandler}
+ */
 export class InputHandler {
     constructor() {
         this.anyKey = false;
@@ -6,11 +13,14 @@ export class InputHandler {
         this.keyUpListener = this.handleKeyUp.bind(this);
         this.active = false;
         this.menuActive = false; // Flag für Menüzustand
-
-        // Standardmäßig aktiviert
         this.activate();
     }
 
+    /**
+     * Handle menu input keys
+     *
+     * @param {*} e
+     */
     menuKeys(e) {
         switch (e.key) {
             case 'ArrowUp':     this.keysPressed.up = true;     break;
@@ -20,6 +30,11 @@ export class InputHandler {
         }
     }
 
+    /**
+     * Handle game input keys 
+     *
+     * @param {*} e
+     */
     gameKeys(e) {
         switch (e.key) {
             case 'ArrowRight':  this.keysPressed.right = true;      break;
@@ -34,12 +49,22 @@ export class InputHandler {
         }
     }
 
+    /**
+     * Handle key down
+     *
+     * @param {*} e
+     */
     handleKeyDown(e) {
         this.keysPressed.any = true;
         if (this.menuActive) this.menuKeys(e)
         else this.gameKeys(e);
     }
 
+    /**
+     * Handle key up
+     *
+     * @param {*} e
+     */
     handleKeyUp(e) {
         this.keysPressed.any = false;
         switch (e.key) {
@@ -55,6 +80,7 @@ export class InputHandler {
         }
     }
 
+    /** Activate key listener */
     activate() {
         if (!this.active) {
             window.addEventListener('keydown', this.keyDownListener);
@@ -63,6 +89,7 @@ export class InputHandler {
         }
     }
     
+    /** Deactivate key listener */
     deactivate() {
         if (this.active) {
             window.removeEventListener('keydown', this.keyDownListener);
@@ -72,11 +99,21 @@ export class InputHandler {
     }
     
 
+    /**
+     * Set menu active
+     *
+     * @param {*} active
+     */
     setMenuActive(active) {
         this.menuActive = active;
         this.keysPressed = { left: false, right: false, up: false, down: false, enter: false, fKey: false, pKey: false, esc: false, space: false }; // Reset keys
     }
 
+    /**
+     * Get input
+     *
+     * @returns {{ left: boolean; right: boolean; up: boolean; down: boolean; enter: boolean; fKey: boolean; esc: boolean; any: boolean; space: boolean; }}
+     */
     getInput() {
         return this.keysPressed;
     }    

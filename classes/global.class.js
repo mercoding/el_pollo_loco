@@ -5,28 +5,21 @@ import { InputHandler } from "./inputHandler.class.js";
 export class Global {
     constructor(canvas) {
         this.canvas = canvas;
-        this.health = 100;
-        this.bossDefeated = 0;
-        this.bottles = 10;
-        this.points = 0;
-        this.coins = 0;
         this.inGame = false;
         this.gameOver = false;
-        //this.isHurt = false;
         this.break = false;
         this.gameObjects = [];
         this.collisionManager = new CollisionManager();
         this.audioManager = new AudioManager();
         this.getVolumes();
-        //this.audioManager.effectsVolume = 0.5;
         this.inputHandler = new InputHandler();
         this.pause = false;
         this.musicOn = true;
         this.groundLevel = this.canvas.height * 0.87;
         this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
-
     }
 
+    /** Get game Volumes -> music, sound */
     getVolumes() {
         if(!localStorage.getItem('MusicOn')) this.setMusicOn('true');
         if(!localStorage.getItem('MusicVolume')) this.setMusicVolumes('0.5');
@@ -36,38 +29,69 @@ export class Global {
         this.audioManager.effectsVolume = this.getSoundVolumes();
     }
 
+    /**
+     * Get music status
+     *
+     * @returns {boolean}
+     */
     getMusicOn() {
         return (localStorage.getItem('MusicOn') === 'true') ? true : false;
     }
 
+    /**
+     * Set music on or off
+     *
+     * @param {*} value
+     */
     setMusicOn(value) {
         localStorage.setItem('MusicOn', value);
     }
 
+    /**
+     * Get music volume
+     *
+     * @returns {*}
+     */
     getMusicVolumes() {
         return parseFloat(localStorage.getItem('MusicVolume'));
     }
 
+    /**
+     * Set music volume
+     *
+     * @param {*} value
+     */
     setMusicVolumes(value) {
         localStorage.setItem('MusicVolume', value);
     }
 
+    /**
+     * Get sound volume
+     *
+     * @returns {*}
+     */
     getSoundVolumes() {
         return parseFloat(localStorage.getItem('SoundVolume'));
     }
 
+    /**
+     * Set sound volume
+     *
+     * @param {*} value
+     */
     setSoundVolumes(value) {
         localStorage.setItem('SoundVolume', value);
     }
 
+    /**
+     * Calculate bottle count into percentage for in game ui
+     *
+     * @param {*} bottleCount
+     * @returns {(100 | 80 | 60 | 40 | 20 | 0)}
+     */
     calculateBottlePercentage(bottleCount) {
-        // Maximalanzahl der Flaschen
         const maxBottles = 10;
-
-        // Berechne den Prozentsatz der aktuellen Flaschenanzahl
         const percentage = (bottleCount / maxBottles) * 100;
-
-        // Runde auf den nächsten Schritt herunter, der in der UI-Anzeige verfügbar ist
         if (percentage >= 100) return 100;
         if (percentage >= 80) return 80;
         if (percentage >= 60) return 60;
@@ -76,22 +100,39 @@ export class Global {
         return 0;
     }
 
+    /** Update collision manager */
     updateCollisions() {
         this.collisionManager.updateCollisions();
     }
 
+    /**
+     * Get bottles percentage
+     *
+     * @returns {(0 | 100 | 80 | 60 | 40 | 20)}
+     */
     getBottles() {
         return this.calculateBottlePercentage(this.bottles);
     }
 
+    /**
+     * Add game object into game object list
+     *
+     * @param {*} gameObject
+     */
     addGameObject(gameObject) {
         this.gameObjects.push(gameObject);
     }
 
+    /**
+     * Destroy game object from game object list
+     *
+     * @param {*} obj
+     */
     destroy(obj) { this.gameObjects = this.gameObjects.filter(o => o !== obj); }
 
 
 
+    /** Set game stats */
     setGameStats() {
          // Zurücksetzen aller wichtigen Zustände
          this.health = 100;
@@ -105,6 +146,7 @@ export class Global {
          this.groundLevel = this.canvas.height * 0.87;
     }
 
+    /** Reset all game stats */
     reset() {
         this.setGameStats();
         this.collisionManager.clear(); // Methode clear() sollte implementiert sein

@@ -1,18 +1,27 @@
 import { AttackState } from "./attackState.class.js";
 import { WalkState } from "./walkState.class.js";
 
+/**
+ * Idle state
+ *
+ * @export
+ * @class IdleState
+ * @typedef {IdleState}
+ */
 export class IdleState {
     constructor(boss) {
         this.boss = boss;
         this.calculateReturnPosition();
     }
 
+    /** Set settings on start */
     onEnter() {
         if(this.boss.health <= 0) return;
         this.boss.setState('idle');
         this.idleTimer = 0; // Start the idle timer
     }
 
+    /** Calculate return positions */
     calculateReturnPosition() {
         // Calculate a dynamic return position relative to the player’s position
         const offsetDistance = 200; // Minimum distance in pixels from the player
@@ -21,16 +30,17 @@ export class IdleState {
             : this.boss.player.x - offsetDistance;
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} deltaTime
+     */
     onUpdate(deltaTime) {
         if(this.boss.health <= 0) return;
         this.idleTimer += deltaTime;
         const direction = (this.boss.x <= this.boss.player.x) ? -1 : 1;
         const distanceToPlayer = this.boss.x - this.boss.player.x;
-
-    // This gives the distance as an absolute value
         const distance = Math.abs(distanceToPlayer);        
-        
-        // Transition to WalkState when the player is within range, regardless of direction
         if (direction > 0 && distance <= this.boss.playerInAttackDistance - 50) {
             this.boss.stateMachine.changeState(new WalkState(this.boss));            
         }
@@ -38,11 +48,11 @@ export class IdleState {
             this.boss.stateMachine.changeState(new WalkState(this.boss));
         } 
         else if (this.idleTimer > 2) {
-            // If the player isn't within range after 2 seconds, reset the idle timer
             this.idleTimer = 0;
         }
     }
 
+    /** Set settings on exit */
     onExit() {
         this.idleTimer = 0;
     }

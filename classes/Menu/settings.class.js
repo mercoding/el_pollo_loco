@@ -1,9 +1,11 @@
 import { InputHandler } from "../inputHandler.class.js";
 import { GameMenu } from "./gameMenu.class.js";
+import { MenuGUI } from "./menuGUI.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
-export class Settings {
+export class Settings extends MenuGUI{
     constructor(ui) {
+        super(ui);
         this.ui = ui;
         this.inputHandler = new InputHandler();
         this.background = new Image();
@@ -15,81 +17,63 @@ export class Settings {
         this.onStart();
     }
 
-    onStart() {
+    /** Set settings options */
+    setSettingsOptions() {
         this.settingsOptions = [
             { label: 'Music On/Off', type: 'toggle', value: this.ui.global.getMusicOn() },
             { label: 'Music Volume', type: 'slider', value: this.ui.global.getMusicVolumes() },
             { label: 'Sound Volume', type: 'slider', value: this.ui.global.getSoundVolumes() },
             { label: 'Back', type: 'button' },
         ];
-        this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
-        this.startMenuBackground.src = "img/ui/panel.png";
-        this.buttonBackground.src = "img/ui/button.png";
-        this.musicImage.src = 'img/ui/Music.png';
-        this.soundImage.src = 'img/ui/Sound.png';
+    }
+
+    /** Set buttons positions */
+    setButtonsPositions() {
         this.buttonPositions = this.settingsOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
             y: this.ui.canvas.height / 2 - (index * 70),
             width: 200,
             height: 50,
         }));
+    }
 
+    /** Set settings on start */
+    onStart() {
+        this.setSettingsOptions();
+        this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
+        this.startMenuBackground.src = "img/ui/panel.png";
+        this.buttonBackground.src = "img/ui/button.png";
+        this.musicImage.src = 'img/ui/Music.png';
+        this.soundImage.src = 'img/ui/Sound.png';
+        this.setButtonsPositions();
         this.ui.menuActive = true;
         this.addMenuListeners();
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} deltaTime
+     */
     onUpdate(deltaTime) {
         this.drawSettingsMenu();
         this.updateUIPositions();
     }
 
+    /** Set settings on exit */
     onExit() {
         this.removeMenuListeners();
         this.ui.canvas.style.cursor = 'default';
     }
 
-    setFont() {
-        this.ui.ctx.fillStyle = 'white';
-        this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.textAlign = 'center';
-    }
 
-    drawBackground(background) {
-        this.clearCanvas();
-        this.ui.ctx.fillStyle = 'black';
-        this.ui.ctx.fillRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-        this.ui.ctx.drawImage(background, 0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    }
-
-    drawRoundedBox(ctx, x, y, width, height, borderRadius) {
-        ctx.beginPath();
-        ctx.moveTo(x + borderRadius, y);
-        ctx.lineTo(x + width - borderRadius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + borderRadius);
-        ctx.lineTo(x + width, y + height - borderRadius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - borderRadius, y + height);
-        ctx.lineTo(x + borderRadius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - borderRadius);
-        ctx.lineTo(x, y + borderRadius);
-        ctx.quadraticCurveTo(x, y, x + borderRadius, y);
-        ctx.closePath();
-    }
-
-    drawImageWithRoundedBorder(ctx, image, x, y, width, height, borderRadius = 20, borderColor = 'black', borderWidth = 2, alpha = 1) {
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        this.drawRoundedBox(ctx, x, y, width, height, borderRadius);
-        ctx.clip();
-        ctx.drawImage(image, x, y, width, height);
-        ctx.restore();
-        ctx.lineWidth = borderWidth;
-        ctx.strokeStyle = borderColor;
-        ctx.stroke();
-        ctx.restore();
-    }
-
-
-
+    /**
+     * Draw slider music volume / sound volume
+     *
+     * @param {*} option
+     * @param {*} isSelected
+     * @param {*} y
+     */
     drawSlider(option, isSelected, y) {
         if (option.type === 'slider') {
             if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
@@ -107,6 +91,13 @@ export class Settings {
         }
     }
 
+    /**
+     * Draw toggle Music On / Off
+     *
+     * @param {*} option
+     * @param {*} isSelected
+     * @param {*} y
+     */
     drawToggle(option, isSelected, y) {
         if (option.type === 'toggle') {
             if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
@@ -117,6 +108,13 @@ export class Settings {
         }
     }
 
+    /**
+     * Draw back button
+     *
+     * @param {*} option
+     * @param {*} isSelected
+     * @param {*} y
+     */
     drawButton(option, isSelected, y) {
         if (option.type === 'button') {
             // "Back"-Option zeichnen
@@ -127,6 +125,7 @@ export class Settings {
         }
     }
 
+    /** Draw settings options */
     drawSettingsOptions() {
         this.settingsOptions.forEach((option, index) => {
             //const y = 170 + index * 80;
@@ -139,6 +138,7 @@ export class Settings {
         });
     }
 
+    /** Draw settings menu */
     drawSettingsMenu() {
         if (this.ui.global.inGame) {
             this.ui.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -152,6 +152,7 @@ export class Settings {
         this.drawSettingsOptions();
     }
 
+    /** Execute menu option */
     executeMenuOption() {
         this.ui.menuActive = true;
         this.ui.global.pause = true;
@@ -160,6 +161,12 @@ export class Settings {
 
     }
 
+    /**
+     * Handle arrow key on slider music volume / sound volume
+     *
+     * @param {*} event
+     * @param {*} currentOption
+     */
     handleArrowKeyInput(event, currentOption) {
         if (event.key === 'ArrowUp') this.selectedOption = (this.selectedOption - 1 + this.settingsOptions.length) % this.settingsOptions.length;
         else if (event.key === 'ArrowDown') this.selectedOption = (this.selectedOption + 1) % this.settingsOptions.length;
@@ -175,6 +182,12 @@ export class Settings {
         }
     }
 
+    /**
+     * Handle enter key on toggle music on / off
+     *
+     * @param {*} event
+     * @param {*} currentOption
+     */
     handleEnterKeyInput(event, currentOption) {
         if (event.key === 'Enter' && currentOption.type === 'toggle') {
             currentOption.value = !currentOption.value; // Umschalten
@@ -188,12 +201,22 @@ export class Settings {
         }
     }
 
+    /**
+     * Handle esc key for back
+     *
+     * @param {*} event
+     */
     handleEscapeKeyInput(event) {
         if (event.key === 'Escape') {
             this.ui.global.inGame ? this.ui.menu.changeMenu(new GameMenu(this.ui)) : this.ui.menu.changeMenu(new StartMenu(this.ui));
         }
     }
 
+    /**
+     * Handle settings key input
+     *
+     * @param {*} event
+     */
     handleSettingsInput(event) {
         const currentOption = this.settingsOptions[this.selectedOption];
         this.ui.global.getVolumes();
@@ -202,6 +225,14 @@ export class Settings {
         this.handleEscapeKeyInput(event);
     }
 
+    /**
+     * Handle slider by mouse
+     *
+     * @param {*} option
+     * @param {*} mouseX
+     * @param {*} mouseY
+     * @param {*} y
+     */
     handleSlider(option, mouseX, mouseY, y) {
         if (option.type === 'slider') {
             const sliderX = this.ui.canvas.width / 2 - 100;
@@ -217,6 +248,15 @@ export class Settings {
         }
     }
 
+
+    /**
+     * Handle toggle by mouse
+     *
+     * @param {*} option
+     * @param {*} mouseX
+     * @param {*} mouseY
+     * @param {*} y
+     */
     handleToggle(option, mouseX, mouseY, y) {
         if (option.type === 'toggle' &&
             mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
@@ -226,6 +266,14 @@ export class Settings {
         }
     }
 
+    /**
+     * Handle button by mouse
+     *
+     * @param {*} option
+     * @param {*} mouseX
+     * @param {*} mouseY
+     * @param {*} y
+     */
     handleButton(option, mouseX, mouseY, y) {
         if (option.type === 'button' &&
             mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
@@ -235,6 +283,11 @@ export class Settings {
         }
     }
 
+    /**
+     * Handle mouse input
+     *
+     * @param {*} event
+     */
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
@@ -250,6 +303,12 @@ export class Settings {
     }
 
 
+    /**
+     * Apply Settings by mouse input
+     *
+     * @param {*} label
+     * @param {*} value
+     */
     applySettings(label, value) {
         if (label === 'Music Volume') this.ui.global.audioManager.musicVolume = value;
         else if (label === 'Sound Volume') this.ui.global.audioManager.effectsVolume = value;
@@ -262,6 +321,7 @@ export class Settings {
         }
     }
 
+    /** Add listeners */
     addMenuListeners() {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.handleSettingsInput(event);
@@ -274,6 +334,7 @@ export class Settings {
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
+    /** Remove listeners */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
@@ -290,33 +351,17 @@ export class Settings {
         }
     }
 
-    clearCanvas() {
-        this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    }
 
-    drawRoundedButton(ctx, x, y, width, height, radius) {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 5;
-        ctx.shadowOffsetY = 5;
-        ctx.fillStyle = '#3498db';
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.arcTo(x + width, y, x + width, y + height, radius);
-        ctx.arcTo(x + width, y + height, x, y + height, radius);
-        ctx.arcTo(x, y + height, x, y, radius);
-        ctx.arcTo(x, y, x + width, y, radius);
-        ctx.closePath();
-        ctx.fill();
-    }
-
+    /**
+     * Handle mouse hover effect -> cursor pointer
+     *
+     * @param {*} event
+     */
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-
         let isHovering = false;
-
         this.buttonPositions.forEach((button, index) => {
             if (
                 mouseX > button.x &&
@@ -328,10 +373,10 @@ export class Settings {
                 this.selectedOption = index;
             }
         });
-
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
 
+    /** Update UI positions */
     updateUIPositions() {
         this.buttonPositions = this.settingsOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,

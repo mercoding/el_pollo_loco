@@ -1,5 +1,13 @@
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
 
+/**
+ * Class for collactable items like bottles or maybe health
+ *
+ * @export
+ * @class CollectableItem
+ * @typedef {CollectableItem}
+ * @extends {CollisionCapable(GameObject)}
+ */
 export class CollectableItem extends CollisionCapable(GameObject) {
     static imageLoaded = false;
     ctx;
@@ -21,24 +29,34 @@ export class CollectableItem extends CollisionCapable(GameObject) {
         //this.global.audioManager.loadSound('Coin', 'audio/Coins_Single_01.wav');
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         if (this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
-
             ctx.drawImage(this.itemImage, screenX, this.y, this.width, this.height);
-
-
         }
         this.onCollisionStay();
         this.updateCollider();
-
     }
 
-    // Prüfen, ob Coin im sichtbaren Bereich des Canvas ist
+    /**
+     * Check if object is visible on canvas
+     *
+     * @param {*} screenX
+     * @param {*} canvasWidth
+     * @returns {boolean}
+     */
     isVisibleOnCanvas(screenX, canvasWidth) {
         // Check if the obstacle is within the visible canvas area
         return screenX + this.width > 0 && screenX < canvasWidth;
     }
 
+    /** Check if collision is on stay */
     onCollisionStay() {
         if (this.collidingWith == null) return;
         if (this.collidingWith.tag === "Player" && !this.collidingWith.onGround) {
@@ -46,6 +64,12 @@ export class CollectableItem extends CollisionCapable(GameObject) {
         }
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -59,6 +83,11 @@ export class CollectableItem extends CollisionCapable(GameObject) {
         ctx.restore();
     }
 
+    /**
+     * Check if collision enter 
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (other.tag == 'Player') {
             other.onGround = 505;
@@ -74,6 +103,7 @@ export class CollectableItem extends CollisionCapable(GameObject) {
         }
     }
 
+    /** Destroy item */
     destroyItem() {
         if (this.collisionManager && !this.dead) {
             this.dead = true;

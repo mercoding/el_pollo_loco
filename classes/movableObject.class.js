@@ -1,5 +1,13 @@
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
 
+/**
+ * Class if a game object is movable and collision capable
+ *
+ * @export
+ * @class MovableObject
+ * @typedef {MovableObject}
+ * @extends {CollisionCapable(GameObject)}
+ */
 export class MovableObject extends CollisionCapable(GameObject) {
     constructor(collisionManager, ...args) {
         super(collisionManager, ...args);
@@ -9,36 +17,53 @@ export class MovableObject extends CollisionCapable(GameObject) {
         this.target = null; // Ziel für Gegner
     }
 
-    move(deltaTime, onTarget = false) {
-        //if(this.moveSimulation) return;
-        // Berechnung der neuen Position basierend auf der Geschwindigkeit und deltaTime
-       
+    /**
+     * Handle object movement
+     *
+     * @param {*} deltaTime
+     * @param {boolean} [onTarget=false]
+     */
+    move(deltaTime, onTarget = false) {       
         this.x += this.velocity.x * deltaTime;
         this.y += this.velocity.y * deltaTime;
-        
         if(onTarget === true)  this.targetMove();
-
-        // Collider nach der Bewegung aktualisieren
         this.updateCollider();
     }
 
+    /**
+     * Set velocity
+     *
+     * @param {*} dx
+     * @param {*} dy
+     */
     setVelocity(dx, dy) {
-        //if(this.moveSimulation) return;
         this.velocity.x = dx * this.speed;
         this.velocity.y = dy * this.speed;
     }
 
+    /**
+     * Translate game object
+     *
+     * @param {*} dx
+     * @param {*} dy
+     * @param {*} speed
+     */
     Translate(dx, dy, speed) {
-        //if(this.moveSimulation) return;
         this.velocity.x = dx * speed;
         this.velocity.y = dy * speed;
     }
 
+    /**
+     * Set target position 
+     *
+     * @param {*} target
+     */
     setTarget(target) {
         this.target = target;  // Einmaliges Ziel für Bewegung setzen
     }
 
 
+    /** Move object to target if target is set */
     targetMove() {
         let direction = 0;
         if (this.target !== null) {
@@ -57,6 +82,12 @@ export class MovableObject extends CollisionCapable(GameObject) {
     }
 }
 
+/**
+ * If movable object has animtion
+ *
+ * @param {*} Base
+ * @returns {typeof (Anonymous class)}
+ */
 export const Animatable = (Base) => class extends Base {
     constructor(animationPaths, collisionManager, ...args) {
         super(collisionManager, ...args);
@@ -70,6 +101,13 @@ export const Animatable = (Base) => class extends Base {
         this.frameTime = 0;
     }
 
+    /**
+     * Load frames
+     *
+     * @param {*} path
+     * @param {*} frameCount
+     * @returns {{}}
+     */
     loadFrames(path, frameCount) {
         const frames = [];
         let folders = path.split('/');        
@@ -82,6 +120,11 @@ export const Animatable = (Base) => class extends Base {
         return frames;
     }
 
+    /**
+     * Update animation
+     *
+     * @param {*} deltaTime
+     */
     updateAnimation(deltaTime) {
         // Frame-Zeit hochzählen
         this.frameTime += deltaTime;
@@ -93,6 +136,11 @@ export const Animatable = (Base) => class extends Base {
         }
     }
 
+    /**
+     * Set animation state -> idle, walk, jump...
+     *
+     * @param {*} newState
+     */
     setState(newState) {
         // Überprüfen, ob der Zustand sich ändert, um Animationen neu zu starten
         if(this.state !== newState) {
@@ -102,6 +150,11 @@ export const Animatable = (Base) => class extends Base {
         }
     }
 
+    /**
+     * Get current frame
+     *
+     * @returns {*}
+     */
     getCurrentFrame() {
         // Sicherheitscheck: Existiert Animation für den Zustand?
         if (this.animations[this.state]) {

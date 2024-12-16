@@ -1,6 +1,14 @@
 import { Chicken } from "./chicken.class.js";
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
 
+/**
+ * Class for set ground object and set ground level for all game objects
+ *
+ * @export
+ * @class Ground
+ * @typedef {Ground}
+ * @extends {CollisionCapable(GameObject)}
+ */
 export class Ground extends CollisionCapable(GameObject) {
     static imageLoaded = false;
     global;
@@ -18,18 +26,26 @@ export class Ground extends CollisionCapable(GameObject) {
 
     Start() {}
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         this.ctx = ctx;
         deltaTime = deltaTime;
-        
-        // Only render the obstacle if it is visible on the canvas
-        if (this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
-            ctx.drawImage(this.obstacleImage, screenX, this.y, this.width, this.height);
-            //this.y = this.global.groundLevel;
-        }
+       
         this.updateCollider();
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -43,6 +59,12 @@ export class Ground extends CollisionCapable(GameObject) {
         ctx.restore();
     }
     
+    /**
+     * Check if player collision comes from side
+     *
+     * @param {*} other
+     * @param {*} direction
+     */
     isPlayerCollisionFromSide(other, direction) {
         if (direction === 'left') {            
             if(other.velocity.x > 0) {
@@ -60,6 +82,12 @@ export class Ground extends CollisionCapable(GameObject) {
         }
     }
 
+    /**
+     * Check if Player leave top
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
     isPlayerAdjacent(other) {
         if(!other.onGround) return;
         const buffer = 22; // Spielraum
@@ -71,6 +99,11 @@ export class Ground extends CollisionCapable(GameObject) {
     
 
     
+    /**
+     * Check if game object collides or stop falling
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (other.tag === 'Player' || other.tag === 'Enemy') {
             const direction = this.getCollisionDirection(other);
@@ -86,10 +119,5 @@ export class Ground extends CollisionCapable(GameObject) {
                 this.isPlayerCollisionFromSide(other, direction);
             }
         }
-    }
-
-    isVisibleOnCanvas(screenX, canvasWidth) {
-        // Check if the obstacle is within the visible canvas area
-        return screenX + this.width > 0 && screenX < canvasWidth;
     }
 }

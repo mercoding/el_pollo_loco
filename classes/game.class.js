@@ -9,7 +9,6 @@ import { ChickenBoss } from "./chickenBoss.class.js";
 import { Global } from "./global.class.js";
 import { Ground } from "./ground.class.js";
 import { InputHandler } from "./inputHandler.class.js";
-import { ClosedMenu } from "./Menu/closedMenu.class.js";
 import { Obstacle } from "./obstacle.class.js";
 import { Player } from "./player.class.js";
 import { UI } from "./ui.class.js";
@@ -22,7 +21,6 @@ export class Game extends World {
         super();
         this.gameObjects = [];
         this.lastFrameTime = 0;
-        //this.global.groundLevel = window.innerHeight - 64;
         this.cameraX = 0;
         this.global = new Global(this.canvas);
         this.inGame = false;
@@ -33,6 +31,7 @@ export class Game extends World {
         this.setSpawnSettings();
     }
 
+    /** Set spawn Settings for enemies and obstacles */
     setSpawnSettings() {
         this.spawnCooldown = 2; // Sekunden zwischen dem Spawnen eines Gegners
         this.spawnCoinCooldown = 5; // Sekunden zwischen dem Spawnen eines Gegners
@@ -41,7 +40,6 @@ export class Game extends World {
         this.spawnDistance = 650;
         this.lastCharacterX = 0;
         this.coinSpacing = 50;
-
         this.lastObstacleSpawnX = 0; // Track the X position of the last spawned obstacle
         this.minObstacleSpacing = 300; // Minimum distance between obstacles
         this.maxObstacleSpacing = 600; // Maximum distance between obstacles
@@ -50,6 +48,7 @@ export class Game extends World {
     }
 
 
+    /** Start new game and reset all Game stats */
     StartGame() {
         this.global.reset();
         const ground = new Ground('', this.global.collisionManager, -20000, this.global.groundLevel, 40000, 50, 'Ground');
@@ -64,6 +63,7 @@ export class Game extends World {
     }
 
 
+    /** Start intro scene, menu and game loop called Update */
     Start() {
         this.ui = new UI(this);
         this.lastFrameTime = performance.now();
@@ -79,6 +79,7 @@ export class Game extends World {
     }
 
 
+    /** Intialize Endbosses in both directions and spwan it to game scene */
     initializeBosses() {
         // Create obstacles at predefined positions to make them feel part of the scene
         const character = this.global.gameObjects.find(obj => obj instanceof Character);
@@ -90,6 +91,13 @@ export class Game extends World {
         });
     }
 
+    /**
+     * Get obstracles a stone which character can land and a cactus
+     *
+     * @param {*} positionX
+     * @param {*} index
+     * @returns {*}
+     */
     getObstacle(positionX, index) {
         let obstacle, ground, width;
         if (index % 3 === 0) {
@@ -104,6 +112,7 @@ export class Game extends World {
         return obstacle;
     }
 
+    /** Spawn obstacles a stone and a cactus */
     initializeObstacles() {
         obstaclePositions.forEach((positionX, index) => {
             const obstacle = this.getObstacle(positionX, index);
@@ -114,6 +123,7 @@ export class Game extends World {
     }
 
 
+    /** Redraw function if user resize window or change to full screen */
     redrawGameObjects() {
         const deltaTime = this.DeltaTime();
         this.global.groundLevel = this.canvas.height * 0.87;
@@ -128,6 +138,11 @@ export class Game extends World {
     }
 
 
+    /**
+     * Calculate delta time for game loop that all animation and moving works in a same perfomance
+     *
+     * @returns {*}
+     */
     DeltaTime() {
         const currentFrameTime = performance.now();
         const frameRate = (currentFrameTime - this.lastFrameTime) / 1000;
@@ -139,6 +154,11 @@ export class Game extends World {
         return deltaTime;
     }
 
+    /**
+     * Draw and update all scene objects in game loop
+     *
+     * @param {*} deltaTime
+     */
     updateScene(deltaTime) {
         if (!this.global.inGame) return;
         this.setCamera();
@@ -154,6 +174,7 @@ export class Game extends World {
         }
     }
 
+    /** Update ui check orientation and update scene objects */
     Update() {
         const deltaTime = this.DeltaTime();
         this.ClearCanvas();
@@ -165,18 +186,21 @@ export class Game extends World {
 
 
 
+    /** Check if game over, has player won or lost */
     checkIfGameOver() {
         if (this.global.bossDefeated > 0 || this.global.health <= 0) {
             this.ui.drawGameOver();
         }
     }
 
+    /** Draw in game ui health, throwable bottles and coins */
     drawUI() {
         this.ui.drawBottleBar(this.global.getBottles(), 10, 10);
         this.ui.drawHealthBar(this.global.health, 10, 45);
         this.ui.drawCoinStatusBar(this.global.coins, this.canvas.width - 100, 10);
     }
 
+    /** Spawn and set enemies or coins to scene */
     setSceneGameObjects() {
         this.global.gameObjects.forEach(obj => {
             if (obj instanceof Character) {     // Kamera nur auf den Charakter fokussieren
@@ -186,12 +210,18 @@ export class Game extends World {
         });
     }
 
+    /** Set Camera position which shows player always into the middle of canvas */
     setCamera() {
         const character = this.global.gameObjects.find(obj => obj instanceof Character);
         if (character === null) return;
         this.cameraX = character.x - this.canvas.width / 2;
     }
 
+    /**
+     * Update all game objects, positions, colliders and so on
+     *
+     * @param {*} deltaTime
+     */
     UpdateGameObjects(deltaTime) {
         const character = this.global.gameObjects.find(obj => obj instanceof Character);
         if (this.player) this.player.Update(this.ctx, deltaTime);
@@ -209,6 +239,7 @@ export class Game extends World {
     }
 
 
+    /** Remove objects which are off screen  */
     removeOffScreenEnemies() {
         const charakter = this.global.gameObjects.find(player => player instanceof Character);
         const minDistanceToRemoveEnemy = 1000; // Mindeststrecke in Pixeln (anpassbar)
@@ -229,11 +260,13 @@ export class Game extends World {
     }
 
 
+    /** Clear canvas */
     ClearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
 
+    /** Resize canvas */
     resizeCanvas() {
         if (!this.hasTouchSupport()) return;
         this.canvas.width = window.innerWidth;
@@ -246,6 +279,7 @@ export class Game extends World {
     }
 
 
+    /** Update ground level */
     updateGroundLevel() {
         this.global.groundLevel = this.canvas.height * 0.87;
         this.global.gameObjects.forEach(obj => {
@@ -259,6 +293,7 @@ export class Game extends World {
     }
 
 
+    /** Check orientation for mobile devices */
     checkOrientation() {
         if (this.isPortrait() && this.hasTouchSupport()) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -274,14 +309,29 @@ export class Game extends World {
     }
 
 
+    /**
+     * Check if mobile device is in landscape
+     *
+     * @returns {*}
+     */
     isLandscape() {
         return window.matchMedia("(orientation: landscape)").matches;
     }
 
+    /**
+     * Check if mobile device is in portrait
+     *
+     * @returns {*}
+     */
     isPortrait() {
         return window.matchMedia("(orientation: portrait)").matches;
     }
 
+    /**
+     * Check if device has touch support
+     *
+     * @returns {boolean}
+     */
     hasTouchSupport() {
         return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }

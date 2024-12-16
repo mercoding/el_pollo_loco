@@ -2,6 +2,15 @@ import { coinAnimations } from "../animations/coin.anim.js";
 import { Coin } from "../classes/coin.class.js";
 import { obstaclePositions } from "./gameObjectPositions.js";
 
+/**
+ * Draw coin in a curved position
+ *
+ * @param {*} isCurvedRow
+ * @param {*} i
+ * @param {*} baseYPosition
+ * @param {*} numberOfCoins
+ * @returns {number}
+ */
 function isCurved(isCurvedRow, i, baseYPosition, numberOfCoins) {
     let y = 0;
     if (isCurvedRow) {
@@ -17,6 +26,14 @@ function isCurved(isCurvedRow, i, baseYPosition, numberOfCoins) {
     return y;
 }
 
+/**
+ * Adjust coin positions and check if obstacle is too close
+ *
+ * @export
+ * @param {*} coinX
+ * @param {number} [minDistance=50]
+ * @returns {*}
+ */
 export function adjustCoinPosition(coinX, minDistance = 50) {
     obstaclePositions
     // Funktion, die überprüft, ob die Position zu nah an den Hindernissen ist
@@ -33,6 +50,15 @@ export function adjustCoinPosition(coinX, minDistance = 50) {
     return coinX; // Gibt die angepasste Position zurück
 }
 
+/**
+ * Check is coin near by another coin
+ *
+ * @param {*} game
+ * @param {*} x
+ * @param {*} y
+ * @param {number} [threshold=50]
+ * @returns {*}
+ */
 function isCoinNearby(game, x, y, threshold = 50) {
     // Prüfe, ob ein Coin in der Nähe der geplanten Position ist
     return game.global.gameObjects.some(obj => {
@@ -42,6 +68,17 @@ function isCoinNearby(game, x, y, threshold = 50) {
     });
 }
 
+/**
+ * Spawn coin
+ *
+ * @param {*} game
+ * @param {*} character
+ * @param {*} direction
+ * @param {*} startX
+ * @param {*} baseYPosition
+ * @param {*} numberOfCoins
+ * @param {*} isCurvedRow
+ */
 function spawnCoin(game, character, direction, startX, baseYPosition, numberOfCoins, isCurvedRow) {
     for (let i = 0; i < numberOfCoins; i++) {
         let x = startX + i * game.coinSpacing * direction;
@@ -59,6 +96,14 @@ function spawnCoin(game, character, direction, startX, baseYPosition, numberOfCo
 }
 
 
+/**
+ * Check coin position and spawn coin
+ *
+ * @export
+ * @param {*} game
+ * @param {*} performance
+ * @param {*} character
+ */
 export function checkAndSpawnCoinRow(game, performance, character) {
     if (character.x > 9000 || character.x < -9000) return;
     if (character.state === 'idle') return;

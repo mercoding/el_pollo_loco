@@ -18,24 +18,30 @@ export class Chicken extends Animatable(MovableObject) {
         this.onGround = true;
         this.touched = false;
         this.invincibilityDuration = 2.0;
+        this.Start();
+    }
+
+    /** Set stats on start */
+    Start() {
         this.lastDamageTime = 0;
         this.soundIndex = 0; // Index für den Soundwechsel
         this.soundCooldown = 0; // Verhindert zu schnelles Abspielen
         this.cooldownDuration = 0.5;
         this.soundRepeatCounter = 0;
-        this.Start();
-    }
-
-    Start() {
         this.audioManager = new AudioManager();
         this.audioManager.effectsVolume = 0.2;
         this.audioManager.loadSound('Bot1', 'audio/Bot1.wav');
         this.audioManager.loadSound('Bot2', 'audio/Bot2.wav');
         this.audioManager.loadSound('Squish', 'audio/Bakaa4.wav');
-        //this.ground = this.global.groundLevel;
-
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         this.drawChicken(ctx, screenX);
         this.audioManager.effectsVolume = this.global.getSoundVolumes();
@@ -44,12 +50,7 @@ export class Chicken extends Animatable(MovableObject) {
         this.isOnGround(deltaTime);
         this.move(deltaTime);
         this.updateAnimation(deltaTime);
-
-        if (this.soundCooldown > 0) {
-            this.soundCooldown -= deltaTime;
-        }
-
-        // Spiele Sounds, wenn Chicken läuft
+        if (this.soundCooldown > 0) this.soundCooldown -= deltaTime;
         if (this.velocity.x !== 0 && this.soundCooldown <= 0) {
             this.playWalkingSound();
             this.soundCooldown = this.cooldownDuration; // Setze den Cooldown zurück
@@ -57,6 +58,12 @@ export class Chicken extends Animatable(MovableObject) {
         this.updateCollider();
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -72,6 +79,12 @@ export class Chicken extends Animatable(MovableObject) {
 
 
 
+    /**
+     * Draw chicken
+     *
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     drawChicken(ctx, screenX) {
         // Frame für das aktuelle Bild der Animation erhalten
         const frame = this.getCurrentFrame();
@@ -83,6 +96,7 @@ export class Chicken extends Animatable(MovableObject) {
         }
     }
 
+    /** Play walking sound */
     playWalkingSound() {
         let sound;
         if (this.soundRepeatCounter < 3) {
@@ -98,6 +112,13 @@ export class Chicken extends Animatable(MovableObject) {
         this.audioManager.playSound(sound);
     }
 
+    /**
+     * Draw chicken image facing to left
+     *
+     * @param {*} frame
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     moveLeft(frame, ctx, screenX) {
         ctx.translate(screenX + this.width, this.y);
         ctx.scale(-1, 1);  // Flipped für "nach links"
@@ -105,12 +126,24 @@ export class Chicken extends Animatable(MovableObject) {
         this.setVelocity(1, 0);
     }
 
+    /**
+     * Draw chicken image facing to right
+     *
+     * @param {*} frame
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     moveRight(frame, ctx, screenX) {
         ctx.translate(screenX, this.y);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
         this.setVelocity(-1, 0);
     }
 
+    /**
+     * Set bouncing effect if player jump on it
+     *
+     * @param {*} other
+     */
     setBounceAfterSquish(other) {
         //other.velocity.y = 0;
         if (other.tag === "Player") {
@@ -121,6 +154,11 @@ export class Chicken extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Draw squish effect if player jump on it and destroy chicken
+     *
+     * @param {*} other
+     */
     squish(other) {
         if (!this.isSquished) {
             this.y += 13;
@@ -138,6 +176,11 @@ export class Chicken extends Animatable(MovableObject) {
         }
     }
 
+    /**
+     * Handle hit if player jump on it
+     *
+     * @param {*} other
+     */
     onHit(other) {
         if (this.dead) return;
         if (!this.dead) {
@@ -150,6 +193,11 @@ export class Chicken extends Animatable(MovableObject) {
         }
     }
 
+    /**
+     * Handle collision on obstacles and move into another direction
+     *
+     * @param {*} other
+     */
     ifCollisionOnObstacle(other) {
         if (other.tag === 'Obstacle' || other.tag === 'Cactus') {
             if (!this.touched) {
@@ -163,6 +211,11 @@ export class Chicken extends Animatable(MovableObject) {
         }
     }
 
+    /**
+     * Handle collision on player and set damage to player if it not jumped on top
+     *
+     * @param {*} other
+     */
     ifCollisionOnPlayer(other) {
         if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
@@ -176,6 +229,12 @@ export class Chicken extends Animatable(MovableObject) {
         }
     }
 
+    /**
+     * Check if player is on side of collider
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
     isPlayerAdjacent(other) {
         if(!other.onGround) return;
         const buffer = 22; // Spielraum
@@ -186,6 +245,11 @@ export class Chicken extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Check if collider enter 
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (this.dead) return;
         this.ifCollisionOnObstacle(other);
@@ -196,6 +260,7 @@ export class Chicken extends Animatable(MovableObject) {
         }
     }
 
+    /** Handle on death */
     onDeath() {
         // Lasse Flaschen fallen, wenn das Chicken besiegt wurde
         const numBottles = Math.floor(Math.random(0, 10) * 10); // 1-2 Flaschen        
@@ -206,12 +271,18 @@ export class Chicken extends Animatable(MovableObject) {
         this.global.collisionManager.addObject(bottle);
     }
 
+    /**
+     * Check if is on ground
+     *
+     * @param {*} deltaTime
+     */
     isOnGround(deltaTime) {
         if (!this.onGround || this.collidingWith === null) {
             this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
         }
     }
 
+    /** Land game object and stop falling */
     land() {
         this.onGround = true; // Charakter ist jetzt auf dem Boden
         this.velocity.y = 0; // Vertikale Geschwindigkeit auf Null setzen

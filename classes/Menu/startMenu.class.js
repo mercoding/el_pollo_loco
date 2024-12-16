@@ -3,10 +3,19 @@ import { ClosedMenu } from "./closedMenu.class.js";
 import { Controls } from "./controls.class.js";
 import { GameMenu } from "./gameMenu.class.js";
 import { Intro } from "./intro.class.js";
+import { MenuGUI } from "./menuGUI.class.js";
 import { Settings } from "./settings.class.js";
 
-export class StartMenu {
+/**
+ * UI for start menu
+ *
+ * @export
+ * @class StartMenu
+ * @typedef {StartMenu}
+ */
+export class StartMenu extends MenuGUI {
     constructor(ui) {
+        super(ui);
         this.ui = ui;
         this.inputHandler = new InputHandler();
         this.background = new Image();
@@ -16,6 +25,7 @@ export class StartMenu {
         this.onStart();
     }
 
+    /** Set menu on start */
     onStart() {
         this.menuOptions = ['New Game', 'Controls', 'Settings', 'Quit']; // Menüoptionen
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
@@ -36,57 +46,24 @@ export class StartMenu {
         this.addMenuListeners();
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} deltaTime
+     */
     onUpdate(deltaTime) {
-
         this.drawStartMenu();
         this.updateUIPositions();
     }
 
+    /** Finish processes on exit */
     onExit() {
         this.removeMenuListeners();
         this.ui.canvas.style.cursor = 'default';
     }
 
-    setFont() {
-        this.ui.ctx.fillStyle = 'white';
-        this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.textAlign = 'center';
-    }
 
-    drawBackground(background) {
-        this.clearCanvas();
-        this.ui.ctx.fillStyle = 'black';
-        this.ui.ctx.fillRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-        this.ui.ctx.drawImage(background, 0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    }
-
-    drawRoundedBox(ctx, x, y, width, height, borderRadius) {
-        ctx.beginPath();
-        ctx.moveTo(x + borderRadius, y);
-        ctx.lineTo(x + width - borderRadius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + borderRadius);
-        ctx.lineTo(x + width, y + height - borderRadius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - borderRadius, y + height);
-        ctx.lineTo(x + borderRadius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - borderRadius);
-        ctx.lineTo(x, y + borderRadius);
-        ctx.quadraticCurveTo(x, y, x + borderRadius, y);
-        ctx.closePath();
-    }
-
-    drawImageWithRoundedBorder(ctx, image, x, y, width, height, borderRadius = 20, borderColor = 'black', borderWidth = 2, alpha = 1) {
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        this.drawRoundedBox(ctx, x, y, width, height, borderRadius);
-        ctx.clip();
-        ctx.drawImage(image, x, y, width, height);
-        ctx.restore();
-        ctx.lineWidth = borderWidth;
-        ctx.strokeStyle = borderColor;
-        ctx.stroke();
-        ctx.restore();
-    }
-
+    /** Draw start menu options */
     drawStartMenuOptions() {
         // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
@@ -98,6 +75,11 @@ export class StartMenu {
         });
     }
 
+    /**
+     * Handle new game option
+     *
+     * @param {*} selected
+     */
     NewGame(selected) {
         if (selected === 'New Game') {
             this.ui.global.inGame = true;
@@ -110,6 +92,11 @@ export class StartMenu {
         }
     }
 
+    /**
+     * Handle controls option
+     *
+     * @param {*} selected
+     */
     Controls(selected) {
         if (selected === 'Controls') {
             this.ui.global.inGame = false;
@@ -120,6 +107,11 @@ export class StartMenu {
         }
     }
 
+    /**
+     * Handle settings option
+     *
+     * @param {*} selected
+     */
     Settings(selected) {
         if (selected === 'Settings') {
             this.ui.global.inGame = false;
@@ -130,6 +122,11 @@ export class StartMenu {
         }
     }
 
+    /**
+     * Handle Quit option
+     *
+     * @param {*} selected
+     */
     Quit(selected) {
         if (selected === 'Quit') {
             this.ui.global.inGame = false;
@@ -140,6 +137,7 @@ export class StartMenu {
         }
     }
 
+    /** Function which call selected option */
     selectOption() {
         const selected = this.menuOptions[this.selectedOption];
         this.NewGame(selected);
@@ -148,27 +146,7 @@ export class StartMenu {
         this.Quit(selected);
     }
 
-    getPanelWidth() {
-        const height = this.getPanelHeight();
-        const diff = height < 450 ? height / 6 : height / 3;         
-        let width = this.getPanelHeight() - diff;
-        return width;
-    }
-
-    getPanelHeight() {
-        if(window.innerHeight > 460) return 450;
-        else return 350;
-    }
-
-    centerPanelX() {
-        const width = this.getPanelWidth();                
-        return this.ui.canvas.width / 2 - width / 2;
-    }
-    centerPanelY() {
-        const height = this.getPanelHeight();
-        return this.ui.canvas.height / 2 - height / 2;
-    }
-
+    /** Draw start menu */
     drawStartMenu() {        
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
@@ -178,6 +156,11 @@ export class StartMenu {
         this.drawStartMenuOptions();
     }
 
+    /**
+     * Handle key input arrow up and down and enter for navigation
+     *
+     * @param {*} event
+     */
     menuKeyInputInStartMenu(event) {
         const input = this.inputHandler.getInput();
         if (input.up) this.selectedOption = (this.selectedOption - 1 + this.menuOptions.length) % this.menuOptions.length;
@@ -186,10 +169,7 @@ export class StartMenu {
     }
 
 
-    clearCanvas() {
-        this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    }
-
+    /** Add menu listeners */
     addMenuListeners() {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.menuKeyInputInStartMenu(event);
@@ -201,6 +181,7 @@ export class StartMenu {
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
+    /** Remove menu listeners */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
@@ -216,33 +197,15 @@ export class StartMenu {
             this.mouseHoverListener = null;
         }
     }
-/*
-    handleMenuMouseOptions(mouseX, mouseY) {
-        this.menuOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 110 + index * 80;
-            if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-                mouseY > y - 40 && mouseY < y + 20) {
-                this.selectedOption = index;
-                this.startMenu();
-            }
-        });
-    }*/
-/*
-    handleMenuMouseOptions(mouseX, mouseY) {    
-        this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
-                this.selectedOption = index;
-                this.startMenu();
-            }
-        });
-    }*/
+
     
 
+    /**
+     * Handle mouse menu quit button
+     *
+     * @param {*} mouseX
+     * @param {*} mouseY
+     */
     handleMenuMouseQuitButton(mouseX, mouseY) {
         const backY = this.ui.canvas.height - 60;
         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
@@ -255,6 +218,11 @@ export class StartMenu {
         }
     }
 
+    /**
+     * Handle menu mouse input
+     *
+     * @param {*} event
+     */
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
@@ -274,43 +242,12 @@ export class StartMenu {
         
     }
 
-    drawRoundedButton(ctx, x, y, width, height, radius) {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 5;
-        ctx.shadowOffsetY = 5;
-        ctx.fillStyle = '#3498db';
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.arcTo(x + width, y, x + width, y + height, radius);
-        ctx.arcTo(x + width, y + height, x, y + height, radius);
-        ctx.arcTo(x, y + height, x, y, radius);
-        ctx.arcTo(x, y, x + width, y, radius);
-        ctx.closePath();
-        ctx.fill();
-    }
 
-    /*
-    handleMouseHover(event) {
-        const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-    
-        let isHovering = false;
-    
-        this.menuOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 80;
-            if (mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
-                mouseY > y - 40 && mouseY < y + 20) {
-                isHovering = true;
-                this.selectedOption = index;
-            }
-        });
-    
-        // Setze den Cursor basierend auf Hover-Zustand
-        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
-    }*/
-
+    /**
+     * Handle mouse hover effect -> cursor pointer
+     *
+     * @param {*} event
+     */
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
@@ -334,6 +271,7 @@ export class StartMenu {
     }
     
 
+    /** Update UI positions */
     updateUIPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
@@ -342,5 +280,4 @@ export class StartMenu {
             height: 50,
         }));
     }
-    
 }

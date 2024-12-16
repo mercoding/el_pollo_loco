@@ -4,6 +4,7 @@ let game = new Game();
 const canvas = document.getElementById('canvas');
 const fullscreen = document.getElementById('fullscreen');
 
+/** Change to fullscreen mode */
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         canvas.requestFullscreen().catch(err => {
@@ -32,6 +33,7 @@ if (!/Mobi|Android/i.test(navigator.userAgent)) {
     fullscreen.style.display = 'block';
 }
 
+/** Initialize game loop */
 function init() {
     game.Start();
 }

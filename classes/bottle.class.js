@@ -6,6 +6,14 @@ import { Explosion } from './explosion.class.js';
 import { CollisionCapable, GameObject } from './gameObject.class.js';
 import { Animatable, MovableObject } from './movableObject.class.js';
 
+/**
+ * Class for bottle item
+ *
+ * @export
+ * @class Bottle
+ * @typedef {Bottle}
+ * @extends {Animatable(MovableObject)}
+ */
 export class Bottle extends Animatable(MovableObject) {
     constructor(animationPaths, collisionManager, global, x, y, width, height, velocityX, velocityY, tag = 'Bottle') {
         super(animationPaths, collisionManager, x, y, width, height, tag);
@@ -23,20 +31,19 @@ export class Bottle extends Animatable(MovableObject) {
         this.audioManager.currentTime = 0;
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         if (this.hasExploded) return; // Nichts tun, wenn bereits explodiert
-
-        // Gravitation anwenden
         this.velocity.y += this.gravity * deltaTime;
-
-        // Position aktualisieren
         this.x += this.velocity.x * deltaTime;
         this.y += this.velocity.y * deltaTime;
-
         this.drawBottle(ctx, screenX);
-
-        // Prüfen, ob die Flasche aufprallt
-
         if (this.y + this.height >= this.global.groundLevel) {
             this.explode();
         }
@@ -45,6 +52,12 @@ export class Bottle extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Draw bottle
+     *
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     drawBottle(ctx, screenX) {
         const frame = this.getCurrentFrame();
 
@@ -57,6 +70,12 @@ export class Bottle extends Animatable(MovableObject) {
         }
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -69,12 +88,24 @@ export class Bottle extends Animatable(MovableObject) {
         );
         ctx.restore();
     }
+
+    /**
+     * Calculate distance for collision
+     *
+     * @param {*} other
+     * @returns {*}
+     */
     calculateDistance(other) {
         const dx = other.x - this.x;
         const dy = other.y - this.y;
         return Math.sqrt(dx * dx + dy * dy);
     }
 
+    /**
+     * Handle hit on chicken enemy
+     *
+     * @param {*} other
+     */
     hitChickenBoss(other) {
         setTimeout(() => {
             other.onHit(this);
@@ -83,6 +114,12 @@ export class Bottle extends Animatable(MovableObject) {
         }, 200);
     }
 
+    /**
+     * Check if chicken enemy collider is on the edge of collider
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
     isChickenAdjacent(other) {
         const buffer = 5; // Spielraum
         return (
@@ -91,6 +128,11 @@ export class Bottle extends Animatable(MovableObject) {
         );
     }
 
+    /**
+     * Check if collision enter
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (other.tag === "Ground" || other.tag === "Enemy" || other.tag === "Obstacle") {
             const distanceToPlayer = this.x - other.x;
@@ -107,11 +149,13 @@ export class Bottle extends Animatable(MovableObject) {
         }
     }
 
+    /** Play explosion audio */
     explosionAudio() {
         // Explosionseffekt (visuell und mechanisch)
         this.audioManager.playSound('Explosion');
     }
 
+    /** Start explode effect spawm explosion game object */
     explode() {
         this.hasExploded = true;
         this.global.addGameObject(new Explosion(bottleExplodeAnimations, this.collisionManager, this.global, this.x, this.y, this.explosionRadius)); // Explosionseffekt hinzufügen

@@ -44,28 +44,57 @@ export class UI extends World {
     }
 
 
+    /** Set stuff on start */
     Start() {
         this.global.getVolumes();
         this.gameOverImg.src = "img/9_intro_outro_screens/game_over/you lost.png";
         this.gameWinImg.src = "img/9_intro_outro_screens/win/won_1.png";
     }
 
+    /**
+     * Update ui state machine if state intro it shows intro scene to example
+     * on state canceledMenu it starts game and over watch p key to change into
+     * in game menu state
+     *
+     * @param {*} deltaTime
+     */
     Update(deltaTime) {
         this.menu.Update(deltaTime);
     }
 
 
+    /**
+     * Description placeholder
+     *
+     * @param {*} percent
+     * @param {*} x
+     * @param {*} y
+     */
     drawHealthBar(percent, x, y) {
         this.healthStatusBar.src = percent > 0 ? this.healthStatus[percent].path : this.healthStatus['0'].path;
         this.ctx.drawImage(this.healthStatusBar, x, y, 200, 50);
     }
 
 
+    /**
+     * Draw bottle bar in game ui
+     *
+     * @param {*} percent
+     * @param {*} x
+     * @param {*} y
+     */
     drawBottleBar(percent, x, y) {
         this.bottlesStatusBar.src = this.bottleStatus[percent].path;
         this.ctx.drawImage(this.bottlesStatusBar, x, y, 200, 50);
     }
 
+    /**
+     * Draw coin status in game ui
+     *
+     * @param {*} coins
+     * @param {*} x
+     * @param {*} y
+     */
     drawCoinStatusBar(coins, x, y) {
         this.coinsStatus.src = 'img/7_statusbars/3_icons/icon_coin.png';
         this.ctx.drawImage(this.coinsStatus, x, y, 50, 50);
@@ -76,6 +105,7 @@ export class UI extends World {
     }
 
 
+    /** Draw game over image */
     drawGameOver() {
         const gameOver = this.global.health <= 0 ? this.gameOverImg : this.gameWinImg;
         if (this.global.health <= 0) this.ctx.drawImage(gameOver, 0, 0, this.canvas.width, this.canvas.height);
@@ -84,6 +114,7 @@ export class UI extends World {
     }
 
 
+    /** Clear canvas */
     clearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }

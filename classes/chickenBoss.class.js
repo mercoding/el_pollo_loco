@@ -3,6 +3,14 @@ import { StateMachine } from "./AI/stateMachine.class.js";
 import { AudioManager } from "./AudioManager.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
+/**
+ * Class for end boss
+ *
+ * @export
+ * @class ChickenBoss
+ * @typedef {ChickenBoss}
+ * @extends {Animatable(MovableObject)}
+ */
 export class ChickenBoss extends Animatable(MovableObject) {
     global;
     healthStatusBar = new Image();
@@ -14,25 +22,28 @@ export class ChickenBoss extends Animatable(MovableObject) {
         80: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue80.png' },
         100: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue100.png' }
     };
+
     constructor(animationPaths, collisionManager, player, x, ...args) {
         super(animationPaths, collisionManager, x, ...args);
         this.facingRight = true;
         this.setState('idle');
-       
         this.mainSettings(player, x);
         this.stateMachine = new StateMachine(new IdleState(this));
-
-        
         this.attackSettings();
         this.Start();
     }
 
+    /**
+     * Set main settings
+     *
+     * @param {*} player
+     * @param {*} x
+     */
     mainSettings(player, x) {
         this.player = player;
         this.startPosition = x;
         this.speed = 50;
         this.gravity = 800;
-        //this.ground = 435;
         this.onGround = true;
         this.dead = false;
         this.frameDuration = 0.3;
@@ -41,6 +52,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.hitCount = 0;
     }
 
+    /** Set attack settings */
     attackSettings() {
         this.attackDistanceThreshold = 180;
         this.playerInAttackDistance = 300;
@@ -50,6 +62,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.attackAnimationComplete = false;
     }
 
+    /** Set stats on start */
     Start() {
         this.audioManager = new AudioManager();
         this.audioManager.effectsVolume = 0.2;
@@ -61,10 +74,15 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.soundCooldown = 0;
         this.cooldownDuration = 0.5;
         this.soundRepeatCounter = 0;
-        //this.ground = this.global.groundLevel + 100;
-
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         this.audioManager.effectsVolume = this.global.getSoundVolumes();
         this.isOnGround(deltaTime);
@@ -82,6 +100,11 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.updateCollider();
     }
 
+    /**
+     * Set dead state
+     *
+     * @returns {boolean}
+     */
     isDead() {
         if (this.health <= 0) {
             this.setState('dead');
@@ -90,6 +113,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
         return false;
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -103,6 +132,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
         ctx.restore();
     }
 
+    /**
+     * Draw chicken boss
+     *
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     drawChicken(ctx, screenX) {
         const frame = this.getCurrentFrame();
         if (frame) {
@@ -113,6 +148,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         }
     }
 
+    /** Play walking sound */
     playWalkingSound() {
         if (this.velocity.x !== 0 && this.soundCooldown <= 0) {
             let sound;
@@ -129,11 +165,25 @@ export class ChickenBoss extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Draw health bar
+     *
+     * @param {*} ctx
+     * @param {*} percent
+     * @param {*} x
+     * @param {*} y
+     */
     drawHealthBar(ctx, percent, x, y) {
         this.healthStatusBar.src = percent > 0 ? this.healthStatus[percent].path : this.healthStatus['0'].path;
         ctx.drawImage(this.healthStatusBar, x, y, 200, 50);
     }
 
+    /**
+     * Calculate bottle hits into percentage
+     *
+     * @param {*} hitCount
+     * @returns {(100 | 80 | 60 | 40 | 20 | 0)}
+     */
     calculateBottlePercentage(hitCount) {
         const maxHealth = 10;
         const percentage = (hitCount / maxHealth) * 100;
@@ -145,27 +195,56 @@ export class ChickenBoss extends Animatable(MovableObject) {
         return 0;
     }
 
+    /**
+     * Draw chicken image facing to left
+     *
+     * @param {*} frame
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     moveLeft(frame, ctx, screenX) {
         ctx.translate(screenX + this.width, this.y);
         ctx.scale(-1, 1);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
+    /**
+     * Draw chicken image facing to right
+     *
+     * @param {*} frame
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     moveRight(frame, ctx, screenX) {
         ctx.translate(screenX, this.y);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
+    /**
+     * Calculate distance to player
+     *
+     * @returns {*}
+     */
     calculateDistanceToPlayer() {
         const dx = this.player.x - this.x;
         const dy = this.player.y - this.y;
         return Math.sqrt(dx * dx + dy * dy);
     }
 
+    /**
+     * Move game object
+     *
+     * @param {*} deltaTime
+     */
     move(deltaTime) {
         super.move(deltaTime);
     }
 
+    /**
+     * Check if game object is on ground
+     *
+     * @param {*} deltaTime
+     */
     isOnGround(deltaTime) {
         if (!this.onGround) {
             this.velocity.y += this.gravity * deltaTime; // Gravitationskraft addieren
@@ -176,6 +255,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         }
     }
 
+    /** Land game object */
     land() {
         this.onGround = true;
         this.velocity.y = 0;
@@ -184,6 +264,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
 
 
 
+    /**
+     * Calculate return position to move
+     *
+     * @param {*} boss
+     * @returns {*}
+     */
     calculateReturnPosition(boss) {
         // Define the offset distance you want the boss to maintain from the player
         const offsetDistance = (this.player.x < boss.x) ? 250 : -250;
@@ -199,6 +285,11 @@ export class ChickenBoss extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Handle if player hit with a bottle
+     *
+     * @param {*} other
+     */
     onHit(other) {
         if (this.dead) return;
         if (this.health > 0) {
@@ -213,6 +304,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
         }
     }
 
+    /**
+     * Check if Player is on side
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
     isPlayerAdjacent(other) {
         if(!other.onGround) return;
         const buffer = 22; // Spielraum
@@ -223,6 +320,11 @@ export class ChickenBoss extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Check if player enter collider
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (other.tag === "Player" && this.health > 0) {
             const direction = this.getCollisionDirection(other);
@@ -231,6 +333,4 @@ export class ChickenBoss extends Animatable(MovableObject) {
             }
         }
     }
-
-
 }

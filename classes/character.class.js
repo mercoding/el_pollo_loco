@@ -2,6 +2,14 @@ import { bottleAnimations } from "../animations/bottle.anim.js";
 import { Bottle } from "./bottle.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
+/**
+ * Class to define playable character
+ *
+ * @export
+ * @class Character
+ * @typedef {Character}
+ * @extends {Animatable(MovableObject)}
+ */
 export class Character extends Animatable(MovableObject) {
     global;
     constructor(animationPaths, collisionManager, ...args) {
@@ -23,6 +31,7 @@ export class Character extends Animatable(MovableObject) {
     }
 
 
+    /** Define stats on start */
     Start() {
         this.global.audioManager.loadSound('El Pollo Loco', 'audio/El Pollo Loco.mp3', true);
         this.global.audioManager.loadSound('Left Step', 'audio/Ground_Step3.wav');
@@ -30,10 +39,13 @@ export class Character extends Animatable(MovableObject) {
         this.global.audioManager.loadSound('Jump', 'audio/Jump.wav');
         this.global.audioManager.loadSound('Land', 'audio/Land.wav');
         this.global.audioManager.loadSound('Hurt', 'audio/Voice_Male_V2_Pain_Mono_01.wav');
-        //this.ground = this.global.groundLevel;
-
     }
 
+    /**
+     * Handle if game is in pause
+     *
+     * @returns {boolean}
+     */
     ifPauseState() {
         if (this.global.pause) {
             this.velocity.x = 0;
@@ -44,6 +56,13 @@ export class Character extends Animatable(MovableObject) {
         return false;
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         this.drawCharacter(ctx, screenX);
         this.updateAnimation(deltaTime);
@@ -58,6 +77,12 @@ export class Character extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -72,6 +97,7 @@ export class Character extends Animatable(MovableObject) {
     }
 
 
+    /** Update collider */
     updateCollider() {
         super.updateCollider(); // Ruft die GameObject-Logik auf
         this.collider.x = this.x - this.width / 2; // Zentriert den Collider
@@ -79,18 +105,38 @@ export class Character extends Animatable(MovableObject) {
     }
 
 
+    /**
+     * Draw player image facing to right
+     *
+     * @param {*} frame
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     drawFacingRight(frame, ctx, screenX) {
         ctx.translate(this.x - screenX - this.width / 2, this.y - this.height / 2);
         ctx.scale(1, 1);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
     }
 
+    /**
+     * Draw player image facing to left
+     *
+     * @param {*} frame
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     drawFacingLeft(frame, ctx, screenX) {
         ctx.translate(this.x - screenX * 2 + this.width / 2, this.y - this.height / 2);
         ctx.scale(-1, 1);
         ctx.drawImage(frame, -screenX, 0, this.width, this.height);
     }
 
+    /**
+     * Draw character
+     *
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     drawCharacter(ctx, screenX) {
         const frame = this.getCurrentFrame();
 
@@ -105,6 +151,13 @@ export class Character extends Animatable(MovableObject) {
         }
     }
 
+    /**
+     * Walk function handle walking speed and direction
+     *
+     * @param {*} facing
+     * @param {*} x
+     * @param {*} speed
+     */
     walk(facing, x, speed) {
         this.facingRight = facing;
         this.velocity.x = x * speed;
@@ -117,12 +170,14 @@ export class Character extends Animatable(MovableObject) {
         }
     }
 
+    /** Play footsteps */
     playFootstepSound() {
         if (this.isLeftFoot) this.global.audioManager.playSound('Left Step');
         else this.global.audioManager.playSound('Right Step');
         this.isLeftFoot = !this.isLeftFoot;
     }
 
+    /** Stop walking  */
     idle() {
         if (this.onGround) {
             this.velocity.x = 0;
@@ -130,24 +185,28 @@ export class Character extends Animatable(MovableObject) {
         }
     }
 
+    /** Handle Jump and double jump*/
     jump() {
-        if (this.onGround) {
-            // Erster Sprung vom Boden
+        if (this.onGround) { // first jump
             this.velocity.y = this.jumpStrength;
             this.onGround = false;
-            this.canDoubleJump = false; // Doppelsprung vorerst deaktiviert
-            this.reachedApex = false;  // Scheitelpunkt-Überwachung zurücksetzen
+            this.canDoubleJump = false; // activate double jump
+            this.reachedApex = false;  
             this.global.audioManager.playSound('Jump');
             this.setStateOnce('jump');
-        } else if (this.reachedApex && !this.canDoubleJump) {
-            // Doppelsprung, nur wenn Scheitelpunkt erreicht wurde
+        } else if (this.reachedApex && !this.canDoubleJump) { // double jump
             this.velocity.y = this.jumpStrength + 100;
-            this.canDoubleJump = true; // Doppelsprung kann nur einmal genutzt werden
+            this.canDoubleJump = true; 
             this.global.audioManager.playSound('Jump');
-            this.setStateOnce('jump'); // Animation für den Doppelsprung
+            this.setStateOnce('jump'); 
         }
     }
 
+    /**
+     * Update jump state
+     *
+     * @param {*} deltaTime
+     */
     updateJumpState(deltaTime) {
         if (!this.onGround && !this.reachedApex && this.velocity.y >= 0) {
             this.reachedApex = true; // Scheitelpunkt wurde erreicht
@@ -156,20 +215,18 @@ export class Character extends Animatable(MovableObject) {
 
 
 
+    /**
+     * Check if is on ground
+     *
+     * @param {*} deltaTime
+     */
     isOnGround(deltaTime) {
         if (!this.onGround || this.collidingWith === null) {
             this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
         }
-/*
-        const groundY = this.ground; // Standardhöhe für den Boden
-        if (this.y + this.height >= groundY) {
-            this.y = groundY - this.height;
-            this.land();
-        }*/
     }
 
-
-
+    /** Land game object */
     land() {
         if (!this.onGround) { // Überprüfen, ob der Charakter zuvor nicht auf dem Boden war
             this.global.audioManager.playSound('Land');
@@ -181,6 +238,13 @@ export class Character extends Animatable(MovableObject) {
         if (this.state == 'jump') this.setStateOnce('idle'); // Status aktualisieren, wenn vorher im Sprung
     }
 
+    /**
+     * Get bottle object for spawning
+     *
+     * @param {*} velocityX
+     * @param {*} velocityY
+     * @returns {*}
+     */
     getBottle(velocityX, velocityY) {
         const bottle = new Bottle(bottleAnimations, this.collisionManager, this.global,
             this.x + (this.facingRight ? this.width : -this.width),
@@ -190,6 +254,7 @@ export class Character extends Animatable(MovableObject) {
     }
 
 
+    /** Throw bottle */
     throwBottle() {
         if (!this.isThrown) {
             if (this.global.bottles > 0) { // Prüfe, ob der Charakter Flaschen hat
@@ -205,6 +270,7 @@ export class Character extends Animatable(MovableObject) {
         }
     }
 
+    /** Remove invincible if was hurt */
     removeInvincible() {
         setTimeout(() => {
             this.isInvincible = false;
@@ -213,6 +279,7 @@ export class Character extends Animatable(MovableObject) {
         }, this.invincibilityDuration * 1000);
     }
 
+    /** Take damage */
     takeDamage() {
         if (this.global.health <= 0) return;
         if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
@@ -230,6 +297,11 @@ export class Character extends Animatable(MovableObject) {
         this.isDead();
     }
 
+    /**
+     * Handle if is player was hit
+     *
+     * @param {*} other
+     */
     onHit(other) {
         if (other.dead) return;
         this.velocity.y = 0;
@@ -244,18 +316,29 @@ export class Character extends Animatable(MovableObject) {
 
     }
 
+    /** Check if player is dead */
     isDead() {
         if (this.global.health <= 0) {
             this.setStateOnce('dead');
         }
     }
 
+    /**
+     * Set player state once
+     *
+     * @param {*} newState
+     */
     setStateOnce(newState) {
         if (this.state !== newState) this.setState(newState);
     }
 
 
 
+    /**
+     * Handle if collision enter
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         const direction = this.getCollisionDirection(other);
         if (other.tag == "Enemy" && !this.onGround) {

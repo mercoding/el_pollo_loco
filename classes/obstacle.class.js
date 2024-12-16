@@ -18,6 +18,13 @@ export class Obstacle extends CollisionCapable(GameObject) {
 
     Start() {}
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         this.ctx = ctx;
         deltaTime = deltaTime;
@@ -28,6 +35,12 @@ export class Obstacle extends CollisionCapable(GameObject) {
         this.updateCollider();
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -41,6 +54,12 @@ export class Obstacle extends CollisionCapable(GameObject) {
         ctx.restore();
     }
     
+    /**
+     * Check if player collides on side and stop moving of player
+     *
+     * @param {*} other
+     * @param {*} direction
+     */
     isPlayerCollisionFromSide(other, direction) {
         if (direction === 'left') {            
             if(other.velocity.x > 0) {
@@ -58,6 +77,12 @@ export class Obstacle extends CollisionCapable(GameObject) {
         }
     }
 
+    /**
+     * Check if player leave obstacle on top
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
     isPlayerAdjacent(other) {
         if(!other.onGround) return;
         const buffer = 22; // Spielraum
@@ -69,6 +94,11 @@ export class Obstacle extends CollisionCapable(GameObject) {
     
 
     
+    /**
+     * Check if game object like player enter collider
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
@@ -85,6 +115,13 @@ export class Obstacle extends CollisionCapable(GameObject) {
         }
     }
 
+    /**
+     * Check if obstacle is visible on canvas
+     *
+     * @param {*} screenX
+     * @param {*} canvasWidth
+     * @returns {boolean}
+     */
     isVisibleOnCanvas(screenX, canvasWidth) {
         // Check if the obstacle is within the visible canvas area
         return screenX + this.width > 0 && screenX < canvasWidth;

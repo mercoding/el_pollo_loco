@@ -1,52 +1,73 @@
 import { InputHandler } from "../inputHandler.class.js";
 import { ClosedMenu } from "./closedMenu.class.js";
+import { MenuGUI } from "./menuGUI.class.js";
 import { Settings } from "./settings.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
-export class GameMenu {
+/**
+ * In Game menu
+ *
+ * @export
+ * @class GameMenu
+ * @typedef {GameMenu}
+ */
+export class GameMenu extends MenuGUI{
     constructor(ui) {
+        super(ui);
         this.ui = ui;
         this.inputHandler = new InputHandler();
         this.selectedOption = 0;
         this.onStart();
     }
 
-    onStart() {
+    /** Set settings options */
+    setSettingsOptions() {
         this.settingsOptions = [
             { label: 'Music On/Off', type: 'toggle', value: this.ui.global.getMusicOn() },
             { label: 'Music Volume', type: 'slider', value: this.ui.global.getMusicVolumes() },
             { label: 'Sound Volume', type: 'slider', value: this.ui.global.getSoundVolumes() },
             { label: 'Back', type: 'button' },
         ];
-        this.ui.global.audioManager.musicVolume = this.ui.global.getMusicVolumes();
-        this.ui.global.audioManager.effectsVolume = this.ui.global.getSoundVolumes();
-        this.ui.global.pause = true;
-        this.ui.global.inGame = true;
+    }
+
+    /** Set button positions */
+    setButtonPositions() {
         this.buttonPositions = this.settingsOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 50,
             y: this.ui.canvas.height / 2 - 30 + index * 40,
             width: 100,
             height: 30,
         }));
+    }
+
+    /** Set settings on start */
+    onStart() {
+        this.setSettingsOptions();
+        this.ui.global.audioManager.musicVolume = this.ui.global.getMusicVolumes();
+        this.ui.global.audioManager.effectsVolume = this.ui.global.getSoundVolumes();
+        this.ui.global.pause = true;
+        this.ui.global.inGame = true;
+        this.setButtonPositions();
         this.addMenuListeners();
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} deltaTime
+     */
     onUpdate(deltaTime) {
         this.drawInGameMenu();
         this.updateUIPositions();
     }
 
+    /** Set settings on exit */
     onExit() {
         this.removeMenuListeners();
         this.ui.canvas.style.cursor = 'default';
     }
 
-    setFont() {
-        this.ui.ctx.fillStyle = 'white';
-        this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.textAlign = 'center';
-    }
-
+    /** Update in game menu options */
     updateInGameMenuOptions() {
         if (this.ui.global.gameOver) {
             this.inGameMenuOptions = ['New Game', 'Settings', 'Exit'];
@@ -55,6 +76,7 @@ export class GameMenu {
         }
     }
 
+    /** Draw in game menu options */
     drawInGameMenuOptions() {
         // Menüoptionen zeichnen
         this.inGameMenuOptions.forEach((option, index) => {
@@ -69,6 +91,7 @@ export class GameMenu {
         });
     }
 
+    /** Draw in game menu */
     drawInGameMenu() {
         this.updateInGameMenuOptions(); // Optionen basierend auf dem Zustand aktualisieren
         this.lastLayer = 1;
@@ -82,6 +105,11 @@ export class GameMenu {
         this.drawInGameMenuOptions();
     }
 
+    /**
+     * Handle menu key input
+     *
+     * @param {*} event
+     */
     menuKeyInputInGameMenu(event) {
         const input = this.inputHandler.getInput();
         if (input.up) this.selectedOption = (this.selectedOption - 1 + this.inGameMenuOptions.length) % this.inGameMenuOptions.length;
@@ -91,6 +119,12 @@ export class GameMenu {
     }
 
 
+    /**
+     * Handle menu options mouse input
+     *
+     * @param {*} mouseX
+     * @param {*} mouseY
+     */
     handleMenuMouseOptions(mouseX, mouseY) {
         // In-Game-Menü
         this.inGameMenuOptions.forEach((option, index) => {
@@ -103,6 +137,12 @@ export class GameMenu {
         });
     }
 
+    /**
+     * Handle menu back button by mouse input
+     *
+     * @param {*} mouseX
+     * @param {*} mouseY
+     */
     handleMenuMouseBackButton(mouseX, mouseY) {
         // "Back"-Option
         const backY = this.ui.canvas.height - 70;
@@ -116,6 +156,11 @@ export class GameMenu {
     }
 
 
+    /**
+     * Handle mouse input
+     *
+     * @param {*} event
+     */
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
@@ -124,6 +169,12 @@ export class GameMenu {
         this.handleMenuMouseBackButton(mouseX, mouseY);
     }
 
+    /**
+     * Apply settings 
+     *
+     * @param {*} label
+     * @param {*} value
+     */
     applySettings(label, value) {
         if (label === 'Music Volume') this.ui.global.audioManager.musicVolume = value;
         else if (label === 'Sound Volume') this.ui.global.audioManager.effectsVolume = value;
@@ -135,6 +186,11 @@ export class GameMenu {
         else if(label === "Exit") this.ui.menu.changeMenu(new StartMenu(this.ui));
     }
 
+    /**
+     * Handle resume option
+     *
+     * @param {*} selected
+     */
     Resume(selected) {
         if (selected === 'Resume' && !this.ui.global.gameOver) {
             this.ui.global.inGame = true;
@@ -145,6 +201,11 @@ export class GameMenu {
         } 
     }
 
+    /**
+     * Handle new game option
+     *
+     * @param {*} selected
+     */
     NewGame(selected) {
         if (selected === 'New Game') {
             this.ui.global.inGame = true;
@@ -156,6 +217,11 @@ export class GameMenu {
     }
 
 
+    /**
+     * Handle settings option
+     *
+     * @param {*} selected
+     */
     Settings(selected) {
         if (selected === 'Settings') {
             this.layer = 2; // Wechsel ins Settings-Menü
@@ -166,6 +232,11 @@ export class GameMenu {
         }
     }
 
+    /**
+     * Handle exit option
+     *
+     * @param {*} selected
+     */
     Exit(selected) {
         if (selected === 'Exit') {
             this.ui.global.inGame = false;
@@ -179,6 +250,7 @@ export class GameMenu {
 
 
 
+    /** Handle selected options */
     inGameMenu() {
         const selected = this.inGameMenuOptions[this.selectedOption];
         this.Resume(selected);
@@ -187,6 +259,7 @@ export class GameMenu {
         this.Exit(selected);
     }
 
+    /** Add menu listeners */
     addMenuListeners() {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.menuKeyInputInGameMenu(event);
@@ -199,6 +272,7 @@ export class GameMenu {
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
+    /** Remove menu listener */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
@@ -215,21 +289,19 @@ export class GameMenu {
         }
     }
 
-    clearCanvas() {
-        this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    }
 
-
+    /**
+     * Handle mouse hover effect -> cursor pointer
+     *
+     * @param {*} event
+     */
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-    
         let isHovering = false;
-    
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
+            if (mouseX > button.x &&
                 mouseX < button.x + button.width &&
                 mouseY > button.y &&
                 mouseY < button.y + button.height
@@ -238,11 +310,11 @@ export class GameMenu {
                 this.selectedOption = index;
             }
         });
-    
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
     
 
+    /** Update UI positions */
     updateUIPositions() {
         this.buttonPositions = this.settingsOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 50,

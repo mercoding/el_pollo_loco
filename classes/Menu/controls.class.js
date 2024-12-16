@@ -1,9 +1,19 @@
 import { InputHandler } from "../inputHandler.class.js";
 import { GameMenu } from "./gameMenu.class.js";
+import { MenuGUI } from "./menuGUI.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
-export class Controls {
+/**
+ * Draw control menu
+ *
+ * @export
+ * @class Controls
+ * @typedef {Controls}
+ * @extends {MenuGUI}
+ */
+export class Controls extends MenuGUI {
     constructor(ui) {
+        super(ui);
         this.ui = ui;
         this.inputHandler = new InputHandler();
         this.background = new Image();
@@ -16,7 +26,7 @@ export class Controls {
         this.onStart();
     }
 
-    onStart() {
+    setControlsMenu() {
         this.controlsMenu = [
             { label: 'Jump/Double', image: 'triangle-up' },
             { label: 'Move Left', image: 'triangle-left' },
@@ -24,39 +34,53 @@ export class Controls {
             { label: 'Shoot' }, { label: 'Menu/Pause' },
             { label: 'Back', type: 'button' },
         ];
-        this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
-        this.upImg.src = "img/ui/up.png";
-        this.startMenuBackground.src = "img/ui/panel.png";
-        this.buttonBackground.src = "img/ui/button.png";
-        this.ui.menuActive = true;
-        this.selectedOption = 6;
+    }
 
+    setButtonPositions() {
         this.buttonPositions = this.controlsMenu.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
             y: this.ui.canvas.height / 2 - 110 + index * 70,
             width: 200,
             height: 50,
         }));
+    }
 
+    /** Set settings on start */
+    onStart() {
+        this.setControlsMenu();
+        this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
+        this.upImg.src = "img/ui/up.png";
+        this.startMenuBackground.src = "img/ui/panel.png";
+        this.buttonBackground.src = "img/ui/button.png";
+        this.ui.menuActive = true;
+        this.selectedOption = 6;
+        this.setButtonPositions();
         this.addMenuListeners();
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} deltaTime
+     */
     onUpdate(deltaTime) {
         this.drawControlsMenu();
         this.selectedOption = 5;
     }
 
+    /** Set settings on exit */
     onExit() {
         this.removeMenuListeners();
         this.ui.canvas.style.cursor = 'default';
     }
 
-    setFont() {
-        this.ui.ctx.fillStyle = 'white';
-        this.ui.ctx.font = '30px Boogaloo';
-        this.ui.ctx.textAlign = 'center';
-    }
-
+    /**
+     * Draw up triangle for arrow key input
+     *
+     * @param {*} x
+     * @param {*} y
+     * @param {*} direction
+     */
     drawTriangleUp(x, y, direction) {
         if (direction === 'up') {
             // Dreieck nach oben
@@ -66,6 +90,13 @@ export class Controls {
         }
     }
 
+    /**
+     * Draw left triangle for arrow key input
+     *
+     * @param {*} x
+     * @param {*} y
+     * @param {*} direction
+     */
     drawTriangleLeft(x, y, direction) {
         if (direction === 'left') {
             // Dreieck nach links
@@ -75,6 +106,13 @@ export class Controls {
         }
     }
 
+    /**
+     * Draw right triangle for arrow key input
+     *
+     * @param {*} x
+     * @param {*} y
+     * @param {*} direction
+     */
     drawTriangleRight(x, y, direction) {
         if (direction === 'right') {
             // Dreieck nach rechts
@@ -84,6 +122,13 @@ export class Controls {
         }
     }
 
+    /**
+     * Draw triangle for arrow key inputs
+     *
+     * @param {*} x
+     * @param {*} y
+     * @param {*} direction
+     */
     drawTriangle(x, y, direction) {
         this.ui.ctx.beginPath();
         this.drawTriangleUp(x, y, direction);
@@ -94,6 +139,13 @@ export class Controls {
         this.ui.ctx.fill();
     }
 
+    /**
+     * Draw back button
+     *
+     * @param {*} option
+     * @param {*} isSelected
+     * @param {*} y
+     */
     drawButton(option, isSelected, y) {
         if (option.type === 'button') {
             // "Back"-Option zeichnen
@@ -107,6 +159,12 @@ export class Controls {
         }
     }
 
+    /**
+     * Draw triangles
+     *
+     * @param {*} option
+     * @param {*} y
+     */
     drawTriangles(option, y) {
         if (option.image === 'triangle-up') {
             this.drawTriangle(this.ui.canvas.width / 2 + 85, y - 25, 'up');
@@ -117,6 +175,12 @@ export class Controls {
         }
     }
 
+    /**
+     * Draw shoot input
+     *
+     * @param {*} option
+     * @param {*} y
+     */
     drawShootInput(option, y) {
         if (option.label === 'Shoot') {
             // Text für "Shoot"
@@ -130,10 +194,14 @@ export class Controls {
         }
     }
 
+    /**
+     * Draw controls
+     *
+     * @param {*} option
+     * @param {*} index
+     * @param {*} y
+     */
     drawControls(option, index, y) {
-        //const y = 150 + index * 60;
-
-        // Zeichne das Label
         this.ui.ctx.fillStyle = 'white';
         this.ui.ctx.textAlign = 'left';
         this.ui.ctx.fillText(option.label, this.ui.canvas.width / 2 - 100, y);
@@ -141,6 +209,7 @@ export class Controls {
         this.drawShootInput(option, y);
     }
 
+    /** Draw controls options */
     drawControlsOptions() {
         this.controlsMenu.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 - 80 + index * 40;
@@ -152,6 +221,7 @@ export class Controls {
     }
 
 
+    /** Draw controls menu */
     drawControlsMenu() {
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
@@ -161,43 +231,8 @@ export class Controls {
         this.drawControlsOptions();
     }
 
-    drawBackground(background) {
-        this.clearCanvas();
-        this.ui.ctx.fillStyle = 'black';
-        this.ui.ctx.fillRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-        this.ui.ctx.drawImage(background, 0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    }
 
-    drawRoundedBox(ctx, x, y, width, height, borderRadius) {
-        ctx.beginPath();
-        ctx.moveTo(x + borderRadius, y);
-        ctx.lineTo(x + width - borderRadius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + borderRadius);
-        ctx.lineTo(x + width, y + height - borderRadius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - borderRadius, y + height);
-        ctx.lineTo(x + borderRadius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - borderRadius);
-        ctx.lineTo(x, y + borderRadius);
-        ctx.quadraticCurveTo(x, y, x + borderRadius, y);
-        ctx.closePath();
-    }
-
-    drawImageWithRoundedBorder(ctx, image, x, y, width, height, borderRadius = 20, borderColor = 'black', borderWidth = 2, alpha = 1) {
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        this.drawRoundedBox(ctx, x, y, width, height, borderRadius);
-        ctx.clip();
-        ctx.drawImage(image, x, y, width, height);
-        ctx.restore();
-        ctx.lineWidth = borderWidth;
-        ctx.strokeStyle = borderColor;
-        ctx.stroke();
-        ctx.restore();
-    }
-
-
-
-
+    /** Execute menu options */
     executeMenuOption() {
         this.ui.menuActive = true;
         this.ui.global.pause = true;
@@ -208,18 +243,36 @@ export class Controls {
 
 
 
+    /**
+     * Handle escape key input
+     *
+     * @param {*} event
+     */
     handleEscapeKeyInput(event) {
         if (event.key === 'Escape') {
             this.ui.menu.changeMenu(new StartMenu(this.ui));
         }
     }
 
+    /**
+     * Handle settings input
+     *
+     * @param {*} event
+     */
     handleSettingsInput(event) {
         const currentOption = this.controlsMenu[6];
         this.ui.menu.changeMenu(new StartMenu(this.ui));
     }
 
 
+    /**
+     * Handle button by mouse
+     *
+     * @param {*} option
+     * @param {*} mouseX
+     * @param {*} mouseY
+     * @param {*} y
+     */
     handleButton(option, mouseX, mouseY, y) {
         const backY = (window.innerWidth < 1024) ? this.ui.canvas.height - 80 : this.ui.canvas.height - 70;
         if ((option.type === 'button') && mouseX > this.ui.canvas.width / 2 - 95 && mouseX < this.ui.canvas.width / 2 + 110 &&
@@ -230,6 +283,11 @@ export class Controls {
         }
     }
 
+    /**
+     * handle menu mouse input
+     *
+     * @param {*} event
+     */
     handleMenuMouseInput(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
@@ -243,12 +301,19 @@ export class Controls {
         });
     }
 
+    /**
+     * Apply settings by mouse input
+     *
+     * @param {*} label
+     * @param {*} value
+     */
     applySettings(label, value) {
         if (label === "Back") {
             this.ui.menu.changeMenu(new StartMenu(this.ui));
         }
     }
 
+    /** Add menu listeners */
     addMenuListeners() {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.handleSettingsInput(event);
@@ -261,6 +326,7 @@ export class Controls {
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
     }
 
+    /** Remove menu listeners  */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
@@ -277,27 +343,12 @@ export class Controls {
         }
     }
 
-    clearCanvas() {
-        this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
-    }
 
-
-    drawRoundedButton(ctx, x, y, width, height, radius) {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-        ctx.shadowBlur = 10;
-        ctx.shadowOffsetX = 5;
-        ctx.shadowOffsetY = 5;
-        ctx.fillStyle = '#3498db';
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.arcTo(x + width, y, x + width, y + height, radius);
-        ctx.arcTo(x + width, y + height, x, y + height, radius);
-        ctx.arcTo(x, y + height, x, y, radius);
-        ctx.arcTo(x, y, x + width, y, radius);
-        ctx.closePath();
-        ctx.fill();
-    }
-
+    /**
+     * Handle mouse hover -> cursor pointer
+     *
+     * @param {*} event
+     */
     handleMouseHover(event) {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
@@ -321,6 +372,7 @@ export class Controls {
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
 
+    /** Update UI positions */
     updateUIPositions() {
         this.buttonPositions = this.controlsMenu.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,

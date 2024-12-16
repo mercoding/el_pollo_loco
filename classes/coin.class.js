@@ -2,6 +2,14 @@ import { AudioManager } from "./AudioManager.class.js";
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
+/**
+ * Class for coin item
+ *
+ * @export
+ * @class Coin
+ * @typedef {Coin}
+ * @extends {Animatable(CollisionCapable(GameObject))}
+ */
 export class Coin extends Animatable(CollisionCapable(GameObject)) {
     global;
     static coinImage = new Image();
@@ -20,6 +28,13 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
         //this.global.audioManager.loadSound('Coin', 'audio/Coins_Single_01.wav');
     }
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         this.drawCoin(ctx, screenX);
         this.updateAnimation(deltaTime);
@@ -27,6 +42,12 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
         this.updateCollider();
     }
 
+    /**
+     * Draw coin
+     *
+     * @param {*} ctx
+     * @param {*} screenX
+     */
     drawCoin(ctx, screenX) {
         const frame = this.getCurrentFrame();
 
@@ -39,12 +60,19 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
         }
     }
 
-    // Prüfen, ob Coin im sichtbaren Bereich des Canvas ist
+    /**
+     * Check if visible on canvas
+     *
+     * @param {*} screenX
+     * @param {*} canvasWidth
+     * @returns {boolean}
+     */
     isVisibleOnCanvas(screenX, canvasWidth) {
         // Check if the obstacle is within the visible canvas area
         return screenX + this.width > 0 && screenX < canvasWidth;
     }
 
+    /** Check if another collider stay into collider */
     onCollisionStay() {
         if (this.collidingWith == null) return;
         if (this.collidingWith.tag === "Player" && !this.collidingWith.onGround) {
@@ -52,6 +80,12 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
         }
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -65,6 +99,11 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
         ctx.restore();
     }
 
+    /**
+     * Check if another collider enter collider
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (other.tag == 'Player') {
             
@@ -76,6 +115,7 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
         }
     }
 
+    /** Destroy coin and add points */
     destroyCoin() {
         if (this.collisionManager && !this.dead) {
             this.dead = true;

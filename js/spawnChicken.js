@@ -4,6 +4,15 @@ import { Obstacle } from "../classes/obstacle.class.js";
 import { adjustCoinPosition } from "./spawnCoins.js";
 
 
+/**
+ * Check if spawned chicken is near by another chicken
+ *
+ * @param {*} game
+ * @param {*} x
+ * @param {*} y
+ * @param {number} [threshold=100]
+ * @returns {*}
+ */
 function isChickenNearby(game, x, y, threshold = 100) {
     // Prüfe, ob ein Chicken in der Nähe der geplanten Position ist
     return game.global.gameObjects.some(obj => {
@@ -14,6 +23,15 @@ function isChickenNearby(game, x, y, threshold = 100) {
 }
 
 
+/**
+ * Check if chicken is near by obstacle
+ *
+ * @param {*} game
+ * @param {*} x
+ * @param {*} y
+ * @param {number} [threshold=5]
+ * @returns {*}
+ */
 function isChickenNearbyObstacle(game, x, y, threshold = 5) {
     // Prüfe, ob ein Chicken in der Nähe der geplanten Position ist
     return game.global.gameObjects.some(obj => {
@@ -24,6 +42,12 @@ function isChickenNearbyObstacle(game, x, y, threshold = 5) {
 }
 
 
+/**
+ * Set chicken facing into walking direction
+ *
+ * @param {*} enemy
+ * @param {*} character
+ */
 function setEnemyFacing(enemy, character) {
     if (character.velocity.x > 0) {
         enemy.facingRight = true;
@@ -37,6 +61,13 @@ function setEnemyFacing(enemy, character) {
     }
 }
 
+/**
+ * Get chicken game object
+ *
+ * @param {*} game
+ * @param {*} spawnX
+ * @returns {Chicken}
+ */
 function getChicken(game, spawnX) {
     const rand = Math.floor(Math.random(0, 10) * 10);
     const chicken = rand < 5 ? chickenAnimations : smallChickenAnimations;
@@ -48,6 +79,14 @@ function getChicken(game, spawnX) {
 }
 
 
+/**
+ * Push spwaned chicken into game list
+ *
+ * @param {*} game
+ * @param {*} enemy
+ * @param {*} spawnX
+ * @param {*} currentFrameTime
+ */
 function pushChickenToGame(game, enemy, spawnX, currentFrameTime) {
     game.global.addGameObject(enemy);
     game.global.collisionManager.addObject(enemy);
@@ -56,6 +95,14 @@ function pushChickenToGame(game, enemy, spawnX, currentFrameTime) {
 }
 
 
+/**
+ * Check if chicken spwaned into right range and spawn chicken
+ *
+ * @export
+ * @param {*} game
+ * @param {*} performance
+ * @param {*} character
+ */
 export function checkAndSpawnEnemy(game, performance, character) {
     if (character.x > 9000 || character.x < -9000) return;
     const currentFrameTime = performance.now() / 1000;

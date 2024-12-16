@@ -1,6 +1,14 @@
 import { CollisionCapable, GameObject } from './gameObject.class.js';
 import { Obstacle } from './obstacle.class.js';
 
+/**
+ * Class for cactus object
+ *
+ * @export
+ * @class Cactus
+ * @typedef {Cactus}
+ * @extends {CollisionCapable(GameObject)}
+ */
 export class Cactus extends CollisionCapable(GameObject) {
     static obstacleImage = new Image();
     static imageLoaded = false;
@@ -24,6 +32,13 @@ export class Cactus extends CollisionCapable(GameObject) {
 
     Start() { }
 
+    /**
+     * Update function
+     *
+     * @param {*} ctx
+     * @param {*} deltaTime
+     * @param {*} screenX
+     */
     Update(ctx, deltaTime, screenX) {
         this.ctx = ctx;
         deltaTime = deltaTime;
@@ -34,6 +49,12 @@ export class Cactus extends CollisionCapable(GameObject) {
         this.updateCollider();
     }
 
+    /**
+     * Draw collider in debug mode
+     *
+     * @param {*} ctx
+     * @param {*} cameraX
+     */
     drawCollider(ctx, cameraX) {
         ctx.save();
         ctx.strokeStyle = 'red'; // Collider-Farbe
@@ -47,6 +68,12 @@ export class Cactus extends CollisionCapable(GameObject) {
         ctx.restore();
     }
 
+    /**
+     * Check if player collides on side
+     *
+     * @param {*} other
+     * @param {*} direction
+     */
     isPlayerCollisionFromSide(other, direction) {
         if (direction === 'left') {
             if (other.velocity.x > 0) {
@@ -65,6 +92,12 @@ export class Cactus extends CollisionCapable(GameObject) {
         }
     }
 
+    /**
+     * Check if player is on side of collider
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
     isPlayerAdjacent(other) {
         const buffer = 55; // Spielraum
         return (
@@ -75,31 +108,37 @@ export class Cactus extends CollisionCapable(GameObject) {
 
 
 
+    /**
+     * Check if collision enter
+     *
+     * @param {*} other
+     */
     onCollisionEnter(other) {
         if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
             const currentTime = performance.now() / 2000;
-
             if (direction === 'top') {
-                // Berechne die Differenz, falls der Charakter über dem Hindernis schwebt
-                const imageOffset = 82; // Passe diesen Wert an die Höhe des Bildes an
+                const imageOffset = 82;
                 other.y = this.collider.y - other.collider.height + imageOffset;
-                if(!this.isPlayerAdjacent(other)) other.land(); // Charakter landet
+                if(!this.isPlayerAdjacent(other)) other.land(); // Character lands
             } else {
                 this.isPlayerCollisionFromSide(other, direction);
             }
-
             if (currentTime - this.lastDamageTime >= this.damageCooldown) {
-                other.takeDamage(); // Charakter nimmt Schaden
+                other.takeDamage(); // Character takes damage
                 this.lastDamageTime = currentTime;
             }
         }
     }
 
 
-
-
-
+    /**
+     * Check is is visible on canvas
+     *
+     * @param {*} screenX
+     * @param {*} canvasWidth
+     * @returns {boolean}
+     */
     isVisibleOnCanvas(screenX, canvasWidth) {
         // Check if the obstacle is within the visible canvas area
         return screenX + this.width > 0 && screenX < canvasWidth;

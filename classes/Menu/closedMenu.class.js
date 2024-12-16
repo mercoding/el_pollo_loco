@@ -1,6 +1,13 @@
 import { InputHandler } from "../inputHandler.class.js";
 import { GameMenu } from "./gameMenu.class.js";
 
+/**
+ * In game scene loop by closed menu listen to p key for show in game menu
+ *
+ * @export
+ * @class ClosedMenu
+ * @typedef {ClosedMenu}
+ */
 export class ClosedMenu {
     constructor(ui) {
         this.ui = ui;
@@ -8,6 +15,7 @@ export class ClosedMenu {
         this.onStart();
     }
 
+    /** Set settings on start */
     onStart() {
         this.ui.global.inGame = true;
         this.ui.global.pause = false;
@@ -21,13 +29,24 @@ export class ClosedMenu {
         this.ui.ctx.shadowOffsetY = 0;
     }
 
+    /**
+     * Update function no things to do because game interactions
+     *
+     * @param {*} deltaTime
+     */
     onUpdate(deltaTime) {}
 
 
+    /** Set settings on exit */
     onExit() {
         this.removeMenuListeners();
     }
 
+    /**
+     * Toggle menu scene to in game menu or to game loop
+     *
+     * @param {*} event
+     */
     toggleMenu(event) {
         const input = this.inputHandler.getInput()
         if (!input.pKey) return;
@@ -44,6 +63,7 @@ export class ClosedMenu {
         }
     }
 
+    /** Add in game listener -> p key for in game menu */
     addMenuListeners() {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.toggleMenu(event);
@@ -51,6 +71,7 @@ export class ClosedMenu {
         window.addEventListener('keydown', this.keyListener);
     }
 
+    /** Remove game listener */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);

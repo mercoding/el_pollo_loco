@@ -8,10 +8,7 @@ export class World {
     constructor() {
         this.canvas = document.getElementById('canvas');
         this.ctx = this.canvas.getContext('2d');
-
         this.setBackground();
-
-        // Scroll-Geschwindigkeiten
         this.cloudsOffset = 0;
         this.scrollSpeedClouds = 0.2;    // Langsame Geschwindigkeit für die kontinuierliche Bewegung der Wolken
         this.scrollSpeedMountains = 0.4; // Geschwindigkeit für die Berge
@@ -19,6 +16,7 @@ export class World {
         this.scrollSpeedNear = 1.0;      // Geschwindigkeit für den vorderen Hintergrund
     }
 
+    /** Set background into right order */
     setBackground() {
         // Parallax-Hintergrundbilder
         this.backgroundImageSky.src = 'img/5_background/layers/air.png';
@@ -28,6 +26,7 @@ export class World {
         this.backgroundImageNear.src = 'img/5_background/layers/1_first_layer/full.png';
     }
 
+    /** Set sky background with movable clouds */
     setSky() {
         this.ctx.drawImage(this.backgroundImageSky, 0, 0, this.canvas.width, this.canvas.height);
         this.cloudsOffset -= this.scrollSpeedClouds;
@@ -39,6 +38,7 @@ export class World {
         }
     }
 
+    /** Set mountains background */
     setMountains() {
         const mountainX = Math.floor(-(this.cameraX * this.scrollSpeedMountains) % this.canvas.width);
         this.ctx.drawImage(this.backgroundImageMountains, mountainX, 0, this.canvas.width, this.canvas.height);
@@ -48,6 +48,7 @@ export class World {
         }
     }
 
+    /** Set far layer */
     setFarLayer() {
         const farX = Math.floor(-(this.cameraX * this.scrollSpeedFar) % this.canvas.width);
         this.ctx.drawImage(this.backgroundImageFar, farX, 0, this.canvas.width, this.canvas.height);
@@ -58,6 +59,7 @@ export class World {
     }
 
     
+    /** Set near layer */
     setNearLayer() {
         const nearX = Math.floor(-(this.cameraX * this.scrollSpeedNear) % this.canvas.width);
     
@@ -69,6 +71,7 @@ export class World {
     }
     
 
+    /** Render all backgrounds update function */
     renderBackgrounds() {
         this.setSky();
         this.setMountains();
