@@ -31,11 +31,27 @@ canvas {
     canvas {
         width: 100%;
     }    
+
+    #title {
+        display: block;
+    }
+
+    #fullscreen {
+        display:  block;
+    }
 }
 
 @media only screen and (max-height: 480px) {
     canvas {
         height: 100vh;
+    }
+
+    #title {
+        display: block;
+    }
+
+    #fullscreen {
+        display:  block;
     }
 }
 
@@ -44,12 +60,28 @@ canvas {
     .menu {
         width: 100%;
     }
+
+    #title {
+        display: none;
+    }
+
+    #fullscreen {
+        display:  none;
+    }
 }
 
 /* Nur im Landscape-Modus */
 @media screen and (orientation: landscape) {
     .canvas {
         width: 100vw;
+    }
+
+    #title {
+        display: none;
+    }
+
+    #fullscreen {
+        display:  none;
     }
 }
 

@@ -90,6 +90,8 @@ export class Player {
         if (this.hasTouchSupport()) {
             this.drawControls(ctx);
             this.initializeTouchControls();
+            document.getElementById('title').style.display = 'none';
+            document.getElementById('fullscreen').style.display = 'none';
         }
         else this.removeTouchControls();
     }
