@@ -106,6 +106,32 @@ export class MenuGUI {
         ctx.fill();
     }
 
+     /**
+     * Draw an Impressum button on the canvas at a specified position.
+     * @param {number} centerX - The X-coordinate of the button center.
+     * @param {number} centerY - The Y-coordinate of the button center.
+     */
+    drawImpressumButton(ctx, centerX, centerY) {
+        const radius = 16;
+
+        // Draw the outer circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.closePath();
+
+        // Draw the 'i' in the center
+        ctx.font = '20px Boogaloo';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('i', centerX, centerY)
+        ctx.textBaseline = 'alphabetic';
+    }
+
+
     /** Clear canvas */
     clearCanvas() {
         this.ui.ctx.clearRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);

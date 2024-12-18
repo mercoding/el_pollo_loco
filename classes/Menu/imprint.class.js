@@ -14,7 +14,7 @@ import { Settings } from "./settings.class.js";
  * @class StartMenu
  * @typedef {StartMenu}
  */
-export class StartMenu extends MenuGUI {
+export class Imprint extends MenuGUI {
     constructor(ui) {
         super(ui);
         this.ui = ui;
@@ -23,12 +23,14 @@ export class StartMenu extends MenuGUI {
         this.startMenuBackground = new Image();
         this.buttonBackground = new Image();
         this.selectedOption = 0;
+// Ensure the impressumButton is initialized
+this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height - 24, radius: 16 };
         this.onStart();
     }
 
     /** Set menu on start */
     onStart() {
-        this.menuOptions = ['Play', 'Controls', 'Settings', 'Back']; // Menüoptionen
+        this.menuOptions = ['eMail', 'Back']; // Menüoptionen
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.startMenuBackground.src = "img/ui/panel.png";
         this.buttonBackground.src = "img/ui/button.png";
@@ -40,7 +42,7 @@ export class StartMenu extends MenuGUI {
         this.ui.global.pause = true;
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
-            y: this.ui.canvas.height / 2 - (index * 70),
+            y: this.ui.canvas.height / 2 + 30 + index * 70,
             width: 200,
             height: 50,
         }));
@@ -53,7 +55,7 @@ export class StartMenu extends MenuGUI {
      * @param {*} deltaTime
      */
     onUpdate(deltaTime) {
-        this.drawStartMenu();
+        this.drawImprint();
         this.updateUIPositions();
     }
 
@@ -68,7 +70,7 @@ export class StartMenu extends MenuGUI {
     drawStartMenuOptions() {
         // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 70;
+            const y = this.ui.canvas.height / 2 + 70 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = this.selectedOption === index ? 'yellow' : 'white'; // Highlight
             if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
@@ -123,6 +125,17 @@ export class StartMenu extends MenuGUI {
         }
     }
 
+    eMail(selected) {
+        if(selected === 'eMail') {
+            window.location.href = 'mailto:martinreifschneider@mercoding.com';
+/*
+            const emailButton = document.getElementById('email-button');
+            emailButton.addEventListener('click', () => {
+              // Open the email client with a predefined email address and subject
+              window.location.href = 'mailto:info@example.com?subject=Inquiry';*/
+        }
+    }
+
     /**
      * Handle Quit option
      *
@@ -141,19 +154,25 @@ export class StartMenu extends MenuGUI {
     /** Function which call selected option */
     selectOption() {
         const selected = this.menuOptions[this.selectedOption];
-        this.Play(selected);
-        this.Controls(selected);
-        this.Settings(selected);
+        this.eMail(selected);
         this.Back(selected);
     }
 
     /** Draw start menu */
-    drawStartMenu() {        
+    drawImprint() {        
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
-        const title = "Main Menu";
+        const title = "Imprint";
         this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
+        const name = "Martin Reifschneider";
+        this.ui.ctx.fillText(name, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 70);
+        const street = "Breite Schneise 9";
+        this.ui.ctx.fillText(street, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 30);
+        const zipCity = "63674 Altenstadt";
+        this.ui.ctx.fillText(zipCity, this.ui.canvas.width / 2, this.ui.canvas.height / 2  + 10);
+        //const email = "martinreifschneider@mercoding.com";
+        //this.ui.ctx.fillText(email, this.ui.canvas.width / 2, this.ui.canvas.height / 2  + 50);
         this.drawStartMenuOptions();
     }
 
@@ -209,17 +228,18 @@ export class StartMenu extends MenuGUI {
      * @param {*} mouseX
      * @param {*} mouseY
      */
+    /*
     handleMenuMouseQuitButton(mouseX, mouseY) {
-        const backY = this.ui.canvas.height - 60;
+        const backY = this.ui.canvas.height / 2 + 140;
         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > backY - 20 && mouseY < backY + 20) {
+            mouseY > backY + 20 && mouseY < backY + 20) {
             this.layer = this.lastLayer;
             this.ui.intro = true;
             this.ui.menuActive = false;
             this.selectedOption = 0;
             this.ui.menu.changeMenu(new Intro(this.ui));
         }
-    }
+    }*/
 
     /**
      * Handle menu mouse input
@@ -270,6 +290,8 @@ export class StartMenu extends MenuGUI {
             }
         });
     
+        if(this.isInsideImpressumButton(mouseX, mouseY)) isHovering = true;
+        //else isHovering = false;
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
     
@@ -278,10 +300,33 @@ export class StartMenu extends MenuGUI {
     updateUIPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
-            y: this.ui.canvas.height / 2 - 110 + index * 70,
+            y: this.ui.canvas.height / 2 + 30 + index * 70,
             width: 200,
             height: 50,
         }));
+    }
+
+
+
+
+    /**
+     * Check if a point is inside the Impressum button
+     * @param {number} x - X-coordinate of the point
+     * @param {number} y - Y-coordinate of the point
+     * @returns {boolean} True if the point is inside the button
+     */
+    isInsideImpressumButton(x, y) {
+        const { x: centerX, y: centerY, radius } = this.impressumButton;
+        const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+        return distance <= radius;
+    }
+
+    /**
+     * Show the Impressum panel
+     */
+    showImpressumPanel() {
+        console.log("Impressum panel opened");
+        // Implement the logic to display the Impressum panel
     }
     
 }

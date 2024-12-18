@@ -14,7 +14,7 @@ import { Settings } from "./settings.class.js";
  * @class StartMenu
  * @typedef {StartMenu}
  */
-export class StartMenu extends MenuGUI {
+export class Credits extends MenuGUI {
     constructor(ui) {
         super(ui);
         this.ui = ui;
@@ -28,7 +28,7 @@ export class StartMenu extends MenuGUI {
 
     /** Set menu on start */
     onStart() {
-        this.menuOptions = ['Play', 'Controls', 'Settings', 'Back']; // Menüoptionen
+        this.menuOptions = ['Back']; // Menüoptionen
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.startMenuBackground.src = "img/ui/panel.png";
         this.buttonBackground.src = "img/ui/button.png";
@@ -40,7 +40,7 @@ export class StartMenu extends MenuGUI {
         this.ui.global.pause = true;
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
-            y: this.ui.canvas.height / 2 - (index * 70),
+            y: this.ui.canvas.height / 2 + 100 + index * 70,
             width: 200,
             height: 50,
         }));
@@ -53,7 +53,7 @@ export class StartMenu extends MenuGUI {
      * @param {*} deltaTime
      */
     onUpdate(deltaTime) {
-        this.drawStartMenu();
+        this.drawImprint();
         this.updateUIPositions();
     }
 
@@ -68,7 +68,7 @@ export class StartMenu extends MenuGUI {
     drawStartMenuOptions() {
         // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 70;
+            const y = this.ui.canvas.height / 2 + 140 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = this.selectedOption === index ? 'yellow' : 'white'; // Highlight
             if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
@@ -123,6 +123,17 @@ export class StartMenu extends MenuGUI {
         }
     }
 
+    eMail(selected) {
+        if(selected === 'eMail') {
+            window.location.href = 'mailto:martinreifschneider@mercoding.com';
+/*
+            const emailButton = document.getElementById('email-button');
+            emailButton.addEventListener('click', () => {
+              // Open the email client with a predefined email address and subject
+              window.location.href = 'mailto:info@example.com?subject=Inquiry';*/
+        }
+    }
+
     /**
      * Handle Quit option
      *
@@ -141,19 +152,25 @@ export class StartMenu extends MenuGUI {
     /** Function which call selected option */
     selectOption() {
         const selected = this.menuOptions[this.selectedOption];
-        this.Play(selected);
-        this.Controls(selected);
-        this.Settings(selected);
+        this.eMail(selected);
         this.Back(selected);
     }
 
     /** Draw start menu */
-    drawStartMenu() {        
+    drawImprint() {        
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
-        const title = "Main Menu";
+        const title = "Credits";
         this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
+        const name = "Music: El Pollo Loco";
+        this.ui.ctx.fillText(name, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 70);
+        const street = "Udio AI created";
+        this.ui.ctx.fillText(street, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 30);
+        const zipCity = "Sounds: bought from";
+        this.ui.ctx.fillText(zipCity, this.ui.canvas.width / 2, this.ui.canvas.height / 2  + 20);
+        const unity = "Unity asset store";
+        this.ui.ctx.fillText(unity, this.ui.canvas.width / 2, this.ui.canvas.height / 2  + 60);
         this.drawStartMenuOptions();
     }
 
@@ -209,17 +226,18 @@ export class StartMenu extends MenuGUI {
      * @param {*} mouseX
      * @param {*} mouseY
      */
+    /*
     handleMenuMouseQuitButton(mouseX, mouseY) {
-        const backY = this.ui.canvas.height - 60;
+        const backY = this.ui.canvas.height / 2 + 140;
         if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > backY - 20 && mouseY < backY + 20) {
+            mouseY > backY + 20 && mouseY < backY + 20) {
             this.layer = this.lastLayer;
             this.ui.intro = true;
             this.ui.menuActive = false;
             this.selectedOption = 0;
             this.ui.menu.changeMenu(new Intro(this.ui));
         }
-    }
+    }*/
 
     /**
      * Handle menu mouse input
@@ -278,7 +296,7 @@ export class StartMenu extends MenuGUI {
     updateUIPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,
-            y: this.ui.canvas.height / 2 - 110 + index * 70,
+            y: this.ui.canvas.height / 2 + 100 + index * 70,
             width: 200,
             height: 50,
         }));

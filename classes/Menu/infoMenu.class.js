@@ -1,11 +1,13 @@
 import { InputHandler } from "../inputHandler.class.js";
 import { ClosedMenu } from "./closedMenu.class.js";
 import { Controls } from "./controls.class.js";
+import { Credits } from "./credits.class.js";
 import { GameMenu } from "./gameMenu.class.js";
-import { InfoMenu } from "./infoMenu.class.js";
+import { Imprint } from "./imprint.class.js";
 import { Intro } from "./intro.class.js";
 import { MenuGUI } from "./menuGUI.class.js";
 import { Settings } from "./settings.class.js";
+import { StartMenu } from "./startMenu.class.js";
 
 /**
  * UI for start menu
@@ -14,7 +16,7 @@ import { Settings } from "./settings.class.js";
  * @class StartMenu
  * @typedef {StartMenu}
  */
-export class StartMenu extends MenuGUI {
+export class InfoMenu extends MenuGUI {
     constructor(ui) {
         super(ui);
         this.ui = ui;
@@ -23,12 +25,14 @@ export class StartMenu extends MenuGUI {
         this.startMenuBackground = new Image();
         this.buttonBackground = new Image();
         this.selectedOption = 0;
+// Ensure the impressumButton is initialized
+this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height - 24, radius: 16 };
         this.onStart();
     }
 
     /** Set menu on start */
     onStart() {
-        this.menuOptions = ['Play', 'Controls', 'Settings', 'Back']; // Menüoptionen
+        this.menuOptions = ['New Game', 'Imprint', 'Credits', 'Quit']; // Menüoptionen
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.startMenuBackground.src = "img/ui/panel.png";
         this.buttonBackground.src = "img/ui/button.png";
@@ -81,15 +85,15 @@ export class StartMenu extends MenuGUI {
      *
      * @param {*} selected
      */
-    Play(selected) {
-        if (selected === 'Play') {
-            this.ui.global.inGame = true;
-            this.ui.menuActive = false;
+    NewGame(selected) {
+        if (selected === 'New Game') {
+            this.ui.global.inGame = false;
+            this.ui.menuActive = true;
             this.ui.intro = false;
-            this.ui.global.pause = false;
+            this.ui.global.pause = true;
             window.removeEventListener('keydown', this.pressAnyKeyListener);
-            this.ui.menu.changeMenu(new ClosedMenu(this.ui));
-            this.ui.game.StartGame();
+            this.ui.menu.changeMenu(new StartMenu(this.ui));
+            //this.ui.game.StartGame();
         }
     }
 
@@ -98,13 +102,13 @@ export class StartMenu extends MenuGUI {
      *
      * @param {*} selected
      */
-    Controls(selected) {
-        if (selected === 'Controls') {
+    Imprint(selected) {
+        if (selected === 'Imprint') {
             this.ui.global.inGame = false;
             this.ui.menuActive = true;
             this.ui.intro = false;
-            this.selectedOption = 3;
-            this.ui.menu.changeMenu(new Controls(this.ui));
+            this.selectedOption = 2;
+            this.ui.menu.changeMenu(new Imprint(this.ui));
         }
     }
 
@@ -113,13 +117,13 @@ export class StartMenu extends MenuGUI {
      *
      * @param {*} selected
      */
-    Settings(selected) {
-        if (selected === 'Settings') {
+    Credits(selected) {
+        if (selected === 'Credits') {
             this.ui.global.inGame = false;
             this.ui.menuActive = true;
             this.ui.intro = false;
-            this.selectedOption = 0;
-            this.ui.menu.changeMenu(new Settings(this.ui));
+            this.selectedOption = 3;
+            this.ui.menu.changeMenu(new Credits(this.ui));
         }
     }
 
@@ -128,23 +132,23 @@ export class StartMenu extends MenuGUI {
      *
      * @param {*} selected
      */
-    Back(selected) {
-        if (selected === 'Back') {
+    Quit(selected) {
+        if (selected === 'Quit') {
             this.ui.global.inGame = false;
             this.ui.menuActive = false;
-            this.ui.intro = false;
+            this.ui.intro = true;
             this.selectedOption = 0;
-            this.ui.menu.changeMenu(new InfoMenu(this.ui));
+            this.ui.menu.changeMenu(new Intro(this.ui));
         }
     }
 
     /** Function which call selected option */
     selectOption() {
         const selected = this.menuOptions[this.selectedOption];
-        this.Play(selected);
-        this.Controls(selected);
-        this.Settings(selected);
-        this.Back(selected);
+        this.NewGame(selected);
+        this.Imprint(selected);
+        this.Credits(selected);
+        this.Quit(selected);
     }
 
     /** Draw start menu */
@@ -152,7 +156,7 @@ export class StartMenu extends MenuGUI {
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
-        const title = "Main Menu";
+        const title = "El Pollo Loco";
         this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
         this.drawStartMenuOptions();
     }

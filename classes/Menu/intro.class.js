@@ -1,4 +1,5 @@
 import { InputHandler } from "../inputHandler.class.js";
+import { InfoMenu } from "./infoMenu.class.js";
 import { MenuGUI } from "./menuGUI.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
@@ -87,7 +88,7 @@ export class Intro extends MenuGUI{
      */
     handleInteraction(event) {
         event.preventDefault(); // Verhindert mögliche doppelte Ausführung bei Touch-Geräten
-        this.ui.menu.changeMenu(new StartMenu(this.ui)); // Wechsel zum Startmenü
+        this.ui.menu.changeMenu(new InfoMenu(this.ui)); // Wechsel zum Startmenü
     }
 
     /** Remove menu listeners */

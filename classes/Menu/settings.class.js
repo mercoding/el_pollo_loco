@@ -1,9 +1,11 @@
 import { InputHandler } from "../inputHandler.class.js";
 import { GameMenu } from "./gameMenu.class.js";
 import { MenuGUI } from "./menuGUI.class.js";
+import { SettingsEventListener } from "./settingsEventListener.class.js";
+import { Slider } from "./slider.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
-export class Settings extends MenuGUI{
+export class Settings extends MenuGUI {
     constructor(ui) {
         super(ui);
         this.ui = ui;
@@ -14,7 +16,21 @@ export class Settings extends MenuGUI{
         this.musicImage = new Image();
         this.soundImage = new Image();
         this.selectedOption = 0;
+        this.setSlider();
         this.onStart();
+    }
+
+    setSlider() {
+        this.sliders = [
+            new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 - 15, 
+                100, 10, this.ui.global.audioManager.musicVolume, 'img/ui/Music.png',
+                (value) => this.ui.global.setMusicVolumes(value), 1
+            ),
+            new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 + 55, 
+                100, 10, this.ui.global.audioManager.effectsVolume, 'img/ui/Sound.png',
+                (value) => this.ui.global.setSoundVolumes(value), 2
+            )
+        ];
     }
 
     /** Set settings options */
@@ -47,7 +63,7 @@ export class Settings extends MenuGUI{
         this.soundImage.src = 'img/ui/Sound.png';
         this.setButtonsPositions();
         this.ui.menuActive = true;
-        this.addMenuListeners();
+        this.eventListener = new SettingsEventListener(this);
     }
 
     /**
@@ -62,34 +78,10 @@ export class Settings extends MenuGUI{
 
     /** Set settings on exit */
     onExit() {
-        this.removeMenuListeners();
+        this.eventListener.removeMenuListeners();
         this.ui.canvas.style.cursor = 'default';
     }
 
-
-    /**
-     * Draw slider music volume / sound volume
-     *
-     * @param {*} option
-     * @param {*} isSelected
-     * @param {*} y
-     */
-    drawSlider(option, isSelected, y) {
-        if (option.type === 'slider') {
-            if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
-            option.label === 'Music Volume' ? this.ui.ctx.drawImage(this.musicImage, this.ui.canvas.width / 2 - 80, y - 30, 40, 40) : this.ui.ctx.drawImage(this.soundImage, this.ui.canvas.width / 2 - 75, y - 28, 35, 35);
-            const sliderX = this.ui.canvas.width / 2 - 30;
-            const sliderY = y - 15;
-            const sliderWidth = 100;
-            this.ui.ctx.fillStyle = 'grey';
-            this.ui.ctx.fillRect(sliderX, sliderY, sliderWidth, 10);
-            const handleX = sliderX + option.value * sliderWidth;
-            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-            this.ui.ctx.beginPath();
-            this.ui.ctx.arc(handleX, sliderY + 5, 8, 0, Math.PI * 2);
-            this.ui.ctx.fill();
-        }
-    }
 
     /**
      * Draw toggle Music On / Off
@@ -133,9 +125,11 @@ export class Settings extends MenuGUI{
 
             const isSelected = this.selectedOption === index;
             this.drawToggle(option, isSelected, y);
-            this.drawSlider(option, isSelected, y);
+            //this.drawSlider(option, isSelected, y);
             this.drawButton(option, isSelected, y);
         });
+
+        this.sliders.forEach((slider) => slider.draw());
     }
 
     /** Draw settings menu */
@@ -147,6 +141,7 @@ export class Settings extends MenuGUI{
             this.drawBackground(this.background);
             this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         }
+       
         this.setFont();
         this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
         this.drawSettingsOptions();
@@ -159,93 +154,6 @@ export class Settings extends MenuGUI{
         if (!this.ui.global.inGame) this.ui.menu.changeMenu(new StartMenu(this.ui));
         else this.ui.menu.changeMenu(new GameMenu(this.ui));
 
-    }
-
-    /**
-     * Handle arrow key on slider music volume / sound volume
-     *
-     * @param {*} event
-     * @param {*} currentOption
-     */
-    handleArrowKeyInput(event, currentOption) {
-        if (event.key === 'ArrowUp') this.selectedOption = (this.selectedOption - 1 + this.settingsOptions.length) % this.settingsOptions.length;
-        else if (event.key === 'ArrowDown') this.selectedOption = (this.selectedOption + 1) % this.settingsOptions.length;
-        else if (event.key === 'ArrowLeft' && currentOption.type === 'slider') {
-            currentOption.value = Math.max(0, currentOption.value - 0.1); // Reduziert den Wert
-            if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
-            else if (currentOption.label === "Sound Volume") this.ui.global.setSoundVolumes(currentOption.value);
-        }
-        else if (event.key === 'ArrowRight' && currentOption.type === 'slider') {
-            currentOption.value = Math.min(1, currentOption.value + 0.1); // Erhöht den Wert
-            if (currentOption.label === "Music Volume") this.ui.global.setMusicVolumes(currentOption.value);
-            else if (currentOption.label === "Sound Volume") this.ui.global.setSoundVolumes(currentOption.value);
-        }
-    }
-
-    /**
-     * Handle enter key on toggle music on / off
-     *
-     * @param {*} event
-     * @param {*} currentOption
-     */
-    handleEnterKeyInput(event, currentOption) {
-        if (event.key === 'Enter' && currentOption.type === 'toggle') {
-            currentOption.value = !currentOption.value; // Umschalten
-            this.ui.global.setMusicOn(currentOption.value);
-        }
-        else if (event.key === 'Enter' && currentOption.type === 'button') {
-            this.selectedOption = 1;
-            if (!this.ui.global.inGame) this.ui.menu.changeMenu(new StartMenu(this.ui));
-            else this.ui.menu.changeMenu(new GameMenu(this.ui));
-
-        }
-    }
-
-    /**
-     * Handle esc key for back
-     *
-     * @param {*} event
-     */
-    handleEscapeKeyInput(event) {
-        if (event.key === 'Escape') {
-            this.ui.global.inGame ? this.ui.menu.changeMenu(new GameMenu(this.ui)) : this.ui.menu.changeMenu(new StartMenu(this.ui));
-        }
-    }
-
-    /**
-     * Handle settings key input
-     *
-     * @param {*} event
-     */
-    handleSettingsInput(event) {
-        const currentOption = this.settingsOptions[this.selectedOption];
-        this.ui.global.getVolumes();
-        this.handleArrowKeyInput(event, currentOption);
-        this.handleEnterKeyInput(event, currentOption);
-        this.handleEscapeKeyInput(event);
-    }
-
-    /**
-     * Handle slider by mouse
-     *
-     * @param {*} option
-     * @param {*} mouseX
-     * @param {*} mouseY
-     * @param {*} y
-     */
-    handleSlider(option, mouseX, mouseY, y) {
-        if (option.type === 'slider') {
-            const sliderX = this.ui.canvas.width / 2 - 100;
-            const sliderY = y - 10;
-            const sliderWidth = 200;
-
-            if (mouseX > sliderX && mouseX < sliderX + sliderWidth &&
-                mouseY > sliderY - 10 && mouseY < sliderY + 20) {
-                const newValue = (mouseX - sliderX) / sliderWidth;
-                option.value = Math.min(1, Math.max(0, newValue));
-                this.applySettings(option.label, option.value);
-            }
-        }
     }
 
 
@@ -283,25 +191,6 @@ export class Settings extends MenuGUI{
         }
     }
 
-    /**
-     * Handle mouse input
-     *
-     * @param {*} event
-     */
-    handleMenuMouseInput(event) {
-        const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
-        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-
-        // Settings-Menü
-        this.settingsOptions.forEach((option, index) => {
-            const y = this.ui.canvas.height / 2 - 70 + index * 70;
-            this.handleSlider(option, mouseX, mouseY, y);
-            this.handleToggle(option, mouseX, mouseY, y);
-            this.handleButton(option, mouseX, mouseY, y);
-        });
-    }
-
 
     /**
      * Apply Settings by mouse input
@@ -321,60 +210,6 @@ export class Settings extends MenuGUI{
         }
     }
 
-    /** Add listeners */
-    addMenuListeners() {
-        this.removeMenuListeners(); // Alte Listener sicher entfernen
-        this.keyListener = (event) => this.handleSettingsInput(event);
-        this.mouseListener = (event) => this.handleMenuMouseInput(event);
-        this.mouseHoverListener = (event) => this.handleMouseHover(event);
-
-
-        window.addEventListener('keydown', this.keyListener);
-        this.ui.canvas.addEventListener('click', this.mouseListener);
-        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
-    }
-
-    /** Remove listeners */
-    removeMenuListeners() {
-        if (this.keyListener) {
-            window.removeEventListener('keydown', this.keyListener);
-
-            this.keyListener = null;
-        }
-        if (this.mouseListener) {
-            this.ui.canvas.removeEventListener('click', this.mouseListener);
-            this.mouseListener = null;
-        }
-        if (this.mouseHoverListener) {
-            this.ui.canvas.removeEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
-            this.mouseHoverListener = null;
-        }
-    }
-
-
-    /**
-     * Handle mouse hover effect -> cursor pointer
-     *
-     * @param {*} event
-     */
-    handleMouseHover(event) {
-        const rect = this.ui.canvas.getBoundingClientRect();
-        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
-        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-        let isHovering = false;
-        this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
-                isHovering = true;
-                this.selectedOption = index;
-            }
-        });
-        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
-    }
 
     /** Update UI positions */
     updateUIPositions() {
@@ -384,5 +219,27 @@ export class Settings extends MenuGUI{
             width: 200,
             height: 50,
         }));
+        this.sliders[0].x = this.ui.canvas.width / 2 - 30;
+        this.sliders[0].y = this.ui.canvas.height / 2 - 15;
+        this.sliders[1].x = this.ui.canvas.width / 2 - 30;
+        this.sliders[1].y = this.ui.canvas.height / 2 + 55;
+    }
+
+    /**
+     * Toggle music volume between 0 and 0.5.
+     */
+    toggleMusicVolume() {
+        const currentVolume = this.ui.global.audioManager.musicVolume;
+        const newVolume = currentVolume === 0 ? 0.5 : 0;
+        this.ui.global.setMusicVolumes(newVolume);
+    }
+
+    /**
+     * Toggle sound volume between 0 and 0.5.
+     */
+    toggleSoundVolume() {
+        const currentVolume = this.ui.global.audioManager.effectsVolume;
+        const newVolume = currentVolume === 0 ? 0.5 : 0;
+        this.ui.global.setSoundVolumes(newVolume);
     }
 }
