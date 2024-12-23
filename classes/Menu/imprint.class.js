@@ -74,7 +74,7 @@ export class Imprint extends MenuGUI {
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 + 70 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
-            this.ui.ctx.fillStyle = this.selectedOption === index ? 'yellow' : 'white'; // Highlight
+            this.ui.ctx.fillStyle = this.selectedOption === index && !this.hasTouchSupport() ? 'yellow' : 'white'; // Highlight
             if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
             else this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
         });
@@ -87,7 +87,7 @@ export class Imprint extends MenuGUI {
      * @param {*} selected
      */
     eMail(selected) {
-        if(selected === 'eMail') {
+        if (selected === 'eMail') {
             window.location.href = 'mailto:martinreifschneider@mercoding.com';
         }
     }
@@ -115,7 +115,7 @@ export class Imprint extends MenuGUI {
     }
 
     /** Draw start menu */
-    drawImprint() {        
+    drawImprint() {
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
@@ -126,7 +126,7 @@ export class Imprint extends MenuGUI {
         const street = "Breite Schneise 9";
         this.ui.ctx.fillText(street, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 30);
         const zipCity = "63674 Altenstadt";
-        this.ui.ctx.fillText(zipCity, this.ui.canvas.width / 2, this.ui.canvas.height / 2  + 10);
+        this.ui.ctx.fillText(zipCity, this.ui.canvas.width / 2, this.ui.canvas.height / 2 + 10);
         this.drawStartMenuOptions();
     }
 
@@ -189,7 +189,7 @@ export class Imprint extends MenuGUI {
                 this.selectOption();
             }
         });
-        
+
     }
 
 
@@ -213,7 +213,7 @@ export class Imprint extends MenuGUI {
         });
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
-    
+
 
     /** Update UI positions */
     updateUIPositions() {
@@ -223,5 +223,14 @@ export class Imprint extends MenuGUI {
             width: 200,
             height: 50,
         }));
+    }
+
+    /**
+    * Check if device has touch support
+    *
+    * @returns {boolean}
+    */
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }
 }

@@ -28,16 +28,16 @@ export class Settings extends MenuGUI {
         this.setSlider();
         this.onStart();
     }
-    
+
 
     /** Set slider for music and sound volume */
     setSlider() {
         this.sliders = [
-            new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 - 15, 
+            new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 - 15,
                 100, 10, this.ui.global.audioManager.musicVolume, 'img/ui/Music.png',
                 (value) => this.ui.global.setMusicVolumes(value), 1, "music"
             ),
-            new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 + 55, 
+            new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 + 55,
                 100, 10, this.ui.global.audioManager.effectsVolume, 'img/ui/Sound.png',
                 (value) => this.ui.global.setSoundVolumes(value), 2, "sound"
             )
@@ -104,7 +104,7 @@ export class Settings extends MenuGUI {
     drawToggle(option, isSelected, y) {
         if (option.type === 'toggle') {
             if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
-            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            this.ui.ctx.fillStyle = isSelected && !this.hasTouchSupport() ? 'yellow' : 'white';
             const status = this.ui.global.getMusicOn() ? 'On' : 'Off';
             this.ui.ctx.fillText(`Music: `, this.ui.canvas.width / 2 - 20, y);
             this.ui.ctx.fillText(`${status}`, this.ui.canvas.width / 2 + 35, y);
@@ -122,7 +122,7 @@ export class Settings extends MenuGUI {
         if (option.type === 'button') {
             const backY = this.ui.canvas.height - 70;
             if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
-            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            this.ui.ctx.fillStyle = isSelected && !this.hasTouchSupport() ? 'yellow' : 'white';
             this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, y);
         }
     }
@@ -174,7 +174,7 @@ export class Settings extends MenuGUI {
             mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
             mouseY > y - 40 && mouseY < y + 20) {
             option.value = !option.value;
-            if(!option.value) this.sliders[0].value = 0;
+            if (!option.value) this.sliders[0].value = 0;
             else this.sliders[0].value = 0.5;
             this.applySettings(option.label, option.value);
         }
@@ -251,5 +251,14 @@ export class Settings extends MenuGUI {
         const newVolume = currentVolume !== 0 ? 0 : 0.5;
         this.ui.global.setSoundVolumes(newVolume);
         this.sliders[1].value = newVolume;
+    }
+
+    /**
+    * Check if device has touch support
+    *
+    * @returns {boolean}
+    */
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }
 }

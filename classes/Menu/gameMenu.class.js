@@ -80,7 +80,7 @@ export class GameMenu extends MenuGUI{
     drawInGameMenuOptions() {
         this.inGameMenuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 + index * 40;
-            if (index === this.selectedOption) {
+            if (index === this.selectedOption && !this.hasTouchSupport()) {
                 this.ui.ctx.fillStyle = 'yellow';
                 this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
             } else {
@@ -315,5 +315,14 @@ export class GameMenu extends MenuGUI{
             width: 100,
             height: 30,
         }));
+    }
+
+    /**
+    * Check if device has touch support
+    *
+    * @returns {boolean}
+    */    
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }
 }

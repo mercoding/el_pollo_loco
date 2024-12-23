@@ -156,7 +156,7 @@ export class Controls extends MenuGUI {
             this.ui.ctx.font = '30px Boogaloo';
             const backY = this.ui.canvas.height - 70;
             if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 5, 200, 50, 20);
-            this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
+            this.ui.ctx.fillStyle = isSelected && !this.hasTouchSupport() ? 'yellow' : 'white';
             this.ui.ctx.fillText("Back", this.ui.canvas.width / 2, y + 30);
         }
     }
@@ -382,5 +382,14 @@ export class Controls extends MenuGUI {
             width: 200,
             height: 50,
         }));
+    }
+
+    /**
+    * Check if device has touch support
+    *
+    * @returns {boolean}
+    */    
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }
 }

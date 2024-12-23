@@ -31,7 +31,7 @@ export class Slider extends MenuGUI {
 
     /** Set image color to yellow */
     setImageColor() {
-        if(this.selected) {
+        if(this.selected && !this.hasTouchSupport()) {
             if(this.tag === "music") this.image.src = 'img/ui/MusicYellow.png';
             else this.image.src = 'img/ui/SoundYellow.png';
         }
@@ -47,7 +47,7 @@ export class Slider extends MenuGUI {
             if(this.tag === "music") this.image.src = 'img/ui/NoneMusic.png';
             else this.image.src = 'img/ui/NoneSound.png';
         }
-        else if(this.value === 0 && this.selected) {
+        else if(this.value === 0 && this.selected && !this.hasTouchSupport()) {
             if(this.tag === "music") this.image.src = 'img/ui/NoneMusicYellow.png';
             else this.image.src = 'img/ui/NoneSoundYellow.png';
         }
@@ -68,7 +68,7 @@ export class Slider extends MenuGUI {
         this.ctx.fillStyle = 'grey';
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
         const handleX = this.x + this.value * this.width;
-        this.ctx.fillStyle = (this.selected) ? 'yellow' : 'white';
+        this.ctx.fillStyle = (this.selected && !this.hasTouchSupport()) ? 'yellow' : 'white';
         this.ctx.beginPath();
         this.ctx.arc(handleX, this.y + this.height / 2, this.height / 2, 0, Math.PI * 2);
         this.ctx.fill();
@@ -170,5 +170,14 @@ export class Slider extends MenuGUI {
         this.handleArrowKeyInputOnMusicSlider(event, currentOption);
         this.handleArrowKeyInputOnSoundSlider(event, currentOption);
         this.draw();
+    }
+
+     /**
+     * Check if device has touch support
+     *
+     * @returns {boolean}
+     */
+     hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }
 }

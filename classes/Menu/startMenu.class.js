@@ -74,7 +74,7 @@ export class StartMenu extends MenuGUI {
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 - 70 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
-            this.ui.ctx.fillStyle = this.selectedOption === index ? 'yellow' : 'white'; // Highlight
+            this.ui.ctx.fillStyle = this.selectedOption === index && !this.hasTouchSupport() ? 'yellow' : 'white'; // Highlight
             if (option === "Quit") this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
             else this.ui.ctx.fillText(option, this.ui.canvas.width / 2, y);
         });
@@ -152,7 +152,7 @@ export class StartMenu extends MenuGUI {
     }
 
     /** Draw start menu */
-    drawStartMenu() {        
+    drawStartMenu() {
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
@@ -202,7 +202,7 @@ export class StartMenu extends MenuGUI {
         }
     }
 
-    
+
 
     /**
      * Handle mouse menu quit button
@@ -231,7 +231,7 @@ export class StartMenu extends MenuGUI {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-    
+
         this.buttonPositions.forEach((button, index) => {
             if (mouseX > button.x && mouseX < button.x + button.width &&
                 mouseY > button.y && mouseY < button.y + button.height
@@ -240,7 +240,7 @@ export class StartMenu extends MenuGUI {
                 this.selectOption();
             }
         });
-        
+
     }
 
 
@@ -253,9 +253,9 @@ export class StartMenu extends MenuGUI {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-    
+
         let isHovering = false;
-    
+
         this.buttonPositions.forEach((button, index) => {
             if (mouseX > button.x && mouseX < button.x + button.width &&
                 mouseY > button.y && mouseY < button.y + button.height
@@ -264,10 +264,10 @@ export class StartMenu extends MenuGUI {
                 this.selectedOption = index;
             }
         });
-    
+
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
-    
+
 
     /** Update UI positions */
     updateUIPositions() {
@@ -278,5 +278,13 @@ export class StartMenu extends MenuGUI {
             height: 50,
         }));
     }
-    
+
+    /**
+    * Check if device has touch support
+    *
+    * @returns {boolean}
+    */
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+    }
 }
