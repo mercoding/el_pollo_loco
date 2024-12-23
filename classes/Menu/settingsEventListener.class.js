@@ -332,7 +332,7 @@ export class SettingsEventListener {
     checkClickOnMusicImage(x, y, musicImage) {
         if (x >= musicImage.x - 40 && x <= musicImage.x - 150 + musicImage.width + 30 &&
             y >= musicImage.y - 15 && y <= musicImage.y - 15 + musicImage.height + 30) {
-            this.settings.toggleMusicVolume();            
+            this.settings.toggleMusicVolume();
         }
     }
 
@@ -350,6 +350,26 @@ export class SettingsEventListener {
         }
     }
 
+
+    /**
+     * Check and handle if clicked on slider and set volume to 
+     * clicked position
+     *
+     * @param {*} x
+     * @param {*} y
+     * @param {*} index
+     */
+    checkClickOnSlider(x, y, index) {
+        const slider = this.settings.sliders[index];
+        if (x > slider.x && x < slider.x + slider.width &&
+            y > slider.y && y < slider.y + slider.height) {
+            const relativeX = x - slider.x;
+            const value = relativeX / slider.width;
+            slider.value = value;
+            this.ui.global.setMusicVolumes(value);
+        }
+    }
+
     /**
      * Handle click events for music and sound images.
      * @param {*} event
@@ -362,5 +382,7 @@ export class SettingsEventListener {
         const soundImage = this.settings.sliders[1];
         this.checkClickOnMusicImage(x, y, musicImage);
         this.checkClickOnSoundImage(x, y, soundImage);
+        this.checkClickOnSlider(x, y, 0);
+        this.checkClickOnSlider(x, y, 1);
     }
 }
