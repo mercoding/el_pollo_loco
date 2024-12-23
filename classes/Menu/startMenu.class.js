@@ -236,7 +236,7 @@ export class StartMenu extends MenuGUI {
             if (mouseX > button.x && mouseX < button.x + button.width &&
                 mouseY > button.y && mouseY < button.y + button.height
             ) {
-                this.selectedOption = index;
+                this.selectedOption = index;                
                 this.selectOption();
             }
         });

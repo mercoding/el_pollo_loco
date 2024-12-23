@@ -205,13 +205,13 @@ export class SettingsEventListener {
 
     /** Remove all click events */
     removeClickListener() {
-        if (this.settings.mouseListener) {
+        if (this.mouseListener) {
             this.settings.ui.canvas.removeEventListener('click', this.mouseListener);
-            this.settings.mouseListener = null;
+            this.mouseListener = null;
         }
         if (this.clickOnImage) {
             this.settings.ui.canvas.removeEventListener('click', this.clickOnImage); // Hinzugefügt
-            this.settings.clickOnImage = null;
+            this.clickOnImage = null;
         }
     }
 
@@ -223,7 +223,7 @@ export class SettingsEventListener {
         }
         if (this.mouseHoverListener) {
             this.settings.ui.canvas.removeEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
-            this.settings.mouseHoverListener = null;
+            this.mouseHoverListener = null;
         }
         this.removeClickListener();
         this.removeSliderListener();
