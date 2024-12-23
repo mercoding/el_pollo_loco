@@ -5,6 +5,15 @@ import { SettingsEventListener } from "./settingsEventListener.class.js";
 import { Slider } from "./slider.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
+/**
+ * Settings class which shows music toggle button and sound and music slider
+ * for volumes
+ *
+ * @export
+ * @class Settings
+ * @typedef {Settings}
+ * @extends {MenuGUI}
+ */
 export class Settings extends MenuGUI {
     constructor(ui) {
         super(ui);
@@ -19,16 +28,18 @@ export class Settings extends MenuGUI {
         this.setSlider();
         this.onStart();
     }
+    
 
+    /** Set slider for music and sound volume */
     setSlider() {
         this.sliders = [
             new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 - 15, 
                 100, 10, this.ui.global.audioManager.musicVolume, 'img/ui/Music.png',
-                (value) => this.ui.global.setMusicVolumes(value), 1
+                (value) => this.ui.global.setMusicVolumes(value), 1, "music"
             ),
             new Slider(this.ui, this.ui.canvas.width / 2 - 30, this.ui.canvas.height / 2 + 55, 
                 100, 10, this.ui.global.audioManager.effectsVolume, 'img/ui/Sound.png',
-                (value) => this.ui.global.setSoundVolumes(value), 2
+                (value) => this.ui.global.setSoundVolumes(value), 2, "sound"
             )
         ];
     }
@@ -94,7 +105,7 @@ export class Settings extends MenuGUI {
         if (option.type === 'toggle') {
             if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
-            const status = option.value ? 'On' : 'Off';
+            const status = this.ui.global.getMusicOn() ? 'On' : 'Off';
             this.ui.ctx.fillText(`Music: `, this.ui.canvas.width / 2 - 20, y);
             this.ui.ctx.fillText(`${status}`, this.ui.canvas.width / 2 + 35, y);
         }
@@ -109,7 +120,6 @@ export class Settings extends MenuGUI {
      */
     drawButton(option, isSelected, y) {
         if (option.type === 'button') {
-            // "Back"-Option zeichnen
             const backY = this.ui.canvas.height - 70;
             if (!this.ui.global.inGame) this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
             this.ui.ctx.fillStyle = isSelected ? 'yellow' : 'white';
@@ -120,15 +130,11 @@ export class Settings extends MenuGUI {
     /** Draw settings options */
     drawSettingsOptions() {
         this.settingsOptions.forEach((option, index) => {
-            //const y = 170 + index * 80;
             const y = this.ui.canvas.height / 2 - 70 + index * 70;
-
             const isSelected = this.selectedOption === index;
             this.drawToggle(option, isSelected, y);
-            //this.drawSlider(option, isSelected, y);
             this.drawButton(option, isSelected, y);
         });
-
         this.sliders.forEach((slider) => slider.draw());
     }
 
@@ -141,7 +147,6 @@ export class Settings extends MenuGUI {
             this.drawBackground(this.background);
             this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         }
-       
         this.setFont();
         this.ui.ctx.fillText("Settings", this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 130);
         this.drawSettingsOptions();
@@ -153,7 +158,6 @@ export class Settings extends MenuGUI {
         this.ui.global.pause = true;
         if (!this.ui.global.inGame) this.ui.menu.changeMenu(new StartMenu(this.ui));
         else this.ui.menu.changeMenu(new GameMenu(this.ui));
-
     }
 
 
@@ -170,6 +174,8 @@ export class Settings extends MenuGUI {
             mouseX > this.ui.canvas.width / 2 - 100 && mouseX < this.ui.canvas.width / 2 + 100 &&
             mouseY > y - 40 && mouseY < y + 20) {
             option.value = !option.value;
+            if(!option.value) this.sliders[0].value = 0;
+            else this.sliders[0].value = 0.5;
             this.applySettings(option.label, option.value);
         }
     }
@@ -229,17 +235,21 @@ export class Settings extends MenuGUI {
      * Toggle music volume between 0 and 0.5.
      */
     toggleMusicVolume() {
-        const currentVolume = this.ui.global.audioManager.musicVolume;
-        const newVolume = currentVolume === 0 ? 0.5 : 0;
+        const currentVolume = this.ui.global.getMusicVolumes();
+        const newVolume = currentVolume !== 0 ? 0 : 0.5;
         this.ui.global.setMusicVolumes(newVolume);
+        const value = newVolume === 0 ? false : true;
+        this.ui.global.setMusicOn(value);
+        this.sliders[0].value = newVolume;
     }
 
     /**
      * Toggle sound volume between 0 and 0.5.
      */
     toggleSoundVolume() {
-        const currentVolume = this.ui.global.audioManager.effectsVolume;
-        const newVolume = currentVolume === 0 ? 0.5 : 0;
+        const currentVolume = this.ui.global.getSoundVolumes();
+        const newVolume = currentVolume !== 0 ? 0 : 0.5;
         this.ui.global.setSoundVolumes(newVolume);
+        this.sliders[1].value = newVolume;
     }
 }

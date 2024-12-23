@@ -38,13 +38,18 @@ export class StartMenu extends MenuGUI {
         this.ui.menuActive = true;
         this.ui.global.inGame = false;
         this.ui.global.pause = true;
+        this.setButtonPositions();
+        this.addMenuListeners();
+    }
+
+    /** Set button positions */
+    setButtonPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
             y: this.ui.canvas.height / 2 - (index * 70),
             width: 200,
             height: 50,
         }));
-        this.addMenuListeners();
     }
 
     /**
@@ -66,7 +71,6 @@ export class StartMenu extends MenuGUI {
 
     /** Draw start menu options */
     drawStartMenuOptions() {
-        // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 - 70 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
@@ -172,23 +176,20 @@ export class StartMenu extends MenuGUI {
 
     /** Add menu listeners */
     addMenuListeners() {
-        this.removeMenuListeners(); // Alte Listener sicher entfernen
+        this.removeMenuListeners();
         this.keyListener = (event) => this.menuKeyInputInStartMenu(event);
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
         this.mouseHoverListener = (event) => this.handleMouseHover(event);
         this.handleMouseHoverImprint = (event) => this.handleMouseHoverImpressum(event);
-
-
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
-        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
+        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener);
     }
 
     /** Remove menu listeners */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
         }
         if (this.mouseListener) {
@@ -232,11 +233,8 @@ export class StartMenu extends MenuGUI {
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
     
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height
             ) {
                 this.selectedOption = index;
                 this.selectOption();
@@ -259,11 +257,8 @@ export class StartMenu extends MenuGUI {
         let isHovering = false;
     
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height
             ) {
                 isHovering = true;
                 this.selectedOption = index;

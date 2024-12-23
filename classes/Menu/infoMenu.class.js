@@ -1,16 +1,12 @@
 import { InputHandler } from "../inputHandler.class.js";
-import { ClosedMenu } from "./closedMenu.class.js";
-import { Controls } from "./controls.class.js";
 import { Credits } from "./credits.class.js";
-import { GameMenu } from "./gameMenu.class.js";
 import { Imprint } from "./imprint.class.js";
 import { Intro } from "./intro.class.js";
 import { MenuGUI } from "./menuGUI.class.js";
-import { Settings } from "./settings.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
 /**
- * UI for start menu
+ * Shows an info menu with imprint and credits informations
  *
  * @export
  * @class StartMenu
@@ -25,8 +21,6 @@ export class InfoMenu extends MenuGUI {
         this.startMenuBackground = new Image();
         this.buttonBackground = new Image();
         this.selectedOption = 0;
-// Ensure the impressumButton is initialized
-this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height - 24, radius: 16 };
         this.onStart();
     }
 
@@ -42,13 +36,18 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         this.ui.menuActive = true;
         this.ui.global.inGame = false;
         this.ui.global.pause = true;
+        this.setButtonPositions();
+        this.addMenuListeners();
+    }
+
+    /** Set button positions */
+    setButtonPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
             y: this.ui.canvas.height / 2 - (index * 70),
             width: 200,
             height: 50,
         }));
-        this.addMenuListeners();
     }
 
     /**
@@ -70,7 +69,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
 
     /** Draw start menu options */
     drawStartMenuOptions() {
-        // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 - 70 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
@@ -93,7 +91,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
             this.ui.global.pause = true;
             window.removeEventListener('keydown', this.pressAnyKeyListener);
             this.ui.menu.changeMenu(new StartMenu(this.ui));
-            //this.ui.game.StartGame();
         }
     }
 
@@ -181,8 +178,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
         this.mouseHoverListener = (event) => this.handleMouseHover(event);
         this.handleMouseHoverImprint = (event) => this.handleMouseHoverImpressum(event);
-
-
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
@@ -192,7 +187,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
         }
         if (this.mouseListener) {
@@ -236,17 +230,12 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
     
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height) {
                 this.selectedOption = index;
                 this.selectOption();
             }
         });
-        
     }
 
 
@@ -259,21 +248,14 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-    
         let isHovering = false;
-    
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height) {
                 isHovering = true;
                 this.selectedOption = index;
             }
         });
-    
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
     

@@ -1,14 +1,9 @@
 import { InputHandler } from "../inputHandler.class.js";
-import { ClosedMenu } from "./closedMenu.class.js";
-import { Controls } from "./controls.class.js";
-import { GameMenu } from "./gameMenu.class.js";
 import { InfoMenu } from "./infoMenu.class.js";
-import { Intro } from "./intro.class.js";
 import { MenuGUI } from "./menuGUI.class.js";
-import { Settings } from "./settings.class.js";
 
 /**
- * UI for start menu
+ * Credits which show all assets like sounds which are used for this game
  *
  * @export
  * @class StartMenu
@@ -38,13 +33,18 @@ export class Credits extends MenuGUI {
         this.ui.menuActive = true;
         this.ui.global.inGame = false;
         this.ui.global.pause = true;
+        this.setButtonPositions();
+        this.addMenuListeners();
+    }
+
+    /** Set button positions */
+    setButtonPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
             y: this.ui.canvas.height / 2 + 100 + index * 70,
             width: 200,
             height: 50,
         }));
-        this.addMenuListeners();
     }
 
     /**
@@ -53,7 +53,7 @@ export class Credits extends MenuGUI {
      * @param {*} deltaTime
      */
     onUpdate(deltaTime) {
-        this.drawImprint();
+        this.drawCredits();
         this.updateUIPositions();
     }
 
@@ -66,7 +66,6 @@ export class Credits extends MenuGUI {
 
     /** Draw start menu options */
     drawStartMenuOptions() {
-        // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 + 140 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
@@ -76,63 +75,6 @@ export class Credits extends MenuGUI {
         });
     }
 
-    /**
-     * Handle new game option
-     *
-     * @param {*} selected
-     */
-    Play(selected) {
-        if (selected === 'Play') {
-            this.ui.global.inGame = true;
-            this.ui.menuActive = false;
-            this.ui.intro = false;
-            this.ui.global.pause = false;
-            window.removeEventListener('keydown', this.pressAnyKeyListener);
-            this.ui.menu.changeMenu(new ClosedMenu(this.ui));
-            this.ui.game.StartGame();
-        }
-    }
-
-    /**
-     * Handle controls option
-     *
-     * @param {*} selected
-     */
-    Controls(selected) {
-        if (selected === 'Controls') {
-            this.ui.global.inGame = false;
-            this.ui.menuActive = true;
-            this.ui.intro = false;
-            this.selectedOption = 3;
-            this.ui.menu.changeMenu(new Controls(this.ui));
-        }
-    }
-
-    /**
-     * Handle settings option
-     *
-     * @param {*} selected
-     */
-    Settings(selected) {
-        if (selected === 'Settings') {
-            this.ui.global.inGame = false;
-            this.ui.menuActive = true;
-            this.ui.intro = false;
-            this.selectedOption = 0;
-            this.ui.menu.changeMenu(new Settings(this.ui));
-        }
-    }
-
-    eMail(selected) {
-        if(selected === 'eMail') {
-            window.location.href = 'mailto:martinreifschneider@mercoding.com';
-/*
-            const emailButton = document.getElementById('email-button');
-            emailButton.addEventListener('click', () => {
-              // Open the email client with a predefined email address and subject
-              window.location.href = 'mailto:info@example.com?subject=Inquiry';*/
-        }
-    }
 
     /**
      * Handle Quit option
@@ -152,12 +94,11 @@ export class Credits extends MenuGUI {
     /** Function which call selected option */
     selectOption() {
         const selected = this.menuOptions[this.selectedOption];
-        this.eMail(selected);
         this.Back(selected);
     }
 
     /** Draw start menu */
-    drawImprint() {        
+    drawCredits() {        
         this.drawBackground(this.background);
         this.drawImageWithRoundedBorder(this.ui.ctx, this.startMenuBackground, this.ui.canvas.width / 2 - 150, this.ui.canvas.height / 2 - 203, 300, 400, 20, "transparent", 2, 0.85);
         this.setFont();
@@ -194,8 +135,6 @@ export class Credits extends MenuGUI {
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
         this.mouseHoverListener = (event) => this.handleMouseHover(event);
         this.handleMouseHoverImprint = (event) => this.handleMouseHoverImpressum(event);
-
-
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
@@ -205,7 +144,6 @@ export class Credits extends MenuGUI {
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
         }
         if (this.mouseListener) {
@@ -218,26 +156,6 @@ export class Credits extends MenuGUI {
         }
     }
 
-    
-
-    /**
-     * Handle mouse menu quit button
-     *
-     * @param {*} mouseX
-     * @param {*} mouseY
-     */
-    /*
-    handleMenuMouseQuitButton(mouseX, mouseY) {
-        const backY = this.ui.canvas.height / 2 + 140;
-        if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > backY + 20 && mouseY < backY + 20) {
-            this.layer = this.lastLayer;
-            this.ui.intro = true;
-            this.ui.menuActive = false;
-            this.selectedOption = 0;
-            this.ui.menu.changeMenu(new Intro(this.ui));
-        }
-    }*/
 
     /**
      * Handle menu mouse input
@@ -250,12 +168,8 @@ export class Credits extends MenuGUI {
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
     
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height) {
                 this.selectedOption = index;
                 this.selectOption();
             }
@@ -273,21 +187,14 @@ export class Credits extends MenuGUI {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-    
         let isHovering = false;
-    
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height) {
                 isHovering = true;
                 this.selectedOption = index;
             }
         });
-    
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
     

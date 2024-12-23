@@ -82,10 +82,11 @@ export class ClosedMenu {
 
             this.keyListener = null;
         }
+        /*
         if (this.mouseListener) {
             this.ui.canvas.removeEventListener('click', this.mouseListener);
             this.mouseListener = null;
-        }
+        }*/
         if(this.touchListener) {
             this.ui.canvas.removeEventListener('touchstart', this.handlePauseButtonTouch); 
             this.touchListener = null;
@@ -105,11 +106,8 @@ export class ClosedMenu {
         const pauseButton = { x: this.ui.canvas.width / 2 - 25, y: 10, width: 50, height: 50 };
 
         // Check if the touch is within the pause button bounds
-        if (
-            x >= pauseButton.x &&
-            x <= pauseButton.x + pauseButton.width &&
-            y >= pauseButton.y &&
-            y <= pauseButton.y + pauseButton.height
+        if (x >= pauseButton.x && x <= pauseButton.x + pauseButton.width &&
+            y >= pauseButton.y && y <= pauseButton.y + pauseButton.height
         ) {
             this.ui.global.audioManager.stopAll();
             this.ui.menu.changeMenu(new GameMenu(this.ui));
@@ -135,6 +133,11 @@ export class ClosedMenu {
         ctx.fillRect(buttonX + 10 + barWidth + barSpacing, buttonY + 10, barWidth, buttonHeight - 20);
     }
 
+    /**
+     * Check if user is on mobile device
+     *
+     * @returns {boolean}
+     */
     hasTouchSupport() {
         return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
     }

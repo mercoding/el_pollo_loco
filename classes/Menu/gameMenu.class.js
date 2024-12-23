@@ -78,7 +78,6 @@ export class GameMenu extends MenuGUI{
 
     /** Draw in game menu options */
     drawInGameMenuOptions() {
-        // Menüoptionen zeichnen
         this.inGameMenuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 + index * 40;
             if (index === this.selectedOption) {
@@ -100,7 +99,7 @@ export class GameMenu extends MenuGUI{
         this.ui.ctx.fillRect(0, 0, this.ui.canvas.width, this.ui.canvas.height);
         this.ui.ctx.restore();
         this.setFont();
-        const title = this.ui.global.gameOver ? "Game Over" : "In-Game Menu";
+        const title = this.ui.global.gameOver ? "Game Over" : "Pause";
         this.ui.ctx.fillText(title, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 100);
         this.drawInGameMenuOptions();
     }
@@ -127,6 +126,7 @@ export class GameMenu extends MenuGUI{
      */
     handleMenuMouseOptions(mouseX, mouseY) {
         // In-Game-Menü
+        if(!this.inGameMenuOptions) return;
         this.inGameMenuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 + index * 40;
             if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
@@ -249,7 +249,6 @@ export class GameMenu extends MenuGUI{
     }
 
 
-
     /** Handle selected options */
     inGameMenu() {
         const selected = this.inGameMenuOptions[this.selectedOption];
@@ -265,8 +264,6 @@ export class GameMenu extends MenuGUI{
         this.keyListener = (event) => this.menuKeyInputInGameMenu(event);
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
         this.mouseHoverListener = (event) => this.handleMouseHover(event);
-
-
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
@@ -276,7 +273,6 @@ export class GameMenu extends MenuGUI{
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
         }
         if (this.mouseListener) {
@@ -301,11 +297,8 @@ export class GameMenu extends MenuGUI{
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
         let isHovering = false;
         this.buttonPositions.forEach((button, index) => {
-            if (mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height) {
                 isHovering = true;
                 this.selectedOption = index;
             }

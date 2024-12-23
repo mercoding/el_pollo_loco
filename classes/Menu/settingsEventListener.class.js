@@ -1,6 +1,14 @@
 import { GameMenu } from "./gameMenu.class.js";
 import { StartMenu } from "./startMenu.class.js";
 
+/**
+ * Setttings event listener for handle mouse, key input and touch on
+ * buttons and slider
+ *
+ * @export
+ * @class SettingsEventListener
+ * @typedef {SettingsEventListener}
+ */
 export class SettingsEventListener {
     constructor(settingsInstance) {
         this.ui = settingsInstance.ui;
@@ -103,7 +111,6 @@ export class SettingsEventListener {
             const rect = canvas.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
-
             this.settings.sliders.forEach((slider) => slider.handleMouseDown(mouseX, mouseY));
         });
     }
@@ -117,7 +124,6 @@ export class SettingsEventListener {
         canvas.addEventListener('mousemove', (event) => {
             const rect = canvas.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
-
             this.settings.sliders.forEach((slider) => slider.handleMouseMove(mouseX));
         });
     }
@@ -143,7 +149,6 @@ export class SettingsEventListener {
             const rect = canvas.getBoundingClientRect();
             const touchX = event.touches[0].clientX - rect.left;
             const touchY = event.touches[0].clientY - rect.top;
-
             this.settings.sliders.forEach((slider) => slider.handleMouseDown(touchX, touchY));
         });
     }
@@ -157,7 +162,6 @@ export class SettingsEventListener {
         canvas.addEventListener('touchmove', (event) => {
             const rect = canvas.getBoundingClientRect();
             const touchX = event.touches[0].clientX - rect.left;
-
             this.settings.sliders.forEach((slider) => slider.handleMouseMove(touchX));
         });
     }
@@ -195,24 +199,33 @@ export class SettingsEventListener {
         this.settings.ui.canvas.addEventListener('click', this.mouseListener);
         this.settings.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
         this.handleSliderEvents();
-        window.addEventListener('click', this.handleClick.bind(this));
+        this.clickOnImage = (event) => this.handleClick(event);
+        this.settings.ui.canvas.addEventListener('click', this.clickOnImage); // Hinzugefügt        
+    }
+
+    /** Remove all click events */
+    removeClickListener() {
+        if (this.settings.mouseListener) {
+            this.settings.ui.canvas.removeEventListener('click', this.mouseListener);
+            this.settings.mouseListener = null;
+        }
+        if (this.clickOnImage) {
+            this.settings.ui.canvas.removeEventListener('click', this.clickOnImage); // Hinzugefügt
+            this.settings.clickOnImage = null;
+        }
     }
 
     /** Remove listeners */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
-        }
-        if (this.settings.mouseListener) {
-            this.settings.ui.canvas.removeEventListener('click', this.mouseListener);
-            this.settings.mouseListener = null;
         }
         if (this.mouseHoverListener) {
             this.settings.ui.canvas.removeEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
             this.settings.mouseHoverListener = null;
         }
+        this.removeClickListener();
         this.removeSliderListener();
     }
 
@@ -241,12 +254,8 @@ export class SettingsEventListener {
         const mouseY = (event.clientY - rect.top) * (this.settings.ui.canvas.height / rect.height);
         let isHovering = false;
         this.settings.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height) {
                 isHovering = true;
                 this.settings.selectedOption = index;
             }
@@ -263,11 +272,8 @@ export class SettingsEventListener {
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-
-        // Settings-Menü
         this.settings.settingsOptions.forEach((option, index) => {
             const y = this.settings.ui.canvas.height / 2 - 70 + index * 70;
-            //this.handleSlider(option, mouseX, mouseY, y);
             this.settings.handleToggle(option, mouseX, mouseY, y);
             this.settings.handleButton(option, mouseX, mouseY, y);
         });
@@ -317,37 +323,44 @@ export class SettingsEventListener {
     }
 
     /**
+     * Check if music image was clicked
+     *
+     * @param {*} x
+     * @param {*} y
+     * @param {*} musicImage
+     */
+    checkClickOnMusicImage(x, y, musicImage) {
+        if (x >= musicImage.x - 40 && x <= musicImage.x - 150 + musicImage.width + 30 &&
+            y >= musicImage.y - 15 && y <= musicImage.y - 15 + musicImage.height + 30) {
+            this.settings.toggleMusicVolume();            
+        }
+    }
+
+    /**
+     * Check if sound image was 
+     *
+     * @param {*} x
+     * @param {*} y
+     * @param {*} soundImage
+     */
+    checkClickOnSoundImage(x, y, soundImage) {
+        if (x >= soundImage.x - 40 && x <= soundImage.x - 150 + soundImage.width + 30 &&
+            y >= soundImage.y - 15 && y <= soundImage.y + soundImage.height + 30) {
+            this.settings.toggleSoundVolume();
+        }
+    }
+
+    /**
      * Handle click events for music and sound images.
      * @param {*} event
      */
     handleClick(event) {
-        const { offsetX, offsetY } = event;
         const rect = this.ui.canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        // Check if the click is within the music image bounds
-        const { musicImage, soundImage } = this.settings;
-
-        // Check if the interaction is within the music image bounds
-        if (
-            x >= musicImage.x &&
-            x <= musicImage.x + musicImage.width &&
-            y >= musicImage.y &&
-            y <= musicImage.y + musicImage.height
-        ) {
-            console.log('Music image clicked or touched');
-            this.settings.toggleMusicVolume();
-        }
-
-        // Check if the interaction is within the sound image bounds
-        if (
-            x >= soundImage.x &&
-            x <= soundImage.x + soundImage.width &&
-            y >= soundImage.y &&
-            y <= soundImage.y + soundImage.height
-        ) {
-            console.log('Sound image clicked or touched');
-            this.settings.toggleSoundVolume();
-        }
+        const musicImage = this.settings.sliders[0];
+        const soundImage = this.settings.sliders[1];
+        this.checkClickOnMusicImage(x, y, musicImage);
+        this.checkClickOnSoundImage(x, y, soundImage);
     }
 }

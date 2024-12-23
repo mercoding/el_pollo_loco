@@ -113,16 +113,12 @@ export class MenuGUI {
      */
     drawImpressumButton(ctx, centerX, centerY) {
         const radius = 16;
-
-        // Draw the outer circle
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.closePath();
-
-        // Draw the 'i' in the center
         ctx.font = '20px Boogaloo';
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';

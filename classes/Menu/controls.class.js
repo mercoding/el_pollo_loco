@@ -26,6 +26,7 @@ export class Controls extends MenuGUI {
         this.onStart();
     }
 
+    /** Set controls options */
     setControlsMenu() {
         this.controlsMenu = [
             { label: 'Jump/Double', image: 'triangle-up' },
@@ -36,6 +37,7 @@ export class Controls extends MenuGUI {
         ];
     }
 
+    /** Set control buttons position */
     setButtonPositions() {
         this.buttonPositions = this.controlsMenu.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 100,

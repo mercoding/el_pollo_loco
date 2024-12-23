@@ -1,7 +1,5 @@
-import { InputHandler } from "../inputHandler.class.js";
 import { InfoMenu } from "./infoMenu.class.js";
 import { MenuGUI } from "./menuGUI.class.js";
-import { StartMenu } from "./startMenu.class.js";
 
 /**
  * Intro scene shows El Pollo Loco start screen
@@ -52,11 +50,9 @@ export class Intro extends MenuGUI{
      */
     drawPressAnyKey(deltaTime) {
         this.blinkTimer += deltaTime;
-        const blink = Math.floor(this.blinkTimer * 2) % 2 === 0; // Einfache Blinklogik
-
+        const blink = Math.floor(this.blinkTimer * 2) % 2 === 0; 
         this.clearCanvas();
         this.drawBackground(this.background);
-
         if (blink) {
             this.setFont();
             this.ui.ctx.fillText("Press Any Key, Click Or Touch", this.ui.canvas.width / 2, this.ui.canvas.height - 32);
@@ -75,7 +71,6 @@ export class Intro extends MenuGUI{
     /** Remove listener */
     removeInteractionListener() {
         window.removeEventListener('keydown', this.handleInteraction);
-
         window.removeEventListener('mousedown', this.handleInteraction);
         window.removeEventListener('touchstart', this.handleInteraction, { passive: false }); // Match the options used when adding
     }
@@ -95,7 +90,6 @@ export class Intro extends MenuGUI{
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
         }
         if (this.mouseListener) {

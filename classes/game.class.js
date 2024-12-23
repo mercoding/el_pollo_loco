@@ -9,6 +9,7 @@ import { ChickenBoss } from "./chickenBoss.class.js";
 import { Global } from "./global.class.js";
 import { Ground } from "./ground.class.js";
 import { InputHandler } from "./inputHandler.class.js";
+import { GameMenu } from "./Menu/gameMenu.class.js";
 import { Obstacle } from "./obstacle.class.js";
 import { Player } from "./player.class.js";
 import { UI } from "./ui.class.js";
@@ -185,11 +186,16 @@ export class Game extends World {
     }
 
 
-
     /** Check if game over, has player won or lost */
     checkIfGameOver() {
         if (this.global.bossDefeated > 0 || this.global.health <= 0) {
             this.ui.drawGameOver();
+            if(!this.ui.menuActive) setTimeout(() => {
+                this.ui.menuActive = true;
+                this.ui.global.pause = true;
+                this.ui.global.audioManager.stopAll();
+                this.ui.menu.changeMenu(new GameMenu(this.ui));
+            }, 4000);
         }
     }
 

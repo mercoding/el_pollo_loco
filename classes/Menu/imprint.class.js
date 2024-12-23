@@ -8,7 +8,7 @@ import { MenuGUI } from "./menuGUI.class.js";
 import { Settings } from "./settings.class.js";
 
 /**
- * UI for start menu
+ * Imprint which shows information of the creator and email link
  *
  * @export
  * @class StartMenu
@@ -23,8 +23,6 @@ export class Imprint extends MenuGUI {
         this.startMenuBackground = new Image();
         this.buttonBackground = new Image();
         this.selectedOption = 0;
-// Ensure the impressumButton is initialized
-this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height - 24, radius: 16 };
         this.onStart();
     }
 
@@ -40,13 +38,18 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         this.ui.menuActive = true;
         this.ui.global.inGame = false;
         this.ui.global.pause = true;
+        this.setButtonPositions();
+        this.addMenuListeners();
+    }
+
+    /** Set button positions */
+    setButtonPositions() {
         this.buttonPositions = this.menuOptions.map((_, index) => ({
             x: this.ui.canvas.width / 2 - 110,
             y: this.ui.canvas.height / 2 + 30 + index * 70,
             width: 200,
             height: 50,
         }));
-        this.addMenuListeners();
     }
 
     /**
@@ -68,7 +71,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
 
     /** Draw start menu options */
     drawStartMenuOptions() {
-        // Menüoptionen zeichnen
         this.menuOptions.forEach((option, index) => {
             const y = this.ui.canvas.height / 2 + 70 + index * 70;
             this.drawRoundedButton(this.ui.ctx, this.ui.canvas.width / 2 - 100, y - 35, 200, 50, 20);
@@ -78,61 +80,15 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         });
     }
 
+
     /**
-     * Handle new game option
+     * Call email program to send mail to creator
      *
      * @param {*} selected
      */
-    Play(selected) {
-        if (selected === 'Play') {
-            this.ui.global.inGame = true;
-            this.ui.menuActive = false;
-            this.ui.intro = false;
-            this.ui.global.pause = false;
-            window.removeEventListener('keydown', this.pressAnyKeyListener);
-            this.ui.menu.changeMenu(new ClosedMenu(this.ui));
-            this.ui.game.StartGame();
-        }
-    }
-
-    /**
-     * Handle controls option
-     *
-     * @param {*} selected
-     */
-    Controls(selected) {
-        if (selected === 'Controls') {
-            this.ui.global.inGame = false;
-            this.ui.menuActive = true;
-            this.ui.intro = false;
-            this.selectedOption = 3;
-            this.ui.menu.changeMenu(new Controls(this.ui));
-        }
-    }
-
-    /**
-     * Handle settings option
-     *
-     * @param {*} selected
-     */
-    Settings(selected) {
-        if (selected === 'Settings') {
-            this.ui.global.inGame = false;
-            this.ui.menuActive = true;
-            this.ui.intro = false;
-            this.selectedOption = 0;
-            this.ui.menu.changeMenu(new Settings(this.ui));
-        }
-    }
-
     eMail(selected) {
         if(selected === 'eMail') {
             window.location.href = 'mailto:martinreifschneider@mercoding.com';
-/*
-            const emailButton = document.getElementById('email-button');
-            emailButton.addEventListener('click', () => {
-              // Open the email client with a predefined email address and subject
-              window.location.href = 'mailto:info@example.com?subject=Inquiry';*/
         }
     }
 
@@ -171,8 +127,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         this.ui.ctx.fillText(street, this.ui.canvas.width / 2, this.ui.canvas.height / 2 - 30);
         const zipCity = "63674 Altenstadt";
         this.ui.ctx.fillText(zipCity, this.ui.canvas.width / 2, this.ui.canvas.height / 2  + 10);
-        //const email = "martinreifschneider@mercoding.com";
-        //this.ui.ctx.fillText(email, this.ui.canvas.width / 2, this.ui.canvas.height / 2  + 50);
         this.drawStartMenuOptions();
     }
 
@@ -196,8 +150,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         this.mouseListener = (event) => this.handleMenuMouseInput(event);
         this.mouseHoverListener = (event) => this.handleMouseHover(event);
         this.handleMouseHoverImprint = (event) => this.handleMouseHoverImpressum(event);
-
-
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('click', this.mouseListener);
         this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
@@ -207,7 +159,6 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
         }
         if (this.mouseListener) {
@@ -220,26 +171,7 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         }
     }
 
-    
 
-    /**
-     * Handle mouse menu quit button
-     *
-     * @param {*} mouseX
-     * @param {*} mouseY
-     */
-    /*
-    handleMenuMouseQuitButton(mouseX, mouseY) {
-        const backY = this.ui.canvas.height / 2 + 140;
-        if (mouseX > this.ui.canvas.width / 2 - 150 && mouseX < this.ui.canvas.width / 2 + 150 &&
-            mouseY > backY + 20 && mouseY < backY + 20) {
-            this.layer = this.lastLayer;
-            this.ui.intro = true;
-            this.ui.menuActive = false;
-            this.selectedOption = 0;
-            this.ui.menu.changeMenu(new Intro(this.ui));
-        }
-    }*/
 
     /**
      * Handle menu mouse input
@@ -250,14 +182,9 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-    
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
-            ) {
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height) {
                 this.selectedOption = index;
                 this.selectOption();
             }
@@ -275,23 +202,15 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
         const rect = this.ui.canvas.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
         const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
-    
         let isHovering = false;
-    
         this.buttonPositions.forEach((button, index) => {
-            if (
-                mouseX > button.x &&
-                mouseX < button.x + button.width &&
-                mouseY > button.y &&
-                mouseY < button.y + button.height
+            if (mouseX > button.x && mouseX < button.x + button.width &&
+                mouseY > button.y && mouseY < button.y + button.height
             ) {
                 isHovering = true;
                 this.selectedOption = index;
             }
         });
-    
-        if(this.isInsideImpressumButton(mouseX, mouseY)) isHovering = true;
-        //else isHovering = false;
         this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
     
@@ -305,28 +224,4 @@ this.impressumButton = { x: this.ui.canvas.width - 24, y: this.ui.canvas.height 
             height: 50,
         }));
     }
-
-
-
-
-    /**
-     * Check if a point is inside the Impressum button
-     * @param {number} x - X-coordinate of the point
-     * @param {number} y - Y-coordinate of the point
-     * @returns {boolean} True if the point is inside the button
-     */
-    isInsideImpressumButton(x, y) {
-        const { x: centerX, y: centerY, radius } = this.impressumButton;
-        const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
-        return distance <= radius;
-    }
-
-    /**
-     * Show the Impressum panel
-     */
-    showImpressumPanel() {
-        console.log("Impressum panel opened");
-        // Implement the logic to display the Impressum panel
-    }
-    
 }
