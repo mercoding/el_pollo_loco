@@ -72,7 +72,7 @@ export class Settings extends MenuGUI {
         this.buttonBackground.src = "img/ui/button.png";
         this.musicImage.src = 'img/ui/Music.png';
         this.soundImage.src = 'img/ui/Sound.png';
-        //this.setButtonsPositions();
+        this.setButtonsPositions();
         this.ui.menuActive = true;
         this.eventListener = new SettingsEventListener(this);
     }
@@ -136,6 +136,7 @@ export class Settings extends MenuGUI {
             this.drawButton(option, isSelected, y);
         });
         this.sliders.forEach((slider) => slider.draw());
+        if(this.sliders[0].value > 0) this.ui.global.setMusicOn(true);
     }
 
     /** Draw settings menu */

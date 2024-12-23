@@ -197,10 +197,10 @@ export class SettingsEventListener {
         this.mouseHoverListener = (event) => this.handleMouseHover(event);
         window.addEventListener('keydown', this.keyListener);
         this.settings.ui.canvas.addEventListener('click', this.mouseListener);
-        this.settings.ui.canvas.addEventListener('mousemove', this.mouseHoverListener); // Hinzugefügt
+        this.settings.ui.canvas.addEventListener('mousemove', this.mouseHoverListener);
         this.handleSliderEvents();
         this.clickOnImage = (event) => this.handleClick(event);
-        this.settings.ui.canvas.addEventListener('click', this.clickOnImage); // Hinzugefügt        
+        this.settings.ui.canvas.addEventListener('click', this.clickOnImage);       
     }
 
     /** Remove all click events */
@@ -210,7 +210,7 @@ export class SettingsEventListener {
             this.mouseListener = null;
         }
         if (this.clickOnImage) {
-            this.settings.ui.canvas.removeEventListener('click', this.clickOnImage); // Hinzugefügt
+            this.settings.ui.canvas.removeEventListener('click', this.clickOnImage); 
             this.clickOnImage = null;
         }
     }
@@ -287,7 +287,7 @@ export class SettingsEventListener {
      */
     handleEnterKeyInput(event, currentOption) {
         if (event.key === 'Enter' && currentOption.type === 'toggle') {
-            currentOption.value = !currentOption.value; // Umschalten
+            currentOption.value = !currentOption.value; 
             this.settings.ui.global.setMusicOn(currentOption.value);
         }
         else if (event.key === 'Enter' && currentOption.type === 'button') {
