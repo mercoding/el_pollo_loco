@@ -59,6 +59,7 @@ export class Game extends World {
         this.initializeObstacles();
         this.initializeBosses();
         this.cameraX = 0;
+        if (this.ui.global.getMusicOn()) this.ui.global.audioManager.playMusic('El Pollo Loco');
         this.inputHandler.deactivate();
         this.inputHandler.activate();
     }
