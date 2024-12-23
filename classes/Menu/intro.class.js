@@ -15,6 +15,8 @@ export class Intro extends MenuGUI{
         this.background = new Image();
         this.background.src = "img/9_intro_outro_screens/start/startscreen_1.png";
         this.blinkTimer = 0; // Timer für das Blinken
+        this.clickCooldown = false;
+        this.cooldownDuration = 200;
         this.ui.global.audioManager.stopAll(); 
         this.removeMenuListeners();
         this.handleInteraction = this.handleInteraction.bind(this); // Bindung des Event-Handlers
@@ -83,7 +85,11 @@ export class Intro extends MenuGUI{
      */
     handleInteraction(event) {
         event.preventDefault(); // Verhindert mögliche doppelte Ausführung bei Touch-Geräten
-        this.ui.menu.changeMenu(new InfoMenu(this.ui)); // Wechsel zum Startmenü
+        this.clickCooldown = true;
+        setTimeout(() => {
+            this.clickCooldown = false; // Cooldown beenden
+            this.ui.menu.changeMenu(new InfoMenu(this.ui)); // Wechsel zum Startmenü
+        }, this.cooldownDuration);   
     }
 
     /** Remove menu listeners */
