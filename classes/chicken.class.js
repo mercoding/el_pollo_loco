@@ -6,7 +6,7 @@ import { CollectableItem } from "./collectableItem.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
 export class Chicken extends Animatable(MovableObject) {
-    squishAudio = new Audio('audio/GGGrasslands - Box Destroy.wav');
+    squishAudio = new Audio('audio/GGGrasslands-Box-Destroy.wav');
     constructor(animationPaths, collisionManager, global, x, y, ...args) {
         super(animationPaths, collisionManager, x, y, ...args);
         this.global = global;
@@ -265,7 +265,7 @@ export class Chicken extends Animatable(MovableObject) {
         // Lasse Flaschen fallen, wenn das Chicken besiegt wurde
         const numBottles = Math.floor(Math.random(0, 10) * 10); // 1-2 Flaschen        
         if (numBottles > 3) return;
-        const bottle = new CollectableItem("img/bottle/rotation/R-1.png", this.global.collisionManager, this.x, this.y - 50, 50, 60, 'Bottle');
+        const bottle = new CollectableItem("../img/bottle/rotation/R-1.png", this.global.collisionManager, this.x, this.y - 50, 50, 60, 'Bottle');
         bottle.global = this.global;
         this.global.addGameObject(bottle);
         this.global.collisionManager.addObject(bottle);

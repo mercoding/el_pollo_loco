@@ -16,7 +16,7 @@ export class Global {
         this.pause = false;
         this.musicOn = true;
         this.groundLevel = this.canvas.height * 0.87;
-        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
+        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands-Box-Destroy.wav');
     }
 
     /** Get game Volumes -> music, sound */

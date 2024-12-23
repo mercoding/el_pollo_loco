@@ -8,7 +8,7 @@ const fullscreen = document.getElementById('fullscreen');
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         canvas.requestFullscreen().catch(err => {
-            console.error(`Vollbildmodus konnte nicht aktiviert werden: ${err.message}`);
+            console.error(`Fullscreen not available: ${err.message}`);
         });
     } else {
         document.exitFullscreen();

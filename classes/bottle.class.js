@@ -26,7 +26,7 @@ export class Bottle extends Animatable(MovableObject) {
         this.state = 'rotation';
         this.hit = false;
         this.audioManager = new AudioManager();
-        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
+        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands-Box-Destroy.wav');
         this.audioManager.effectsVolume = 0.5;
         this.audioManager.currentTime = 0;
     }

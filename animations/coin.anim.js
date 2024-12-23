@@ -1,3 +1,3 @@
 export const coinAnimations = {
-    idle: { path: 'img/coin', frameCount: 2 }
+    idle: { path: '../img/coin', frameCount: 2 }
 };

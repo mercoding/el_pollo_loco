@@ -279,16 +279,17 @@ export class Game extends World {
         this.canvas.height = 480;
         document.getElementById('title').style.display = 'block';
         document.getElementById('fullscreen').style.display = 'block';
+        this.redrawGameObjects();
         if (!this.hasTouchSupport()) return;
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         document.getElementById('title').style.display = 'none';
         document.getElementById('fullscreen').style.display = 'none';
-        this.redrawGameObjects();
         if (this.player) {
             this.player.setTouchControls();
             this.player.checkIfOnMobile(this.ctx);
         }
+        this.redrawGameObjects();
     }
 
 
