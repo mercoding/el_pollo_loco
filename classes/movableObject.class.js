@@ -11,10 +11,10 @@ import { CollisionCapable, GameObject } from "./gameObject.class.js";
 export class MovableObject extends CollisionCapable(GameObject) {
     constructor(collisionManager, ...args) {
         super(collisionManager, ...args);
-        this.velocity = { x: 0, y: 0 }; // Geschwindigkeit in x- und y-Richtung
+        this.velocity = { x: 0, y: 0 }; 
         this.speed = 100;
         this.moveSimulation = false;
-        this.target = null; // Ziel für Gegner
+        this.target = null; 
     }
 
     /**
@@ -59,7 +59,7 @@ export class MovableObject extends CollisionCapable(GameObject) {
      * @param {*} target
      */
     setTarget(target) {
-        this.target = target;  // Einmaliges Ziel für Bewegung setzen
+        this.target = target;  
     }
 
 
@@ -67,8 +67,8 @@ export class MovableObject extends CollisionCapable(GameObject) {
     targetMove() {
         let direction = 0;
         if (this.target !== null) {
-            direction = this.target.x > this.x ? 1 : -1;  // Richtung festlegen
-            this.velocity.x = this.speed * direction;  // Geschwindigkeit basierend auf Richtung            
+            direction = this.target.x > this.x ? 1 : -1;  
+            this.velocity.x = this.speed * direction;             
             if ((direction === -1 && this.x >= this.target.x)) {                
                 this.target = null;
                 direction = -1; 
@@ -97,7 +97,7 @@ export const Animatable = (Base) => class extends Base {
             this.animations[state] = this.loadFrames(pathInfo.path, pathInfo.frameCount);
         }
         this.currentFrame = 0;
-        this.frameDuration = 0.1; // Dauer jedes Frames in Sekunden
+        this.frameDuration = 0.1; 
         this.frameTime = 0;
     }
 
@@ -126,10 +126,7 @@ export const Animatable = (Base) => class extends Base {
      * @param {*} deltaTime
      */
     updateAnimation(deltaTime) {
-        // Frame-Zeit hochzählen
         this.frameTime += deltaTime;
-
-        // Frame wechseln, wenn die Dauer überschritten ist
         if(this.frameTime >= this.frameDuration) {
             this.frameTime = 0;
             this.currentFrame = (this.currentFrame + 1) % this.animations[this.state].length;
@@ -142,7 +139,6 @@ export const Animatable = (Base) => class extends Base {
      * @param {*} newState
      */
     setState(newState) {
-        // Überprüfen, ob der Zustand sich ändert, um Animationen neu zu starten
         if(this.state !== newState) {
             this.state = newState;
             this.currentFrame = 0;
@@ -156,7 +152,6 @@ export const Animatable = (Base) => class extends Base {
      * @returns {*}
      */
     getCurrentFrame() {
-        // Sicherheitscheck: Existiert Animation für den Zustand?
         if (this.animations[this.state]) {
             return this.animations[this.state][this.currentFrame];
         }

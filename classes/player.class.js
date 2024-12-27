@@ -7,7 +7,7 @@ export class Player {
         this.canvas = canvas;
         this.global = global;
         this.inputHandler = new InputHandler();
-        this.joystickOffset = { x: 0, y: 0 }; // Offset des inneren Kreises
+        this.joystickOffset = { x: 0, y: 0 }; 
         this.setTouchControls();
         this.Start();
     }
@@ -38,7 +38,6 @@ export class Player {
 
     /** Initialize Character and spawn into scene */
     initializeCharacter() {
-        // Erstelle und füge den Charakter hinzu
         this.character = new Character(pepeAnimations, this.global.collisionManager, this.canvas.width, this.global.groundLevel, 50, 150, 'Player');
         this.character.x = 0;
         this.character.global = this.global;
@@ -58,7 +57,6 @@ export class Player {
 
     /** Function on start game */
     Start() {
-        // Initiale Logik bei Spielstart, falls nötig
         this.initializeCharacter();
         this.character.Start();
     }
@@ -137,9 +135,9 @@ export class Player {
      */
     handleCameraAndCharacterMovement(character, deltaTime) {
         if (this.global.pause) return;
-        this.cameraX = character.x; // Zentriere die Kamera auf den Charakter
+        this.cameraX = character.x; 
         this.handleInput(deltaTime);
-        character.updateCollider(); // Aktualisiere den Collider des Charakters
+        character.updateCollider(); 
     }
 
     /**
@@ -167,7 +165,6 @@ export class Player {
      * @param {*} ctx
      */
     drawFireButton(ctx) {
-        // Zeichne den Feuerknopf
         const fireButton = this.touchControls.fireButton;
         ctx.beginPath();
         ctx.arc(fireButton.x, fireButton.y, fireButton.radius, 0, Math.PI * 2);
@@ -254,7 +251,7 @@ export class Player {
                 Math.pow(touchY - fireButton.y, 2)
             ) <= fireButton.radius
         ) {
-            this.character.throwBottle(); // Feuerknopf gedrückt
+            this.character.throwBottle();
         }
     }
 
@@ -341,12 +338,9 @@ export class Player {
         const touch = event.touches[0];
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
-
         const joystick = this.touchControls.joystick;
         const dx = touchX - joystick.x;
         const dy = touchY - joystick.y;
-
-        // Berechne die Richtung und begrenze den Offset auf den Radius
         this.calculateJoystickTouchDirection(joystick, dx, dy);
         this.translateJoystickMovementIntoInput(dx);
 
@@ -362,7 +356,7 @@ export class Player {
         this.joystickActive = false;
         this.joystickOffset = { x: 0, y: 0 };
         this.character.velocity.x = 0;
-        this.character.velocity.y = 0; // Stoppe den Charakter, wenn der Finger losgelassen wird
+        this.character.velocity.y = 0; 
         this.inputHandler.keysPressed.right = false;
         this.inputHandler.keysPressed.left = false;
         this.inputHandler.keysPressed.space = false;
@@ -376,10 +370,7 @@ export class Player {
     detectMobileDevice() {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-
-        // Kombiniere User-Agent-Abfrage und Touch-Unterstützung
         const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-
         return isMobile || isTouch;
     }
 

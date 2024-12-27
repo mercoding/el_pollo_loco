@@ -47,6 +47,9 @@ export class GameMenu extends MenuGUI{
         this.ui.global.audioManager.effectsVolume = this.ui.global.getSoundVolumes();
         this.ui.global.pause = true;
         this.ui.global.inGame = true;
+        this.ui.menuActive = true;
+        clearInterval();
+        clearTimeout();
         this.setButtonPositions();
         this.addMenuListeners();
     }
@@ -63,8 +66,8 @@ export class GameMenu extends MenuGUI{
 
     /** Set settings on exit */
     onExit() {
+        //this.ui.global.audioManager.stopAll();
         this.removeMenuListeners();
-        this.ui.canvas.style.cursor = 'default';
     }
 
     /** Update in game menu options */
@@ -196,7 +199,6 @@ export class GameMenu extends MenuGUI{
             this.ui.global.inGame = true;
             this.ui.menuActive = false;
             this.ui.global.pause = false;
-            this.layer = 1;
             this.ui.menu.changeMenu(new ClosedMenu(this.ui));
         } 
     }

@@ -2,6 +2,14 @@ import { AudioManager } from "./AudioManager.class.js";
 import { CollisionManager } from "./collisionManager.class.js";
 import { InputHandler } from "./inputHandler.class.js";
 
+/**
+ * Global class all variables for game handling and game play
+ * reset all stats on start or restart
+ *
+ * @export
+ * @class Global
+ * @typedef {Global}
+ */
 export class Global {
     constructor(canvas) {
         this.canvas = canvas;
@@ -16,7 +24,7 @@ export class Global {
         this.pause = false;
         this.musicOn = true;
         this.groundLevel = this.canvas.height * 0.87;
-        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands-Box-Destroy.wav');
+        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
     }
 
     /** Get game Volumes -> music, sound */
@@ -155,6 +163,8 @@ export class Global {
         this.gameObjects = [];
         this.audioManager.stopAll(); // Stopp alle Sounds und Musik
         this.audioManager = new AudioManager();
+        this.audioManager.musicVolume = this.getMusicVolumes();
+        this.audioManager.effectsVolume = this.getSoundVolumes();
         this.audioManager.initializeUserInteractionListener();
         this.inputHandler.deactivate(); // Entfernt alle Event Listener
         clearInterval();

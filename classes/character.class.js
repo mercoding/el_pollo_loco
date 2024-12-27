@@ -28,6 +28,7 @@ export class Character extends Animatable(MovableObject) {
         this.isThrown = false;
         this.throwDuration = 1.0;
         this.doubleJump = false;
+        this.onStart = true;
     }
 
 
@@ -85,8 +86,8 @@ export class Character extends Animatable(MovableObject) {
      */
     drawCollider(ctx, cameraX) {
         ctx.save();
-        ctx.strokeStyle = 'red'; // Collider-Farbe
-        ctx.lineWidth = 1; // Dünne Linie
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
         ctx.strokeRect(
             this.collider.x - cameraX,
             this.collider.y,
@@ -99,8 +100,8 @@ export class Character extends Animatable(MovableObject) {
 
     /** Update collider */
     updateCollider() {
-        super.updateCollider(); // Ruft die GameObject-Logik auf
-        this.collider.x = this.x - this.width / 2; // Zentriert den Collider
+        super.updateCollider(); 
+        this.collider.x = this.x - this.width / 2; 
         this.collider.y = this.y - this.height / 2;
     }
 
@@ -209,7 +210,7 @@ export class Character extends Animatable(MovableObject) {
      */
     updateJumpState(deltaTime) {
         if (!this.onGround && !this.reachedApex && this.velocity.y >= 0) {
-            this.reachedApex = true; // Scheitelpunkt wurde erreicht
+            this.reachedApex = true; 
         }
     }
 
@@ -222,20 +223,21 @@ export class Character extends Animatable(MovableObject) {
      */
     isOnGround(deltaTime) {
         if (!this.onGround || this.collidingWith === null) {
-            this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
+            this.velocity.y += this.gravity * deltaTime; 
         }
     }
 
     /** Land game object */
     land() {
-        if (!this.onGround) { // Überprüfen, ob der Charakter zuvor nicht auf dem Boden war
+        if (!this.onGround && !this.onStart) { 
             this.global.audioManager.playSound('Land');
         }
         this.doubleJump = false;
         this.jumping = false;
-        this.onGround = true; // Charakter ist jetzt auf dem Boden
-        this.velocity.y = 0; // Vertikale Geschwindigkeit auf Null setzen
-        if (this.state == 'jump') this.setStateOnce('idle'); // Status aktualisieren, wenn vorher im Sprung
+        this.onGround = true; 
+        this.velocity.y = 0; 
+        if (this.state == 'jump') this.setStateOnce('idle'); 
+        this.onStart = false;
     }
 
     /**
@@ -257,14 +259,14 @@ export class Character extends Animatable(MovableObject) {
     /** Throw bottle */
     throwBottle() {
         if (!this.isThrown) {
-            if (this.global.bottles > 0) { // Prüfe, ob der Charakter Flaschen hat
+            if (this.global.bottles > 0) { 
                 this.isThrown = true;
-                const velocityX = this.facingRight ? 300 : -300; // Richtung der Flasche
-                const velocityY = -200; // Anfangsaufwärtsbewegung
+                const velocityX = this.facingRight ? 300 : -300; 
+                const velocityY = -200; 
                 const bottle = this.getBottle(velocityX, velocityY);
                 this.global.addGameObject(bottle);
-                this.global.bottles -= 1; // Verringere die Anzahl der verfügbaren Flaschen
-                this.global.audioManager.playSound('Throw'); // Soundeffekt fürs Werfen
+                this.global.bottles -= 1; 
+                this.global.audioManager.playSound('Throw'); 
                 setTimeout(() => { this.isThrown = false; }, this.throwDuration * 200);
             }
         }
@@ -282,7 +284,7 @@ export class Character extends Animatable(MovableObject) {
     /** Take damage */
     takeDamage() {
         if (this.global.health <= 0) return;
-        if (!this.isInvincible) { // Nur Schaden, wenn nicht unverwundbar
+        if (!this.isInvincible) { 
             this.global.health -= 20;
             this.isInvincible = true;
             this.isHurt = true;
@@ -306,7 +308,7 @@ export class Character extends Animatable(MovableObject) {
         if (other.dead) return;
         this.velocity.y = 0;
         if (other) {
-            this.velocity.y = Math.min(other.velocity.y, -200);  // Setzt den „Bounce“-Effekt nach oben
+            this.velocity.y = Math.min(other.velocity.y, -200); 
             other.squish();
             setTimeout(() => {
                 this.velocity.y = 0;

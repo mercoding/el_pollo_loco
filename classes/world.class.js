@@ -1,3 +1,11 @@
+/**
+ * Class which draw all world images like mountains or sky with 
+ * moving clouds
+ *
+ * @export
+ * @class World
+ * @typedef {World}
+ */
 export class World {
     backgroundImageSky = new Image();
     backgroundImageClouds = new Image();
@@ -10,15 +18,14 @@ export class World {
         this.ctx = this.canvas.getContext('2d');
         this.setBackground();
         this.cloudsOffset = 0;
-        this.scrollSpeedClouds = 0.2;    // Langsame Geschwindigkeit für die kontinuierliche Bewegung der Wolken
-        this.scrollSpeedMountains = 0.4; // Geschwindigkeit für die Berge
-        this.scrollSpeedFar = 0.5;       // Geschwindigkeit für den fernen Hintergrund
-        this.scrollSpeedNear = 1.0;      // Geschwindigkeit für den vorderen Hintergrund
+        this.scrollSpeedClouds = 0.2;    
+        this.scrollSpeedMountains = 0.4; 
+        this.scrollSpeedFar = 0.5;       
+        this.scrollSpeedNear = 1.0;      
     }
 
     /** Set background into right order */
     setBackground() {
-        // Parallax-Hintergrundbilder
         this.backgroundImageSky.src = 'img/5_background/layers/air.png';
         this.backgroundImageClouds.src = 'img/5_background/layers/4_clouds/full.png';
         this.backgroundImageMountains.src = 'img/5_background/layers/3_third_layer/full.png';
@@ -62,7 +69,6 @@ export class World {
     /** Set near layer */
     setNearLayer() {
         const nearX = Math.floor(-(this.cameraX * this.scrollSpeedNear) % this.canvas.width);
-    
         this.ctx.drawImage(this.backgroundImageNear, nearX, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.backgroundImageNear, nearX + this.canvas.width, 0, this.canvas.width, this.canvas.height);
         if (nearX > 0) {

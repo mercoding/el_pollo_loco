@@ -78,7 +78,7 @@ export class Cactus extends CollisionCapable(GameObject) {
         if (direction === 'left') {
             if (other.velocity.x > 0) {
                 other.velocity.x = 0; // Stoppe Bewegung horizontal
-                other.x = this.x - this.width + 30;
+                other.x = this.x - this.width + 45;
                 other.idle();
             }
         }
@@ -92,21 +92,6 @@ export class Cactus extends CollisionCapable(GameObject) {
         }
     }
 
-    /**
-     * Check if player is on side of collider
-     *
-     * @param {*} other
-     * @returns {boolean}
-     */
-    isPlayerAdjacent(other) {
-        const buffer = 55; // Spielraum
-        return (
-            other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
-            other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
-        );
-    }
-
-
 
     /**
      * Check if collision enter
@@ -114,19 +99,20 @@ export class Cactus extends CollisionCapable(GameObject) {
      * @param {*} other
      */
     onCollisionEnter(other) {
+        if (this.global.pause) return;
         if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
             const currentTime = performance.now() / 2000;
             if (direction === 'top') {
                 const imageOffset = 82;
                 other.y = this.collider.y - other.collider.height + imageOffset;
-                if(!this.isPlayerAdjacent(other)) other.land(); // Character lands
+                other.land(); // Character lands
             } else {
                 this.isPlayerCollisionFromSide(other, direction);
             }
             if (currentTime - this.lastDamageTime >= this.damageCooldown) {
-                other.takeDamage(); // Character takes damage
                 this.lastDamageTime = currentTime;
+                other.takeDamage(); // Character takes damage
             }
         }
     }

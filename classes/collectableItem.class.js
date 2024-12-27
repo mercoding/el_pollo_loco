@@ -21,6 +21,7 @@ export class CollectableItem extends CollisionCapable(GameObject) {
         this.itemImage = new Image();
         this.itemImage.src = imgPath;
         this.isInvincible = false;
+        this.collected = false;
         setTimeout(() => { this.destroyItem(); }, 5000);
         this.updateCollider();
     }
@@ -52,7 +53,6 @@ export class CollectableItem extends CollisionCapable(GameObject) {
      * @returns {boolean}
      */
     isVisibleOnCanvas(screenX, canvasWidth) {
-        // Check if the obstacle is within the visible canvas area
         return screenX + this.width > 0 && screenX < canvasWidth;
     }
 
@@ -72,8 +72,8 @@ export class CollectableItem extends CollisionCapable(GameObject) {
      */
     drawCollider(ctx, cameraX) {
         ctx.save();
-        ctx.strokeStyle = 'red'; // Collider-Farbe
-        ctx.lineWidth = 1; // Dünne Linie
+        ctx.strokeStyle = 'red'; 
+        ctx.lineWidth = 1; 
         ctx.strokeRect(
             this.collider.x - cameraX,
             this.collider.y,
@@ -89,16 +89,16 @@ export class CollectableItem extends CollisionCapable(GameObject) {
      * @param {*} other
      */
     onCollisionEnter(other) {
+        if(this.collected) return;
         if (other.tag == 'Player') {
             other.onGround = 505;
             
             if (this.tag === "Bottle" && this.global.bottles < 10) {
-                if (this.y > 290) {
-                    this.global.bottles++;
-                    setTimeout(() => {
-                        this.destroyItem();
-                    }, 150);
-                }
+                this.global.bottles++;
+                this.collected = true;
+                setTimeout(() => {
+                    this.destroyItem();
+                }, 150);
             }
         }
     }

@@ -34,17 +34,17 @@ export class Game extends World {
 
     /** Set spawn Settings for enemies and obstacles */
     setSpawnSettings() {
-        this.spawnCooldown = 2; // Sekunden zwischen dem Spawnen eines Gegners
-        this.spawnCoinCooldown = 5; // Sekunden zwischen dem Spawnen eines Gegners
-        this.lastEnemySpawnTime = 0; // Letzte Spawn-Zeit für Gegner
-        this.minDistanceBetweenEnemies = 300; // Mindestabstand zwischen Gegnern
+        this.spawnCooldown = 2; 
+        this.spawnCoinCooldown = 5; 
+        this.lastEnemySpawnTime = 0; 
+        this.minDistanceBetweenEnemies = 300; 
         this.spawnDistance = 650;
         this.lastCharacterX = 0;
         this.coinSpacing = 50;
-        this.lastObstacleSpawnX = 0; // Track the X position of the last spawned obstacle
-        this.minObstacleSpacing = 300; // Minimum distance between obstacles
-        this.maxObstacleSpacing = 600; // Maximum distance between obstacles
-        this.obstacleSpawnCooldown = 3; // Minimum time in seconds between spawns
+        this.lastObstacleSpawnX = 0; 
+        this.minObstacleSpacing = 300; 
+        this.maxObstacleSpacing = 600; 
+        this.obstacleSpawnCooldown = 3; 
         this.lastObstacleSpawnTime = 0;
     }
 
@@ -76,7 +76,6 @@ export class Game extends World {
             document.getElementById('title').style.display = "none";
             document.getElementById('fullscreen').style.display = "none";
         }
-
         this.Update();
     }
 
@@ -148,10 +147,10 @@ export class Game extends World {
     DeltaTime() {
         const currentFrameTime = performance.now();
         const frameRate = (currentFrameTime - this.lastFrameTime) / 1000;
-        const maxDeltaTime = 1 / 30; // Begrenze auf 30 FPS
+        const maxDeltaTime = 1 / 30; 
         const deltaTime = Math.min(frameRate, maxDeltaTime);
         this.lastFrameTime = currentFrameTime;
-        this.inputCooldown = this.inputCooldown || 0; // Initialisieren, falls nicht vorhanden
+        this.inputCooldown = this.inputCooldown || 0; 
         this.inputCooldown -= deltaTime;
         return deltaTime;
     }
@@ -191,12 +190,7 @@ export class Game extends World {
     checkIfGameOver() {
         if (this.global.bossDefeated > 0 || this.global.health <= 0) {
             this.ui.drawGameOver();
-            if(!this.ui.menuActive) setTimeout(() => {
-                this.ui.menuActive = true;
-                this.ui.global.pause = true;
-                this.ui.global.audioManager.stopAll();
-                this.ui.menu.changeMenu(new GameMenu(this.ui));
-            }, 4000);
+            this.ui.global.audioManager.stopAll();
         }
     }
 
@@ -204,7 +198,7 @@ export class Game extends World {
     drawUI() {
         this.ui.drawBottleBar(this.global.getBottles(), 10, 10);
         this.ui.drawHealthBar(this.global.health, 10, 45);
-        this.ui.drawCoinStatusBar(this.global.coins, this.canvas.width - 100, 10);
+        this.ui.drawCoinStatusBar(this.global.coins, this.canvas.width - 100, 30);
     }
 
     /** Spawn and set enemies or coins to scene */
@@ -249,7 +243,7 @@ export class Game extends World {
     /** Remove objects which are off screen  */
     removeOffScreenEnemies() {
         const charakter = this.global.gameObjects.find(player => player instanceof Character);
-        const minDistanceToRemoveEnemy = 1000; // Mindeststrecke in Pixeln (anpassbar)
+        const minDistanceToRemoveEnemy = 1000; 
         this.global.gameObjects = this.global.gameObjects.filter(obj => {
             if (obj instanceof Chicken) {
                 const screenX = obj.x - this.cameraX + this.canvas.width / 2;
@@ -257,12 +251,12 @@ export class Game extends World {
                     const distanceMoved = Math.abs(charakter.x - obj.lastCharacterX);
                     if (distanceMoved >= minDistanceToRemoveEnemy) {
                         this.global.collisionManager.destroy(obj);
-                        return false; // Entferne den Gegner
+                        return false; 
                     }
                 }
                 else obj.lastCharacterX = charakter.x;
             }
-            return true; // Behalte das Objekt im Spiel, wenn es kein Chicken ist oder nicht entfernt werden soll
+            return true; 
         });
     }
 

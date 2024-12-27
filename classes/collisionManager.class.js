@@ -72,7 +72,7 @@ export class CollisionManager {
 
     /** Clear object list  */
     clear() {
-        this.objects.length = 0; // Leert die Liste der Objekte
+        this.objects.length = 0; 
     }
 
     /** Check collisions */

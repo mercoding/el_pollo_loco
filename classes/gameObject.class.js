@@ -8,8 +8,8 @@
  */
 export class GameObject {
     constructor(x, y, width, height, tag = 'untagged') {
-        this.x = x; // Mitte des Objekts
-        this.y = y; // Mitte des Objekts
+        this.x = x; 
+        this.y = y; 
         this.width = width;
         this.height = height;
         this.tag = tag;
@@ -42,9 +42,6 @@ export const CollisionCapable = (Base) => class extends Base {
         this.collider.width = this.width;
         this.collider.height = this.height;
     }
-    
-    
-    
 
     /**
      * Draw collider
@@ -63,14 +60,16 @@ export const CollisionCapable = (Base) => class extends Base {
      * @returns {boolean}
      */
     isCollidingWith(other) {
+        const buffer = 10; 
         if (!other || !other.collider) return false;
         return (
-            this.collider.x < other.collider.x + other.collider.width &&
-            this.collider.x + this.collider.width > other.collider.x &&
-            this.collider.y < other.collider.y + other.collider.height &&
+            this.collider.x + buffer < other.collider.x + other.collider.width - buffer &&
+            this.collider.x + this.collider.width - buffer > other.collider.x + buffer &&
+            this.collider.y  < other.collider.y + other.collider.height &&
             this.collider.y + this.collider.height > other.collider.y
         );
     }
+
 
     /**
      * Get collision direction

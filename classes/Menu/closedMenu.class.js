@@ -23,6 +23,7 @@ export class ClosedMenu {
         this.ui.intro = false;
         this.addMenuListeners();
         if (this.ui.global.getMusicOn()) this.ui.global.audioManager.playMusic('El Pollo Loco');
+        else this.ui.global.audioManager.stopMusic('El Pollo Loco');
         this.ui.ctx.shadowColor = 'transparent';
         this.ui.ctx.shadowBlur = 0;
         this.ui.ctx.shadowOffsetX = 0;
@@ -70,25 +71,28 @@ export class ClosedMenu {
         this.removeMenuListeners(); // Alte Listener sicher entfernen
         this.keyListener = (event) => this.toggleMenu(event);
         this.touchListener = (event) => this.handlePauseButtonTouch(event);
-
+        this.mouseListener = (event) => this.handleMenuMouseInput(event);
+        this.mouseHoverListener = (event) => this.handleMouseHover(event);
         window.addEventListener('keydown', this.keyListener);
         this.ui.canvas.addEventListener('touchstart', this.touchListener);
+        this.ui.canvas.addEventListener('click', this.mouseListener);
+        this.ui.canvas.addEventListener('mousemove', this.mouseHoverListener);
+
     }
 
     /** Remove game listener */
     removeMenuListeners() {
         if (this.keyListener) {
             window.removeEventListener('keydown', this.keyListener);
-
             this.keyListener = null;
         }
-        /*
+
         if (this.mouseListener) {
             this.ui.canvas.removeEventListener('click', this.mouseListener);
             this.mouseListener = null;
-        }*/
-        if(this.touchListener) {
-            this.ui.canvas.removeEventListener('touchstart', this.handlePauseButtonTouch); 
+        }
+        if (this.touchListener) {
+            this.ui.canvas.removeEventListener('touchstart', this.handlePauseButtonTouch);
             this.touchListener = null;
         }
     }
@@ -118,10 +122,10 @@ export class ClosedMenu {
  * Draw a pause button on the canvas.
  */
     drawPauseButton() {
-        if(!this.hasTouchSupport()) return;
+        //if(!this.hasTouchSupport()) return;
         const ctx = this.ui.canvas.getContext('2d');
         const buttonX = this.ui.canvas.width / 2 - 25;
-        const buttonY = 10;
+        const buttonY = 35;
         const buttonWidth = 50;
         const buttonHeight = 50;
         ctx.fillStyle = '#000';
@@ -131,6 +135,51 @@ export class ClosedMenu {
         const barSpacing = 10;
         ctx.fillRect(buttonX + 10, buttonY + 10, barWidth, buttonHeight - 20);
         ctx.fillRect(buttonX + 10 + barWidth + barSpacing, buttonY + 10, barWidth, buttonHeight - 20);
+    }
+
+    /**
+     * Handle menu mouse input
+     *
+     * @param {*} event
+     */
+    handleMenuMouseInput(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
+
+        // Pause button dimensions
+        const pauseButton = { x: this.ui.canvas.width / 2 - 25, y: 35, width: 50, height: 50 };
+
+        // Check if the touch is within the pause button bounds
+        if (mouseX >= pauseButton.x && mouseX <= pauseButton.x + pauseButton.width &&
+            mouseY >= pauseButton.y && mouseY <= pauseButton.y + pauseButton.height
+        ) {
+            this.ui.global.audioManager.stopAll();
+            this.ui.menu.changeMenu(new GameMenu(this.ui));
+        }
+
+    }
+
+    /**
+     * Handle mouse hover effect -> cursor pointer
+     *
+     * @param {*} event
+     */
+    handleMouseHover(event) {
+        const rect = this.ui.canvas.getBoundingClientRect();
+        const mouseX = (event.clientX - rect.left) * (this.ui.canvas.width / rect.width);
+        const mouseY = (event.clientY - rect.top) * (this.ui.canvas.height / rect.height);
+
+        let isHovering = false;
+        const pauseButton = { x: this.ui.canvas.width / 2 - 25, y: 35, width: 50, height: 50 };
+
+        if (mouseX >= pauseButton.x && mouseX <= pauseButton.x + pauseButton.width &&
+            mouseY >= pauseButton.y && mouseY <= pauseButton.y + pauseButton.height
+        ) {
+                isHovering = true;
+        }
+
+        this.ui.canvas.style.cursor = isHovering ? 'pointer' : 'default';
     }
 
     /**

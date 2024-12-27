@@ -91,7 +91,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.stateMachine.Update(deltaTime);
         this.drawChicken(ctx, screenX);
         this.drawHealthBar(ctx, this.calculateBottlePercentage(this.hitCount), screenX + this.width / 2 - 100, this.y - 20);
-        if (this.global.pause) return;
+        if (this.global.pause || this.global.gameOver && !this.isDead()) return;
         this.updateAnimation(deltaTime);
         if (this.isDead()) return;
         if (this.soundCooldown > 0) this.soundCooldown -= deltaTime;
@@ -121,8 +121,8 @@ export class ChickenBoss extends Animatable(MovableObject) {
      */
     drawCollider(ctx, cameraX) {
         ctx.save();
-        ctx.strokeStyle = 'red'; // Collider-Farbe
-        ctx.lineWidth = 1; // Dünne Linie
+        ctx.strokeStyle = 'red'; 
+        ctx.lineWidth = 1; 
         ctx.strokeRect(
             this.collider.x - cameraX,
             this.collider.y,
@@ -157,10 +157,10 @@ export class ChickenBoss extends Animatable(MovableObject) {
                 this.soundRepeatCounter++;
             } else {
                 sound = 'Bot2';
-                this.soundRepeatCounter = 0; // Zurücksetzen für den nächsten Zyklus
+                this.soundRepeatCounter = 0; 
             }
             this.audioManager.playSound(sound);
-            this.soundCooldown = this.cooldownDuration; // Setze den Cooldown zurück
+            this.soundCooldown = this.cooldownDuration; 
         }
     }
 
@@ -247,11 +247,11 @@ export class ChickenBoss extends Animatable(MovableObject) {
      */
     isOnGround(deltaTime) {
         if (!this.onGround) {
-            this.velocity.y += this.gravity * deltaTime; // Gravitationskraft addieren
+            this.velocity.y += this.gravity * deltaTime; 
         }
-        if (this.y + this.height >= this.ground) { // Bodenhöhe hier auf `400` festgelegt
-            this.y = this.ground - this.height; // Charakter auf dem Boden halten
-            this.land(); // Charakter landet und Animation wird zurückgesetzt
+        if (this.y + this.height >= this.ground) { 
+            this.y = this.ground - this.height; 
+            this.land(); 
         }
     }
 
@@ -271,15 +271,10 @@ export class ChickenBoss extends Animatable(MovableObject) {
      * @returns {*}
      */
     calculateReturnPosition(boss) {
-        // Define the offset distance you want the boss to maintain from the player
         const offsetDistance = (this.player.x < boss.x) ? 250 : -250;
-
-        // Determine the boss's target return position based on the player's position
         if (this.player.x < boss.x) {
-            // If the player is to the left, position the boss to the right of the player
             return this.player.x + offsetDistance;
         } else {
-            // If the player is to the right, position the boss to the left of the player
             return this.player.x - offsetDistance;
         }
     }
@@ -312,10 +307,10 @@ export class ChickenBoss extends Animatable(MovableObject) {
      */
     isPlayerAdjacent(other) {
         if(!other.onGround) return;
-        const buffer = 22; // Spielraum
+        const buffer = 22; 
         return (
-            other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
-            other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
+            other.x < this.x + this.width / 2 - buffer || 
+            other.x > this.x + this.width / 2 + buffer   
         );
     }
 
@@ -326,6 +321,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
      * @param {*} other
      */
     onCollisionEnter(other) {
+        if (this.global.pause) return;
         if (other.tag === "Player" && this.health > 0) {
             const direction = this.getCollisionDirection(other);
             if ((direction === 'left' || direction === 'right')) {

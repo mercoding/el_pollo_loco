@@ -26,7 +26,7 @@ export class Bottle extends Animatable(MovableObject) {
         this.state = 'rotation';
         this.hit = false;
         this.audioManager = new AudioManager();
-        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands-Box-Destroy.wav');
+        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
         this.audioManager.effectsVolume = 0.5;
         this.audioManager.currentTime = 0;
     }
@@ -109,7 +109,7 @@ export class Bottle extends Animatable(MovableObject) {
     hitChickenBoss(other) {
         setTimeout(() => {
             other.onHit(this);
-            if(other.health <= 0) this.global.bossDefeated++;
+            if (other.health <= 0) this.global.bossDefeated++;
             this.explode();
         }, 200);
     }
@@ -141,25 +141,17 @@ export class Bottle extends Animatable(MovableObject) {
                 this.hitChickenBoss(other);
                 this.hit = true;
             }
-            else if (other instanceof Chicken && !this.isChickenAdjacent(other) /*distance <= 20*/) {
+            else if (other instanceof Chicken) {
                 if (other.tag === "Enemy") other.onHit(this);
                 this.explode();
             }
-            this.explosionAudio();
         }
-    }
-
-    /** Play explosion audio */
-    explosionAudio() {
-        // Explosionseffekt (visuell und mechanisch)
-        this.audioManager.playSound('Explosion');
     }
 
     /** Start explode effect spawm explosion game object */
     explode() {
         this.hasExploded = true;
         this.global.addGameObject(new Explosion(bottleExplodeAnimations, this.collisionManager, this.global, this.x, this.y, this.explosionRadius)); // Explosionseffekt hinzufügen
-        // Entferne die Flasche aus der Szene
         this.global.destroy(this);
         this.global.collisionManager.destroy(this);
     }

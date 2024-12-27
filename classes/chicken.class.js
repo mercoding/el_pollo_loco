@@ -5,8 +5,17 @@ import { Bottle } from "./bottle.class.js";
 import { CollectableItem } from "./collectableItem.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
+/**
+ * Chicken enemy which walking between obstacles destroyable with
+ * jump on top or bottle throw
+ *
+ * @export
+ * @class Chicken
+ * @typedef {Chicken}
+ * @extends {Animatable(MovableObject)}
+ */
 export class Chicken extends Animatable(MovableObject) {
-    squishAudio = new Audio('audio/GGGrasslands-Box-Destroy.wav');
+    squishAudio = new Audio('audio/GGGrasslands - Box Destroy.wav');
     constructor(animationPaths, collisionManager, global, x, y, ...args) {
         super(animationPaths, collisionManager, x, y, ...args);
         this.global = global;
@@ -24,8 +33,8 @@ export class Chicken extends Animatable(MovableObject) {
     /** Set stats on start */
     Start() {
         this.lastDamageTime = 0;
-        this.soundIndex = 0; // Index für den Soundwechsel
-        this.soundCooldown = 0; // Verhindert zu schnelles Abspielen
+        this.soundIndex = 0; 
+        this.soundCooldown = 0; 
         this.cooldownDuration = 0.5;
         this.soundRepeatCounter = 0;
         this.audioManager = new AudioManager();
@@ -53,7 +62,7 @@ export class Chicken extends Animatable(MovableObject) {
         if (this.soundCooldown > 0) this.soundCooldown -= deltaTime;
         if (this.velocity.x !== 0 && this.soundCooldown <= 0) {
             this.playWalkingSound();
-            this.soundCooldown = this.cooldownDuration; // Setze den Cooldown zurück
+            this.soundCooldown = this.cooldownDuration; 
         }
         this.updateCollider();
     }
@@ -66,8 +75,8 @@ export class Chicken extends Animatable(MovableObject) {
      */
     drawCollider(ctx, cameraX) {
         ctx.save();
-        ctx.strokeStyle = 'red'; // Collider-Farbe
-        ctx.lineWidth = 1; // Dünne Linie
+        ctx.strokeStyle = 'red'; 
+        ctx.lineWidth = 1; 
         ctx.strokeRect(
             this.collider.x - cameraX,
             this.collider.y,
@@ -86,7 +95,6 @@ export class Chicken extends Animatable(MovableObject) {
      * @param {*} screenX
      */
     drawChicken(ctx, screenX) {
-        // Frame für das aktuelle Bild der Animation erhalten
         const frame = this.getCurrentFrame();
         if (frame) {
             ctx.save();
@@ -100,15 +108,12 @@ export class Chicken extends Animatable(MovableObject) {
     playWalkingSound() {
         let sound;
         if (this.soundRepeatCounter < 3) {
-            // Spiele den ersten Sound zweimal
             sound = 'Bot2';
             this.soundRepeatCounter++;
         } else {
-            // Wechsel zum zweiten Sound
             sound = 'Bot1';
-            this.soundRepeatCounter = 0; // Zurücksetzen für den nächsten Zyklus
+            this.soundRepeatCounter = 0; 
         }
-
         this.audioManager.playSound(sound);
     }
 
@@ -121,7 +126,7 @@ export class Chicken extends Animatable(MovableObject) {
      */
     moveLeft(frame, ctx, screenX) {
         ctx.translate(screenX + this.width, this.y);
-        ctx.scale(-1, 1);  // Flipped für "nach links"
+        ctx.scale(-1, 1);  
         ctx.drawImage(frame, 0, 0, this.width, this.height);
         this.setVelocity(1, 0);
     }
@@ -145,9 +150,7 @@ export class Chicken extends Animatable(MovableObject) {
      * @param {*} other
      */
     setBounceAfterSquish(other) {
-        //other.velocity.y = 0;
         if (other.tag === "Player") {
-            //other.velocity.y = 200;   // Setzt den „Bounce“-Effekt nach oben
             setTimeout(() => { other.velocity.y = Math.min(other.velocity.y, -150); }, 100);
             setTimeout(() => { other.velocity.y = 100; }, 250);
         }
@@ -220,7 +223,7 @@ export class Chicken extends Animatable(MovableObject) {
         if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
             if ((direction === 'left' || direction === 'right')) {
-                if(!this.isPlayerAdjacent(other)) other.takeDamage();
+                if(!this.isPlayerAdjacent(other) && other.onGround) other.takeDamage();
             }
             if (direction === 'top' && other.velocity.y > 0) {
                 other.setState('jump');
@@ -237,7 +240,7 @@ export class Chicken extends Animatable(MovableObject) {
      */
     isPlayerAdjacent(other) {
         if(!other.onGround) return;
-        const buffer = 22; // Spielraum
+        const buffer = 32; // Spielraum
         return (
             other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
             other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
@@ -251,6 +254,7 @@ export class Chicken extends Animatable(MovableObject) {
      * @param {*} other
      */
     onCollisionEnter(other) {
+        if (this.global.pause) return;
         if (this.dead) return;
         this.ifCollisionOnObstacle(other);
         this.ifCollisionOnPlayer(other);
@@ -265,7 +269,7 @@ export class Chicken extends Animatable(MovableObject) {
         // Lasse Flaschen fallen, wenn das Chicken besiegt wurde
         const numBottles = Math.floor(Math.random(0, 10) * 10); // 1-2 Flaschen        
         if (numBottles > 3) return;
-        const bottle = new CollectableItem("../img/bottle/rotation/R-1.png", this.global.collisionManager, this.x, this.y - 50, 50, 60, 'Bottle');
+        const bottle = new CollectableItem("img/bottle/rotation/R-1.png", this.global.collisionManager, this.x, this.y - 50, 50, 60, 'Bottle');
         bottle.global = this.global;
         this.global.addGameObject(bottle);
         this.global.collisionManager.addObject(bottle);
@@ -284,7 +288,7 @@ export class Chicken extends Animatable(MovableObject) {
 
     /** Land game object and stop falling */
     land() {
-        this.onGround = true; // Charakter ist jetzt auf dem Boden
-        this.velocity.y = 0; // Vertikale Geschwindigkeit auf Null setzen
+        this.onGround = true; 
+        this.velocity.y = 0; 
     }
 }

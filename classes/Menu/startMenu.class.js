@@ -38,6 +38,7 @@ export class StartMenu extends MenuGUI {
         this.ui.menuActive = true;
         this.ui.global.inGame = false;
         this.ui.global.pause = true;
+        this.ui.global.audioManager.stopAll();
         this.setButtonPositions();
         this.addMenuListeners();
     }

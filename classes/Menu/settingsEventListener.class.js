@@ -366,7 +366,8 @@ export class SettingsEventListener {
             const relativeX = x - slider.x;
             const value = relativeX / slider.width;
             slider.value = value;
-            this.ui.global.setMusicVolumes(value);
+            if(index === 0) this.ui.global.setMusicVolumes(value);
+            else  this.ui.global.setSoundVolumes(value);
         }
     }
 

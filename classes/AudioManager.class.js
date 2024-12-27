@@ -8,12 +8,11 @@
 export class AudioManager {
     constructor() {
         this.sounds = {};
-        this.musicVolume = 1.0; // Standardlautstärke
+        this.musicVolume = 1.0; 
         this.effectsVolume = 1.0;
-        this.isUserInteracted = false; // Benutzerinteraktion
-        this.pendingAudio = []; // Warteschlange für Audio
+        this.isUserInteracted = false; 
+        this.pendingAudio = []; 
         this.musicOn = true;
-        // Warte auf Benutzerinteraktion
         this.initializeUserInteractionListener();
     }
 
@@ -145,7 +144,6 @@ export class AudioManager {
     stopAll() {
         Object.values(this.sounds).forEach(sound => {
             sound.pause();
-            sound.currentTime = 0;
         });
     }
 

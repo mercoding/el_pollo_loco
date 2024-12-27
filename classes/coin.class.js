@@ -88,8 +88,8 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
      */
     drawCollider(ctx, cameraX) {
         ctx.save();
-        ctx.strokeStyle = 'red'; // Collider-Farbe
-        ctx.lineWidth = 1; // Dünne Linie
+        ctx.strokeStyle = 'red'; 
+        ctx.lineWidth = 1; 
         ctx.strokeRect(
             this.collider.x - cameraX,
             this.collider.y,
@@ -106,7 +106,6 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
      */
     onCollisionEnter(other) {
         if (other.tag == 'Player') {
-            
             if (this.y >= other.y + other.height / 2 - 100) {
                 setTimeout(() => {
                     this.destroyCoin();

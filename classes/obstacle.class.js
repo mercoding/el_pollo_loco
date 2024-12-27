@@ -1,6 +1,15 @@
 import { Chicken } from "./chicken.class.js";
 import { CollisionCapable, GameObject } from "./gameObject.class.js";
 
+/**
+ * Class which create obstacle which player cannot walking through
+ * but possible to land on it
+ *
+ * @export
+ * @class Obstacle
+ * @typedef {Obstacle}
+ * @extends {CollisionCapable(GameObject)}
+ */
 export class Obstacle extends CollisionCapable(GameObject) {
     static imageLoaded = false;
     global;
@@ -43,8 +52,8 @@ export class Obstacle extends CollisionCapable(GameObject) {
      */
     drawCollider(ctx, cameraX) {
         ctx.save();
-        ctx.strokeStyle = 'red'; // Collider-Farbe
-        ctx.lineWidth = 1; // Dünne Linie
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
         ctx.strokeRect(
             this.collider.x - cameraX,
             this.collider.y,
@@ -63,14 +72,14 @@ export class Obstacle extends CollisionCapable(GameObject) {
     isPlayerCollisionFromSide(other, direction) {
         if (direction === 'left') {            
             if(other.velocity.x > 0) {
-                other.velocity.x = 0; // Stoppe Bewegung horizontal
+                other.velocity.x = 0; 
                 other.x = this.x - this.width + 40;
                 other.idle();
             }
         }
         else if(direction === 'right') {
             if(other.velocity.x < 0) {
-                other.velocity.x = 0; // Stoppe Bewegung horizontal
+                other.velocity.x = 0; 
                 other.x = this.x + this.width + 10;
                 other.idle();
             }

@@ -15,11 +15,14 @@ export class Explosion extends Animatable(MovableObject) {
         super(bottleExplodeAnimations, collisionManager, x, y, radius * 2, radius * 2, tag);
         this.global = global;
         this.radius = radius;
-        this.timer = 0; // Zeit, wie lange die Explosion sichtbar bleibt
-        this.duration = 0.5; // 0.5 Sekunden
+        this.timer = 0; 
+        this.duration = 0.5; 
         this.state = 'explode';
-        this.global.audioManager.currentTime = 0;
-        this.global.audioManager.playSound('Explosion'); 
+        this.audioManager = new AudioManager();
+        this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
+        this.audioManager.isUserInteracted = true;
+        this.audioManager.currentTime = 0;
+        this.audioManager.playSound('Explosion');
         this.play = false;
         
     }

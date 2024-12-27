@@ -1,8 +1,18 @@
 import { InputHandler } from "./inputHandler.class.js";
+import { InfoMenu } from "./Menu/infoMenu.class.js";
 import { Intro } from "./Menu/intro.class.js";
 import { Menu } from "./Menu/menu.class.js";
+import { StartMenu } from "./Menu/startMenu.class.js";
 import { World } from "./world.class.js";
 
+/**
+ * Class which draw UI like health, bottle bar and coins
+ *
+ * @export
+ * @class UI
+ * @typedef {UI}
+ * @extends {World}
+ */
 export class UI extends World {
     startBackground = new Image();
     startMenuBackground = new Image();
@@ -33,13 +43,13 @@ export class UI extends World {
     constructor(game) {
         super(game);
         this.game = game;
-        this.menuActive = false; // Menü ist zunächst deaktiviert
+        this.menuActive = false; 
         this.intro = true;
         this.global = game.global;
         this.global.inGame = false;
         this.global.pause = true;
         this.selectedOption = 0;
-        this.menu = new Menu(new Intro(this));
+        this.menu = new Menu(new InfoMenu(this));
         this.Start();
     }
 
