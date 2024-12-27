@@ -41,7 +41,6 @@ export class CollectableItem extends CollisionCapable(GameObject) {
         if (this.isVisibleOnCanvas(screenX, ctx.canvas.width)) {
             ctx.drawImage(this.itemImage, screenX, this.y, this.width, this.height);
         }
-        this.onCollisionStay();
         this.updateCollider();
     }
 
@@ -56,13 +55,6 @@ export class CollectableItem extends CollisionCapable(GameObject) {
         return screenX + this.width > 0 && screenX < canvasWidth;
     }
 
-    /** Check if collision is on stay */
-    onCollisionStay() {
-        if (this.collidingWith == null) return;
-        if (this.collidingWith.tag === "Player" && !this.collidingWith.onGround) {
-            if (this.tag === "Bottle" && this.global.bottles < 10) this.destroyItem();
-        }
-    }
 
     /**
      * Draw collider in debug mode
@@ -90,9 +82,7 @@ export class CollectableItem extends CollisionCapable(GameObject) {
      */
     onCollisionEnter(other) {
         if(this.collected) return;
-        if (other.tag == 'Player') {
-            other.onGround = 505;
-            
+        if (other.tag == 'Player') {            
             if (this.tag === "Bottle" && this.global.bottles < 10) {
                 this.global.bottles++;
                 this.collected = true;
