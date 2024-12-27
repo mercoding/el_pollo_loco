@@ -22,8 +22,9 @@ export class Explosion extends Animatable(MovableObject) {
         this.audioManager.loadSound('Explosion', 'audio/GGGrasslands - Box Destroy.wav');
         this.audioManager.isUserInteracted = true;
         this.audioManager.currentTime = 0;
+        this.audioManager.effectsVolume = this.global.getSoundVolumes();
         this.audioManager.playSound('Explosion');
-        this.play = false;
+        this.played = false;
         
     }
 
@@ -36,12 +37,13 @@ export class Explosion extends Animatable(MovableObject) {
      */
     Update(ctx, deltaTime, screenX) {
         this.timer += deltaTime;   
-        if (this.timer >= this.duration) {
+        this.drawSplash(ctx, screenX);
+        this.playExplosionAudio();
+        if (this.timer >= this.duration && !this.global.pause) {
             this.global.destroy(this);
             this.global.collisionManager.destroy(this);
             return;
         }
-        this.drawSplash(ctx, screenX);
     }
 
     /**
@@ -60,5 +62,11 @@ export class Explosion extends Animatable(MovableObject) {
             ctx.drawImage(frame, -5, -5, this.width, this.height);
             ctx.restore();
         }        
+    }
+
+    playExplosionAudio() {
+        if(this.global.pause) return;
+        if(!this.played) this.audioManager.playSound('Explosion');
+        this.played = true;
     }
 }

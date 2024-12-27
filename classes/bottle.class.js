@@ -40,10 +40,11 @@ export class Bottle extends Animatable(MovableObject) {
      */
     Update(ctx, deltaTime, screenX) {
         if (this.hasExploded) return; // Nichts tun, wenn bereits explodiert
+        this.drawBottle(ctx, screenX);
+        if(this.global.pause) return;
         this.velocity.y += this.gravity * deltaTime;
         this.x += this.velocity.x * deltaTime;
         this.y += this.velocity.y * deltaTime;
-        this.drawBottle(ctx, screenX);
         if (this.y + this.height >= this.global.groundLevel) {
             this.explode();
         }
