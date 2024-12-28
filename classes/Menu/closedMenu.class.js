@@ -58,10 +58,12 @@ export class ClosedMenu {
         this.selectedOption = 0; // Zurücksetzen der Auswahl
 
         if (this.ui.menuActive) {
+            this.ui.global.inGame = false;
             this.ui.global.audioManager.stopAll();
             this.ui.menu.changeMenu(new GameMenu(this.ui));
         } else {
             if (this.ui.global.getMusicOn()) this.ui.global.audioManager.playMusic('El Pollo Loco');
+            this.ui.global.inGame = true;
             this.removeMenuListeners();
         }
     }

@@ -25,7 +25,6 @@ document.addEventListener('fullscreenchange', () => {
         canvas.width = 720;
         canvas.height = 480;
     }
-    //game.redrawGameObjects();
 });
 
 // Nur auf Desktop das Icon anzeigen

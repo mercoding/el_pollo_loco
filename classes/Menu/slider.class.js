@@ -31,6 +31,7 @@ export class Slider extends MenuGUI {
 
     /** Set image color to yellow */
     setImageColor() {
+        if(this.hasTouchSupport()) return;
         if(this.selected && !this.hasTouchSupport()) {
             if(this.tag === "music") this.image.src = 'img/ui/MusicYellow.png';
             else this.image.src = 'img/ui/SoundYellow.png';

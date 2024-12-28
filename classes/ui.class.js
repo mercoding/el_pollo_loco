@@ -33,10 +33,15 @@ export class UI extends World {
 
     bottleStatus = {
         0: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/0.png' },
+        10: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/10.png' },
         20: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/20.png' },
+        30: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/30.png' },
         40: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/40.png' },
+        50: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/50.png' },
         60: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/60.png' },
+        70: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/70.png' },
         80: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/80.png' },
+        90: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/90.png' },
         100: { path: 'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/100.png' }
     };
 
@@ -53,12 +58,26 @@ export class UI extends World {
         this.Start();
     }
 
+    preloadImages(images) {
+        // Iteriere durch die Keys des Objekts
+        for (const key in images) {
+            if (images.hasOwnProperty(key)) {
+                const img = new Image(); // Erstelle ein neues Image-Objekt
+                img.src = images[key].path; // Weise den Bildpfad zu
+                images[key].image = img; // Speichere das geladene Bild im Objekt
+            }
+        }
+        return images; // Gib das aktualisierte Objekt zurück
+    }
 
     /** Set stuff on start */
     Start() {
         this.global.getVolumes();
+        this.bottleImages = this.preloadImages(this.bottleStatus);
+        this.healthImages = this.preloadImages(this.healthStatus);
         this.gameOverImg.src = "img/9_intro_outro_screens/game_over/you lost.png";
         this.gameWinImg.src = "img/9_intro_outro_screens/win/won_1.png";
+        this.coinsStatus.src = 'img/7_statusbars/3_icons/icon_coin.png';
     }
 
     /**
@@ -80,8 +99,8 @@ export class UI extends World {
      * @param {*} x
      * @param {*} y
      */
-    drawHealthBar(percent, x, y) {
-        this.healthStatusBar.src = percent > 0 ? this.healthStatus[percent].path : this.healthStatus['0'].path;
+    drawHealthBar(percent, x, y) {        
+        this.healthStatusBar = percent > 0 ? this.healthImages[percent].image : this.healthImages[0].image; //this.healthStatus['0'].path;
         this.ctx.drawImage(this.healthStatusBar, x, y, 200, 50);
     }
 
@@ -94,7 +113,7 @@ export class UI extends World {
      * @param {*} y
      */
     drawBottleBar(percent, x, y) {
-        this.bottlesStatusBar.src = this.bottleStatus[percent].path;
+        this.bottlesStatusBar = this.bottleImages[percent].image;
         this.ctx.drawImage(this.bottlesStatusBar, x, y, 200, 50);
     }
 
@@ -106,7 +125,6 @@ export class UI extends World {
      * @param {*} y
      */
     drawCoinStatusBar(coins, x, y) {
-        this.coinsStatus.src = 'img/7_statusbars/3_icons/icon_coin.png';
         this.ctx.drawImage(this.coinsStatus, x, y, 50, 50);
         this.ctx.font = '30px "Boogaloo"';
         this.ctx.fillStyle = 'white'; //

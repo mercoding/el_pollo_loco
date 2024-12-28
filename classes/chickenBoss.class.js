@@ -1,5 +1,8 @@
+import { AttackState } from "./AI/attackState.class.js";
+import { DeadState } from "./AI/deadState.class.js";
 import { IdleState } from "./AI/idleState.class.js";
 import { StateMachine } from "./AI/stateMachine.class.js";
+import { WalkState } from "./AI/walkState.class.js";
 import { AudioManager } from "./AudioManager.class.js";
 import { Animatable, MovableObject } from "./movableObject.class.js";
 
@@ -15,12 +18,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
     global;
     healthStatusBar = new Image();
     healthStatus = {
-        0: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue0.png' },
-        20: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue20.png' },
-        40: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue40.png' },
-        60: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue60.png' },
-        80: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue80.png' },
-        100: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue100.png' }
+        100: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue0.png' },
+        80: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue20.png' },
+        60: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue40.png' },
+        40: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue60.png' },
+        20: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue80.png' },
+        0: { path: 'img/7_statusbars/2_statusbar_endboss/blue/blue100.png' }
     };
 
     constructor(animationPaths, collisionManager, player, x, ...args) {
@@ -31,6 +34,18 @@ export class ChickenBoss extends Animatable(MovableObject) {
         this.stateMachine = new StateMachine(new IdleState(this));
         this.attackSettings();
         this.Start();
+    }
+
+    preloadImages(images) {
+        // Iteriere durch die Keys des Objekts
+        for (const key in images) {
+            if (images.hasOwnProperty(key)) {
+                const img = new Image(); // Erstelle ein neues Image-Objekt
+                img.src = images[key].path; // Weise den Bildpfad zu
+                images[key].image = img; // Speichere das geladene Bild im Objekt
+            }
+        }
+        return images; // Gib das aktualisierte Objekt zurück
     }
 
     /**
@@ -66,6 +81,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
     Start() {
         this.audioManager = new AudioManager();
         this.audioManager.effectsVolume = 0.2;
+        this.healthImages = this.preloadImages(this.healthStatus);
         this.audioManager.loadSound('Bot1', 'audio/Bot12.wav');
         this.audioManager.loadSound('Bot2', 'audio/Bot11.wav');
         this.audioManager.loadSound('BotAttack', 'audio/Bakaa11.wav');
@@ -86,9 +102,9 @@ export class ChickenBoss extends Animatable(MovableObject) {
     Update(ctx, deltaTime, screenX) {
         this.audioManager.effectsVolume = this.global.getSoundVolumes();
         this.isOnGround(deltaTime);
-        this.facingRight = this.player.x < this.x;
         this.currentDistanceToPlayer = this.calculateDistanceToPlayer();
         this.stateMachine.Update(deltaTime);
+        this.facingRight = this.player.x < this.x ? true : false;
         this.drawChicken(ctx, screenX);
         this.drawHealthBar(ctx, this.calculateBottlePercentage(this.hitCount), screenX + this.width / 2 - 100, this.y - 20);
         if (this.global.pause || this.global.gameOver && !this.isDead()) return;
@@ -174,7 +190,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
      * @param {*} y
      */
     drawHealthBar(ctx, percent, x, y) {
-        this.healthStatusBar.src = percent > 0 ? this.healthStatus[percent].path : this.healthStatus['0'].path;
+        this.healthStatusBar = percent > 0 ? this.healthImages[percent].image : this.healthImages[0].image;
         ctx.drawImage(this.healthStatusBar, x, y, 200, 50);
     }
 
@@ -290,11 +306,15 @@ export class ChickenBoss extends Animatable(MovableObject) {
         if (this.health > 0) {
             this.hitCount += 2;
             this.health -= 20;
+            if(this.speed < 70) this.speed += 10;
+            const attackState = Math.random() < 0.75;            
+            attackState ? this.stateMachine.changeState(new AttackState(this)) : this.stateMachine.changeState(new WalkState(this));
+
         }
         else {
             this.global.bossDefeated++;
             this.setState('dead');
-            this.stateMachine.changeState('dead');
+            this.stateMachine.changeState(DeadState(this));
             this.dead = true;
         }
     }
@@ -306,11 +326,12 @@ export class ChickenBoss extends Animatable(MovableObject) {
      * @returns {boolean}
      */
     isPlayerAdjacent(other) {
-        if(!other.onGround) return;
-        const buffer = 22; 
+        const buffer = 30; 
         return (
-            other.x < this.x + this.width / 2 - buffer || 
-            other.x > this.x + this.width / 2 + buffer   
+            this.collider.x + buffer < other.collider.x + other.collider.width - buffer &&
+            this.collider.x + this.collider.width - buffer > other.collider.x + buffer &&
+            this.collider.y  < other.collider.y + other.collider.height &&
+            this.collider.y + this.collider.height > other.collider.y 
         );
     }
 
@@ -325,7 +346,7 @@ export class ChickenBoss extends Animatable(MovableObject) {
         if (other.tag === "Player" && this.health > 0) {
             const direction = this.getCollisionDirection(other);
             if ((direction === 'left' || direction === 'right')) {
-                if(!this.isPlayerAdjacent(other)) other.takeDamage();
+                if(this.isPlayerAdjacent(other)) other.takeDamage();
             }
         }
     }

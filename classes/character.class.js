@@ -343,6 +343,7 @@ export class Character extends Animatable(MovableObject) {
      */
     onCollisionEnter(other) {
         const direction = this.getCollisionDirection(other);
+        if (other.tag == "Bottle") return;
         if (other.tag == "Enemy" && !this.onGround) {
             this.global.audioManager.playSound('Land');
         }

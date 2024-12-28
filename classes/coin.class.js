@@ -109,7 +109,7 @@ export class Coin extends Animatable(CollisionCapable(GameObject)) {
             if (this.y >= other.y + other.height / 2 - 100) {
                 setTimeout(() => {
                     this.destroyCoin();
-                }, 150); 
+                }, 100); 
             }
         }
     }

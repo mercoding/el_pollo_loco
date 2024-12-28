@@ -24,6 +24,8 @@ export class Settings extends MenuGUI {
         this.buttonBackground = new Image();
         this.musicImage = new Image();
         this.soundImage = new Image();
+        this.musicImage.src = 'img/ui/Music.png';
+        this.soundImage.src = 'img/ui/Sound.png';
         this.selectedOption = 0;
         this.setSlider();
         this.onStart();

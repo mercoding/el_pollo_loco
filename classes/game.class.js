@@ -191,6 +191,14 @@ export class Game extends World {
         if (this.global.bossDefeated > 0 || this.global.health <= 0) {
             this.ui.drawGameOver();
             this.ui.global.audioManager.stopAll();
+            if(!this.global.menuActive && !this.global.timerOff) {
+                setTimeout(() => {
+                    this.ui.menuActive = !this.menuActive;
+                    this.ui.global.pause = this.menuActive;
+                    this.global.timerOff = true;
+                    this.ui.menu.changeMenu(new GameMenu(this.ui));
+                }, 2000);
+            }
         }
     }
 

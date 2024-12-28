@@ -108,11 +108,9 @@ export class Bottle extends Animatable(MovableObject) {
      * @param {*} other
      */
     hitChickenBoss(other) {
-        setTimeout(() => {
-            other.onHit(this);
-            if (other.health <= 0) this.global.bossDefeated++;
-            this.explode();
-        }, 200);
+        other.onHit(this);
+        if (other.health <= 0) this.global.bossDefeated++;
+        this.explode();
     }
 
     /**
@@ -122,10 +120,12 @@ export class Bottle extends Animatable(MovableObject) {
      * @returns {boolean}
      */
     isChickenAdjacent(other) {
-        const buffer = 5; // Spielraum
+        const buffer = 30; 
         return (
-            other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
-            other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
+            this.collider.x + buffer < other.collider.x + other.collider.width - buffer &&
+            this.collider.x + this.collider.width - buffer > other.collider.x + buffer &&
+            this.collider.y  < other.collider.y + other.collider.height &&
+            this.collider.y + this.collider.height > other.collider.y 
         );
     }
 
@@ -139,8 +139,10 @@ export class Bottle extends Animatable(MovableObject) {
             const distanceToPlayer = this.x - other.x;
             const distance = Math.abs(distanceToPlayer);
             if (other instanceof ChickenBoss && !this.hit) {
-                this.hitChickenBoss(other);
-                this.hit = true;
+                if(this.isChickenAdjacent) {
+                    this.hitChickenBoss(other);
+                    this.hit = true;
+                }
             }
             else if (other instanceof Chicken) {
                 if (other.tag === "Enemy") other.onHit(this);

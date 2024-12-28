@@ -27,7 +27,9 @@ export class ReturnState {
     onUpdate(deltaTime) {
         if(this.boss.health <= 0) return;
         const distance = Math.abs(this.targetReturnPosition);
-        const direction =  Math.abs(this.boss.x) >= this.targetReturnPosition ? -1 : 1;     
+        const direction =  Math.abs(this.boss.x) >= this.targetReturnPosition ? -1 : 1;   
+        const directionToPlayer = (this.boss.x <= this.boss.player.x) ? true : false;
+        this.boss.facingRight = directionToPlayer;
         const distanceToReturnPosition = Math.abs(this.boss.x - this.targetReturnPosition);        
         if (direction > 0 && distanceToReturnPosition <= 50 || direction < 0 && distanceToReturnPosition >= 750) {  // Adjusted threshold to 5 pixels
             this.boss.stateMachine.changeState(new IdleState(this.boss));

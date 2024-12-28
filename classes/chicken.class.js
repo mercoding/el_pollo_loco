@@ -23,7 +23,7 @@ export class Chicken extends Animatable(MovableObject) {
         this.setState('walk');
         this.speed = 50;
         this.dead = false;
-        this.gravity = 800; 
+        this.gravity = 800;
         this.onGround = true;
         this.touched = false;
         this.invincibilityDuration = 2.0;
@@ -33,8 +33,8 @@ export class Chicken extends Animatable(MovableObject) {
     /** Set stats on start */
     Start() {
         this.lastDamageTime = 0;
-        this.soundIndex = 0; 
-        this.soundCooldown = 0; 
+        this.soundIndex = 0;
+        this.soundCooldown = 0;
         this.cooldownDuration = 0.5;
         this.soundRepeatCounter = 0;
         this.audioManager = new AudioManager();
@@ -62,7 +62,7 @@ export class Chicken extends Animatable(MovableObject) {
         if (this.soundCooldown > 0) this.soundCooldown -= deltaTime;
         if (this.velocity.x !== 0 && this.soundCooldown <= 0) {
             this.playWalkingSound();
-            this.soundCooldown = this.cooldownDuration; 
+            this.soundCooldown = this.cooldownDuration;
         }
         this.updateCollider();
     }
@@ -75,8 +75,8 @@ export class Chicken extends Animatable(MovableObject) {
      */
     drawCollider(ctx, cameraX) {
         ctx.save();
-        ctx.strokeStyle = 'red'; 
-        ctx.lineWidth = 1; 
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
         ctx.strokeRect(
             this.collider.x - cameraX,
             this.collider.y,
@@ -112,7 +112,7 @@ export class Chicken extends Animatable(MovableObject) {
             this.soundRepeatCounter++;
         } else {
             sound = 'Bot1';
-            this.soundRepeatCounter = 0; 
+            this.soundRepeatCounter = 0;
         }
         this.audioManager.playSound(sound);
     }
@@ -126,7 +126,7 @@ export class Chicken extends Animatable(MovableObject) {
      */
     moveLeft(frame, ctx, screenX) {
         ctx.translate(screenX + this.width, this.y);
-        ctx.scale(-1, 1);  
+        ctx.scale(-1, 1);
         ctx.drawImage(frame, 0, 0, this.width, this.height);
         this.setVelocity(1, 0);
     }
@@ -164,18 +164,18 @@ export class Chicken extends Animatable(MovableObject) {
      */
     squish(other) {
         if (!this.isSquished) {
-            this.y += 13;
-            this.collider.y += 25;
-            this.collider.height -= 30;
-            this.setBounceAfterSquish(other);
-            this.global.audioManager.playSound('Squish');
-            this.isSquished = true; // Gegner als zerquetscht markieren
-            this.velocity.x = 0;
-            this.setState('dead');
-            this.onDeath();
-            this.dead = true;
-            this.collidingWith = null;
-            this.collisionManager.destroy(this);
+                this.y += 13;
+                this.collider.y += 25;
+                this.collider.height -= 30;
+                this.setBounceAfterSquish(other);
+                this.global.audioManager.playSound('Squish');
+                this.isSquished = true; // Gegner als zerquetscht markieren
+                this.velocity.x = 0;
+                setTimeout(() => {this.setState('dead');}, 70);
+                this.onDeath();
+                this.dead = true;
+                this.collidingWith = null;
+                this.collisionManager.destroy(this);
         }
     }
 
@@ -223,11 +223,11 @@ export class Chicken extends Animatable(MovableObject) {
         if (other.tag === 'Player') {
             const direction = this.getCollisionDirection(other);
             if ((direction === 'left' || direction === 'right')) {
-                if(!this.isPlayerAdjacent(other) && other.onGround) other.takeDamage();
+                if (this.isPlayerAdjacent(other) && other.onGround) other.takeDamage();
             }
             if (direction === 'top' && other.velocity.y > 0) {
                 other.setState('jump');
-                this.onHit(other);
+                if (this.isPlayerAdjacentOnTop(other)) this.onHit(other);
             }
         }
     }
@@ -239,11 +239,30 @@ export class Chicken extends Animatable(MovableObject) {
      * @returns {boolean}
      */
     isPlayerAdjacent(other) {
-        if(!other.onGround) return;
-        const buffer = 32; // Spielraum
+        const buffer = 10;
+        if (!other || !other.collider) return false;
         return (
-            other.x < this.x + this.width / 2 - buffer || // Charakter links vom Hindernis
-            other.x > this.x + this.width / 2 + buffer   // Charakter rechts vom Hindernis
+            this.collider.x + buffer < other.collider.x + other.collider.width - buffer &&
+            this.collider.x + this.collider.width - buffer > other.collider.x + buffer &&
+            this.collider.y < other.collider.y + other.collider.height &&
+            this.collider.y + this.collider.height > other.collider.y
+        );
+    }
+
+    /**
+     * Check if player is on side of collider
+     *
+     * @param {*} other
+     * @returns {boolean}
+     */
+    isPlayerAdjacentOnTop(other) {
+        const buffer = 15;
+        if (!other || !other.collider) return false;
+        return (
+            this.collider.x + buffer < other.collider.x + other.collider.width - buffer &&
+            this.collider.x + this.collider.width - buffer > other.collider.x + buffer &&
+            this.collider.y < other.collider.y + other.collider.height &&
+            this.collider.y + this.collider.height > other.collider.y
         );
     }
 
@@ -266,8 +285,7 @@ export class Chicken extends Animatable(MovableObject) {
 
     /** Handle on death */
     onDeath() {
-        // Lasse Flaschen fallen, wenn das Chicken besiegt wurde
-        const numBottles = Math.floor(Math.random(0, 10) * 10); // 1-2 Flaschen        
+        const numBottles = Math.floor(Math.random(0, 10) * 10);
         if (numBottles > 3) return;
         const bottle = new CollectableItem("img/bottle/rotation/R-1.png", this.global.collisionManager, this.x, this.y - 50, 50, 60, 'Bottle');
         bottle.global = this.global;
@@ -282,13 +300,13 @@ export class Chicken extends Animatable(MovableObject) {
      */
     isOnGround(deltaTime) {
         if (!this.onGround || this.collidingWith === null) {
-            this.velocity.y += this.gravity * deltaTime; // Gravitation anwenden
+            this.velocity.y += this.gravity * deltaTime;
         }
     }
 
     /** Land game object and stop falling */
     land() {
-        this.onGround = true; 
-        this.velocity.y = 0; 
+        this.onGround = true;
+        this.velocity.y = 0;
     }
 }

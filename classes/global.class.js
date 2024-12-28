@@ -95,17 +95,12 @@ export class Global {
      * Calculate bottle count into percentage for in game ui
      *
      * @param {*} bottleCount
-     * @returns {(100 | 80 | 60 | 40 | 20 | 0)}
+     * @returns {(100 | 90 | 80 | 70 | 60 | 50 | 40 | 30 | 20 | 10 | 0)}
      */
     calculateBottlePercentage(bottleCount) {
         const maxBottles = 10;
         const percentage = (bottleCount / maxBottles) * 100;
-        if (percentage >= 100) return 100;
-        if (percentage >= 80) return 80;
-        if (percentage >= 60) return 60;
-        if (percentage >= 40) return 40;
-        if (percentage >= 20) return 20;
-        return 0;
+        return percentage;
     }
 
     /** Update collision manager */
@@ -149,6 +144,7 @@ export class Global {
          this.coins = 0;
          this.inGame = true;
          this.gameOver = false;
+         this.timerOff = false;
          this.bossDefeated = 0;
          this.pause = false;
          this.groundLevel = this.canvas.height * 0.87;
