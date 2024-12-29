@@ -148,10 +148,10 @@ export class Player {
     drawJoystick(ctx) {
         const joystick = this.touchControls.joystick;
         ctx.beginPath();
-        ctx.arc(joystick.x, joystick.y, joystick.radius, 0, Math.PI * 2);
+        ctx.arc(joystick.x, joystick.y, joystick.radius, 0, Math.PI * 2);        
         ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
         ctx.fill();
-        const innerX = joystick.x + this.joystickOffset.x;
+        const innerX = joystick.x + this.joystickOffset.x;        
         const innerY = joystick.y + this.joystickOffset.y;
         ctx.beginPath();
         ctx.arc(innerX, innerY, joystick.radius / 2, 0, Math.PI * 2);
@@ -302,6 +302,7 @@ export class Player {
      */
     calculateJoystickTouchDirection(joystick, dx, dy) {
         const magnitude = Math.sqrt(dx * dx + dy * dy);
+        
         if (magnitude <= joystick.radius) {
             this.joystickOffset = { x: dx, y: dy };
         } else {
@@ -309,7 +310,7 @@ export class Player {
                 x: (dx / magnitude) * joystick.radius / 2,
                 y: (dy / magnitude) * joystick.radius / 2,
             };
-        }
+        }                
     }
 
     /**
@@ -339,11 +340,10 @@ export class Player {
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
         const joystick = this.touchControls.joystick;
-        const dx = touchX - joystick.x;
+        const dx = touchX - joystick.x;        
         const dy = touchY - joystick.y;
-        this.calculateJoystickTouchDirection(joystick, dx, dy);
+        this.calculateJoystickTouchDirection(joystick, dx, 0);
         this.translateJoystickMovementIntoInput(dx);
-
     }
 
 
